@@ -226,8 +226,16 @@ struct ClientIpResolver {
 
 impl ClientIpResolver {
     fn from_config(cfg: &ClientIpConfig) -> Self {
-        let header = HeaderName::from_bytes(cfg.header.as_bytes())
-            .unwrap_or_else(|_| HeaderName::from_static("x-forwarded-for"));
+        let header = match HeaderName::from_bytes(cfg.header.as_bytes()) {
+            Ok(header) => header,
+            Err(err) => {
+                eprintln!(
+                    "invalid client_ip header '{}': {err}; falling back to x-forwarded-for",
+                    cfg.header
+                );
+                HeaderName::from_static("x-forwarded-for")
+            }
+        };
         let trusted_proxies = cfg
             .trusted_proxies
             .iter()

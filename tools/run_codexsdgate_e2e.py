@@ -244,10 +244,11 @@ def main() -> None:
         upstream_thread.start()
         config_path, filters_path, events_path = write_config(base, proxy_port, upstream_port)
 
+        proxy_log = (base / "proxy.log").open("w")
         proxy = subprocess.Popen(
             [str(binary), "--config", str(config_path)],
             stdout=subprocess.DEVNULL,
-            stderr=(base / "proxy.log").open("w"),
+            stderr=proxy_log,
             text=True,
         )
         analyzer_logs: list[str] = []
@@ -259,11 +260,12 @@ def main() -> None:
                 events_path.write_text("", encoding="utf-8")
                 time.sleep(1.2)
                 analyzer_log_path = base / f"analyzer-{scenario}.log"
-                analyzer = start_analyzer(args, events_path, filters_path, analyzer_log_path)
+                analyzer, analyzer_log = start_analyzer(args, events_path, filters_path, analyzer_log_path)
                 collect = run_phase(proxy_port, scenario, args.duration, args.workers)
                 filters = wait_for_filters(filters_path, args.analyzer_wait)
                 replay = run_phase(proxy_port, scenario, args.duration, args.workers)
                 stop_process(analyzer)
+                analyzer_log.close()
                 analyzer_logs.extend(
                     analyzer_log_path.read_text(encoding="utf-8", errors="replace").splitlines()
                 )
@@ -284,6 +286,7 @@ def main() -> None:
             print(json.dumps(report, indent=2, sort_keys=True))
         finally:
             stop_process(proxy)
+            proxy_log.close()
             upstream.shutdown()
 
 def start_analyzer(
@@ -291,7 +294,7 @@ def start_analyzer(
     events_path: Path,
     filters_path: Path,
     log_path: Path,
-) -> subprocess.Popen[str]:
+) -> tuple[subprocess.Popen[str], Any]:
     analyzer_cmd = [
         sys.executable,
         "tools/codexsdgate.py",
@@ -310,13 +313,15 @@ def start_analyzer(
     ]
     if args.no_codex:
         analyzer_cmd.append("--no-codex")
-    return subprocess.Popen(
+    log_file = log_path.open("w")
+    process = subprocess.Popen(
         analyzer_cmd,
-        stdout=log_path.open("w"),
+        stdout=log_file,
         stderr=subprocess.STDOUT,
         text=True,
         env={**os.environ, "PYTHONUNBUFFERED": "1"},
     )
+    return process, log_file
 
 
 def stop_process(proc: subprocess.Popen[Any]) -> None:
