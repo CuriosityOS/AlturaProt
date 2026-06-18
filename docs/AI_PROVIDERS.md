@@ -79,6 +79,8 @@ CodexSDGate defaults to high-confidence learning. Deterministic fallback rules a
 
 Provider output is also merged with deterministic high-confidence signature coverage. This prevents a model from omitting a strong attack signature during a short real-time mitigation window. Use `--disable-strong-coverage` only when evaluating raw provider behavior.
 
+Learned adaptive filters are preserved in `runtime/filters.json` even when there are no new attack events. This lets the proxy keep a dormant library of previous attack signatures and reactivate the same filter quickly when the pattern returns. Use `--max-filters` to cap the retained filter library size.
+
 To intentionally learn from observed-only bursts during a controlled test, pass:
 
 ```bash
@@ -100,13 +102,15 @@ For deterministic fallback testing without an AI provider:
 python3 tools/run_codexsdgate_e2e.py --no-codex
 ```
 
+To verify repeat-attack persistence, add `--verify-persistence`. The runner clears the event log after a filter is learned, lets CodexSDGate process a quiet interval, then replays the same attack pattern to confirm the dormant filter still reactivates.
+
 The scenario runner tests a basic flood, cache-busting query flood, rotating numeric path flood, and mixed user-agent flood. It reports collection-phase statuses, replay-phase statuses, learned filters, event reasons, and the analyzer log tail.
 
-Latest Codex SDK run on `core` used `gpt-5.5`, `reasoning_effort=high`, and `service_tier=fast`.
+Latest Codex SDK persistence run on `core` used `gpt-5.5`, `reasoning_effort=high`, and `service_tier=fast` with `--verify-persistence`.
 
-| Scenario | Learned filters | Replay result |
-| --- | ---: | --- |
-| basic `/api/login` flood | 1 | `403: 18200`, `429: 8624`, `204: 135` |
-| cachebuster query flood | 1 | `403: 20438`, `429: 6489`, `204: 117` |
-| mixed user-agent flood | 4 | `403: 18635`, `429: 6999`, `204: 123` |
-| rotating numeric path flood | 1 | `403: 24290`, `429: 3204`, `204: 100` |
+| Scenario | Learned filters | Initial replay | Quiet repeated replay |
+| --- | ---: | --- | --- |
+| basic `/api/login` flood | 1 | `403: 5231`, `429: 11543`, `204: 135` | `403: 16673` |
+| cachebuster query flood | 1 | `403: 10597`, `429: 4838`, `204: 102` | `403: 13089` |
+| mixed user-agent flood | 4 | `403: 9464`, `429: 7588`, `204: 115` | `403: 16914` |
+| rotating numeric path flood | 1 | `403: 10415`, `429: 5426`, `204: 108` | `403: 17062` |

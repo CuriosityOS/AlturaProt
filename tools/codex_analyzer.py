@@ -74,6 +74,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-count", type=int, default=1)
     parser.add_argument("--ttl-seconds", type=int, default=60)
     parser.add_argument("--max-events", type=int, default=200)
+    parser.add_argument("--max-filters", type=int, default=512)
     parser.add_argument("--no-codex", action="store_true")
     parser.add_argument("--provider", choices=["auto", "codex", "openai", "anthropic", "openrouter"], default="auto")
     parser.add_argument("--provider-config", default=str(default_provider_config_path()))
@@ -503,11 +504,54 @@ def write_filters(path: Path, filters: list[dict[str, Any]]) -> None:
     os.replace(tmp_path, path)
 
 
+def read_filter_file(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    filters = data.get("filters", []) if isinstance(data, dict) else []
+    return [item for item in filters if isinstance(item, dict)]
+
+
+def filter_key(item: dict[str, Any]) -> str:
+    condition = item.get("condition", {})
+    if isinstance(condition, dict) and isinstance(condition.get("signature"), str):
+        return f"signature:{condition['signature']}"
+    return f"id:{item.get('id', '')}"
+
+
+def merge_existing_filters(
+    existing: list[dict[str, Any]],
+    new_filters: list[dict[str, Any]],
+    ttl_seconds: int,
+    max_filters: int,
+) -> list[dict[str, Any]]:
+    merged: dict[str, dict[str, Any]] = {}
+
+    def upsert(item: dict[str, Any]) -> None:
+        clean = sanitize_filter(item, ttl_seconds)
+        key = filter_key(clean)
+        if key == "id:":
+            return
+        merged.pop(key, None)
+        merged[key] = clean
+
+    for item in existing:
+        upsert(item)
+    for item in new_filters:
+        upsert(item)
+    return list(merged.values())[-max(1, max_filters) :]
+
+
 def analyze_once(args: argparse.Namespace) -> None:
     events = read_events(Path(args.events), args.max_events)
+    existing_filters = read_filter_file(Path(args.filters))
     if not events:
-        write_filters(Path(args.filters), [])
-        print("no attack events found", flush=True)
+        preserved = merge_existing_filters(existing_filters, [], args.ttl_seconds, args.max_filters)
+        write_filters(Path(args.filters), preserved)
+        print(f"no attack events found; preserved {len(preserved)} learned filters", flush=True)
         return
     filters: list[dict[str, Any]]
     prompt = build_prompt(events, args.min_count, args.ttl_seconds)
@@ -530,6 +574,7 @@ def analyze_once(args: argparse.Namespace) -> None:
         filters = merge_strong_coverage(filters, events, args.min_count, args.ttl_seconds)
     else:
         filters = [sanitize_filter(item, args.ttl_seconds) for item in filters]
+    filters = merge_existing_filters(existing_filters, filters, args.ttl_seconds, args.max_filters)
     write_filters(Path(args.filters), filters)
     print(f"wrote {len(filters)} filters to {args.filters} via {used_provider}", flush=True)
 

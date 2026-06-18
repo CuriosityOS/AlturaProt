@@ -59,6 +59,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--duration", type=float, default=4.0)
     parser.add_argument("--workers", type=int, default=32)
     parser.add_argument("--analyzer-wait", type=float, default=20.0)
+    parser.add_argument("--verify-persistence", action="store_true")
     parser.add_argument("--workdir", default=None)
     return parser.parse_args()
 
@@ -264,17 +265,28 @@ def main() -> None:
                 collect = run_phase(proxy_port, scenario, args.duration, args.workers)
                 filters = wait_for_filters(filters_path, args.analyzer_wait)
                 replay = run_phase(proxy_port, scenario, args.duration, args.workers)
+                persistent_replay = None
+                filters_after_quiet = None
+                if args.verify_persistence:
+                    events_path.write_text("", encoding="utf-8")
+                    time.sleep(2.2)
+                    filters_after_quiet = json.loads(filters_path.read_text(encoding="utf-8")).get("filters", [])
+                    persistent_replay = run_phase(proxy_port, scenario, args.duration, args.workers)
                 stop_process(analyzer)
                 analyzer_log.close()
                 analyzer_logs.extend(
                     analyzer_log_path.read_text(encoding="utf-8", errors="replace").splitlines()
                 )
-                scenario_results[scenario] = {
+                result: dict[str, Any] = {
                     "collect": summarize_phase(collect),
                     "replay": summarize_phase(replay),
                     "filters_after_collect": len(filters),
                     "learned_filters": filters,
                 }
+                if args.verify_persistence:
+                    result["filters_after_quiet"] = len(filters_after_quiet or [])
+                    result["persistent_replay"] = summarize_phase(persistent_replay or PhaseResult())
+                scenario_results[scenario] = result
             report = {
                 "provider": "deterministic" if args.no_codex else args.provider,
                 "workdir": str(base),

@@ -53,6 +53,75 @@ class AnalyzerTests(unittest.TestCase):
         signatures = {item["condition"]["signature"] for item in merged}
         self.assertEqual(signatures, {"covered", "missing"})
 
+    def test_merge_existing_filters_preserves_dormant_rules(self) -> None:
+        existing = [
+            {
+                "id": "old",
+                "enabled": True,
+                "adaptive": True,
+                "condition": {"signature": "oldsig"},
+                "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
+            }
+        ]
+        new = [
+            {
+                "id": "new",
+                "enabled": True,
+                "adaptive": True,
+                "condition": {"signature": "newsig"},
+                "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
+            }
+        ]
+        merged = codex_analyzer.merge_existing_filters(existing, new, ttl_seconds=20, max_filters=10)
+        self.assertEqual({item["condition"]["signature"] for item in merged}, {"oldsig", "newsig"})
+
+    def test_merge_existing_filters_replaces_same_signature(self) -> None:
+        existing = [
+            {
+                "id": "old",
+                "enabled": True,
+                "adaptive": True,
+                "condition": {"signature": "same"},
+                "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
+            }
+        ]
+        new = [
+            {
+                "id": "new",
+                "enabled": True,
+                "adaptive": True,
+                "condition": {"signature": "same"},
+                "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
+            }
+        ]
+        merged = codex_analyzer.merge_existing_filters(existing, new, ttl_seconds=20, max_filters=10)
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(merged[0]["id"], "new")
+
+    def test_merge_existing_filters_cap_prefers_new_rules(self) -> None:
+        existing = [
+            {
+                "id": f"old-{idx}",
+                "enabled": True,
+                "adaptive": True,
+                "condition": {"signature": f"old-{idx}"},
+                "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
+            }
+            for idx in range(3)
+        ]
+        new = [
+            {
+                "id": "new",
+                "enabled": True,
+                "adaptive": True,
+                "condition": {"signature": "new"},
+                "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
+            }
+        ]
+        merged = codex_analyzer.merge_existing_filters(existing, new, ttl_seconds=20, max_filters=3)
+        self.assertEqual(len(merged), 3)
+        self.assertIn("new", {item["condition"]["signature"] for item in merged})
+
     def test_provider_config_merges_defaults(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "providers.json"
