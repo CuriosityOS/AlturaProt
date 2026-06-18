@@ -165,19 +165,21 @@ def prompt_required(label: str, current: str) -> str:
 
 
 def codex_status() -> str:
+    status = []
     codex = shutil.which("codex")
-    if not codex:
-        return "codex CLI not found"
-    try:
-        version = subprocess.check_output([codex, "--version"], text=True, stderr=subprocess.STDOUT, timeout=5).strip()
-    except Exception as exc:
-        version = f"codex check failed: {exc}"
+    if codex:
+        try:
+            status.append(subprocess.check_output([codex, "--version"], text=True, stderr=subprocess.STDOUT, timeout=5).strip())
+        except Exception as exc:
+            status.append(f"codex CLI check failed: {exc}")
+    else:
+        status.append("codex CLI not on PATH")
     try:
         __import__("openai_codex")
-        sdk = "openai-codex import ok"
+        status.append("openai-codex import ok")
     except Exception:
-        sdk = "openai-codex not installed"
-    return f"{version}, {sdk}"
+        status.append("openai-codex not installed")
+    return ", ".join(status)
 
 
 if __name__ == "__main__":
