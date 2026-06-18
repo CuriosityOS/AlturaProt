@@ -1,6 +1,6 @@
 use std::{
     convert::Infallible,
-    net::SocketAddr,
+    net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
     sync::Arc,
     time::Duration,
 };
@@ -21,7 +21,7 @@ use tokio::sync::{oneshot, watch};
 
 use crate::{
     adaptive::AdaptiveDetector,
-    config::HttpConfig,
+    config::{ClientIpConfig, HttpConfig},
     filter::{request_signature, FilterEngine, RequestContext},
     limiter::{LimitReason, RateLimiter},
     telemetry::Stats,
@@ -36,6 +36,7 @@ struct HttpProxyState {
     cfg: HttpConfig,
     upstream: Uri,
     client: HyperClient,
+    client_ip: ClientIpResolver,
     engine: Arc<FilterEngine>,
     limiter: Arc<RateLimiter>,
     detector: Arc<AdaptiveDetector>,
@@ -77,6 +78,7 @@ pub async fn run_http_proxy(
         cfg: cfg.clone(),
         upstream,
         client,
+        client_ip: ClientIpResolver::from_config(&cfg.client_ip),
         engine,
         limiter,
         detector,
@@ -142,7 +144,7 @@ async fn handle_http(
 ) -> Result<Response<ProxyBody>, Infallible> {
     Stats::inc(&state.stats.http_total);
 
-    let client_ip = peer_addr.ip();
+    let client_ip = state.client_ip.resolve(peer_addr.ip(), req.headers());
     let method = req.method().as_str().to_string();
     let path = req.uri().path().to_string();
     let query = req.uri().query().map(ToString::to_string);
@@ -214,6 +216,153 @@ async fn handle_http(
             Ok(simple_response(502, "bad gateway\n", None))
         }
     }
+}
+
+#[derive(Clone, Debug)]
+struct ClientIpResolver {
+    header: HeaderName,
+    trusted_proxies: Arc<Vec<IpRange>>,
+}
+
+impl ClientIpResolver {
+    fn from_config(cfg: &ClientIpConfig) -> Self {
+        let header = HeaderName::from_bytes(cfg.header.as_bytes())
+            .unwrap_or_else(|_| HeaderName::from_static("x-forwarded-for"));
+        let trusted_proxies = cfg
+            .trusted_proxies
+            .iter()
+            .filter_map(|entry| match IpRange::parse(entry) {
+                Ok(range) => Some(range),
+                Err(err) => {
+                    eprintln!("ignoring invalid trusted proxy range '{entry}': {err}");
+                    None
+                }
+            })
+            .collect();
+        Self {
+            header,
+            trusted_proxies: Arc::new(trusted_proxies),
+        }
+    }
+
+    fn resolve(&self, peer_ip: IpAddr, headers: &HeaderMap<HeaderValue>) -> IpAddr {
+        if self.trusted_proxies.is_empty() || !self.is_trusted(peer_ip) {
+            return peer_ip;
+        }
+        let Some(header) = headers.get(&self.header).and_then(|value| value.to_str().ok()) else {
+            return peer_ip;
+        };
+        let mut chain: Vec<IpAddr> = header
+            .split(',')
+            .filter_map(parse_forwarded_ip_token)
+            .collect();
+        chain.push(peer_ip);
+        for ip in chain.iter().rev() {
+            if !self.is_trusted(*ip) {
+                return *ip;
+            }
+        }
+        peer_ip
+    }
+
+    fn is_trusted(&self, ip: IpAddr) -> bool {
+        self.trusted_proxies
+            .iter()
+            .any(|range| range.contains(ip))
+    }
+}
+
+#[derive(Clone, Debug)]
+enum IpRange {
+    V4(u32, u8),
+    V6(u128, u8),
+}
+
+impl IpRange {
+    fn parse(raw: &str) -> Result<Self, String> {
+        let raw = raw.trim();
+        let (ip_raw, prefix_raw) = raw
+            .split_once('/')
+            .map(|(ip, prefix)| (ip, Some(prefix)))
+            .unwrap_or((raw, None));
+        let ip: IpAddr = ip_raw
+            .parse()
+            .map_err(|err| format!("invalid IP address: {err}"))?;
+        match ip {
+            IpAddr::V4(ip) => {
+                let prefix = parse_prefix(prefix_raw, 32)?;
+                Ok(Self::V4(u32::from(ip), prefix))
+            }
+            IpAddr::V6(ip) => {
+                let prefix = parse_prefix(prefix_raw, 128)?;
+                Ok(Self::V6(u128::from(ip), prefix))
+            }
+        }
+    }
+
+    fn contains(&self, ip: IpAddr) -> bool {
+        match (self, ip) {
+            (Self::V4(network, prefix), IpAddr::V4(ip)) => {
+                let mask = prefix_mask_u32(*prefix);
+                (u32::from(ip) & mask) == (*network & mask)
+            }
+            (Self::V6(network, prefix), IpAddr::V6(ip)) => {
+                let mask = prefix_mask_u128(*prefix);
+                (u128::from(ip) & mask) == (*network & mask)
+            }
+            _ => false,
+        }
+    }
+}
+
+fn parse_prefix(raw: Option<&str>, max: u8) -> Result<u8, String> {
+    let Some(raw) = raw else {
+        return Ok(max);
+    };
+    let prefix = raw
+        .parse::<u8>()
+        .map_err(|err| format!("invalid prefix: {err}"))?;
+    if prefix > max {
+        return Err(format!("prefix {prefix} exceeds max {max}"));
+    }
+    Ok(prefix)
+}
+
+fn prefix_mask_u32(prefix: u8) -> u32 {
+    if prefix == 0 {
+        0
+    } else {
+        u32::MAX << (32 - prefix)
+    }
+}
+
+fn prefix_mask_u128(prefix: u8) -> u128 {
+    if prefix == 0 {
+        0
+    } else {
+        u128::MAX << (128 - prefix)
+    }
+}
+
+fn parse_forwarded_ip_token(raw: &str) -> Option<IpAddr> {
+    let token = raw.trim();
+    if token.is_empty() {
+        return None;
+    }
+    if let Some(rest) = token.strip_prefix('[') {
+        let (ip, _) = rest.split_once(']')?;
+        return ip.parse().ok();
+    }
+    if let Ok(ip) = token.parse() {
+        return Some(ip);
+    }
+    if token.matches(':').count() == 1 {
+        let (host, _) = token.rsplit_once(':')?;
+        if let Ok(ip) = host.parse::<Ipv4Addr>() {
+            return Some(IpAddr::V4(ip));
+        }
+    }
+    token.parse::<Ipv6Addr>().map(IpAddr::V6).ok()
 }
 
 fn maybe_admin_response(
@@ -390,5 +539,47 @@ mod tests {
         assert!(!headers.contains_key("connection"));
         assert!(!headers.contains_key("x-test"));
         assert!(!headers.contains_key("upgrade"));
+    }
+
+    #[test]
+    fn client_ip_ignores_forwarded_header_from_untrusted_peer() {
+        let resolver = ClientIpResolver::from_config(&ClientIpConfig {
+            header: "x-forwarded-for".to_string(),
+            trusted_proxies: vec!["10.0.0.0/8".to_string()],
+        });
+        let mut headers = HeaderMap::new();
+        headers.insert("x-forwarded-for", HeaderValue::from_static("203.0.113.10"));
+        let peer: IpAddr = "198.51.100.20".parse().unwrap();
+        assert_eq!(resolver.resolve(peer, &headers), peer);
+    }
+
+    #[test]
+    fn client_ip_uses_rightmost_non_trusted_forwarded_ip() {
+        let resolver = ClientIpResolver::from_config(&ClientIpConfig {
+            header: "x-forwarded-for".to_string(),
+            trusted_proxies: vec!["10.0.0.0/8".to_string(), "192.0.2.10".to_string()],
+        });
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            "x-forwarded-for",
+            HeaderValue::from_static("198.51.100.1, 203.0.113.2, 10.1.2.3"),
+        );
+        let peer: IpAddr = "192.0.2.10".parse().unwrap();
+        assert_eq!(
+            resolver.resolve(peer, &headers),
+            "203.0.113.2".parse::<IpAddr>().unwrap()
+        );
+    }
+
+    #[test]
+    fn parses_forwarded_ips_with_ports_and_ipv6_brackets() {
+        assert_eq!(
+            parse_forwarded_ip_token("198.51.100.7:443"),
+            Some("198.51.100.7".parse().unwrap())
+        );
+        assert_eq!(
+            parse_forwarded_ip_token("[2001:db8::1]:443"),
+            Some("2001:db8::1".parse().unwrap())
+        );
     }
 }

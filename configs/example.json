@@ -4,6 +4,10 @@
     "upstream": "http://127.0.0.1:9000",
     "preserve_host": true,
     "admin_token": "change-me",
+    "client_ip": {
+      "header": "x-forwarded-for",
+      "trusted_proxies": []
+    },
     "limits": {
       "per_ip_rps": 250,
       "per_ip_burst": 500,

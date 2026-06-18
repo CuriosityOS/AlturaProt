@@ -40,7 +40,26 @@ pub struct HttpConfig {
     #[serde(default = "default_max_header_bytes")]
     pub max_header_bytes: usize,
     #[serde(default)]
+    pub client_ip: ClientIpConfig,
+    #[serde(default)]
     pub limits: HttpLimitConfig,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ClientIpConfig {
+    #[serde(default = "default_client_ip_header")]
+    pub header: String,
+    #[serde(default)]
+    pub trusted_proxies: Vec<String>,
+}
+
+impl Default for ClientIpConfig {
+    fn default() -> Self {
+        Self {
+            header: default_client_ip_header(),
+            trusted_proxies: Vec::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -193,6 +212,10 @@ fn default_admin_prefix() -> String {
 
 fn default_max_header_bytes() -> usize {
     32 * 1024
+}
+
+fn default_client_ip_header() -> String {
+    "x-forwarded-for".to_string()
 }
 
 fn default_per_ip_rps() -> f64 {

@@ -10,6 +10,7 @@ The hot path must remain deterministic. AI providers never run inline with clien
 ## HTTP Path
 
 - Accept HTTP/1 connections with Hyper.
+- Resolve the client identity from the TCP peer, or from `X-Forwarded-For` only when the peer is in a configured trusted proxy range.
 - Build a stable request signature from method, normalized path, query shape, user-agent family, and accept header.
 - Observe the signature in a one-second adaptive detector.
 - Apply static and active adaptive filters.

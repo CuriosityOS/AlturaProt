@@ -45,6 +45,7 @@ Blackholing is cheaper than host firewall processing, but it drops all matched t
 - Run behind TLS termination or add TLS support before internet exposure.
 - Put metrics behind an admin token and private network.
 - Keep default listeners bound to explicit addresses.
+- Configure `http.client_ip.trusted_proxies` before trusting `X-Forwarded-For`; never trust forwarded client-IP headers from arbitrary internet peers.
 - Tune `per_ip_rps`, `global_rps`, and adaptive thresholds from real traffic.
 - Tune TCP `max_connection_duration_seconds` for long-lived socket services.
 - Send SIGINT for graceful listener shutdown; existing connection tasks get a short grace window before process exit.
