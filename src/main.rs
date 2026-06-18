@@ -9,7 +9,7 @@ use altura_prot::{
     telemetry::{EventLogger, Stats},
     BoxError,
 };
-use tokio::sync::oneshot;
+use tokio::{sync::{oneshot, watch}, task::JoinHandle};
 
 #[tokio::main]
 async fn main() -> Result<(), BoxError> {
@@ -47,18 +47,21 @@ async fn main() -> Result<(), BoxError> {
         });
     }
 
+    let (shutdown_tx, shutdown_rx) = watch::channel(false);
     let mut startup_checks = Vec::new();
+    let mut listener_tasks: Vec<JoinHandle<()>> = Vec::new();
     if let Some(http_cfg) = cfg.http.clone() {
         let (startup_tx, startup_rx) = oneshot::channel();
         startup_checks.push(("http".to_string(), startup_rx));
         let engine = Arc::clone(&engine);
         let detector = Arc::clone(&detector);
         let stats = Arc::clone(&stats);
-        tokio::spawn(async move {
-            if let Err(err) = run_http_proxy(http_cfg, engine, detector, stats, Some(startup_tx)).await {
+        let shutdown = shutdown_rx.clone();
+        listener_tasks.push(tokio::spawn(async move {
+            if let Err(err) = run_http_proxy(http_cfg, engine, detector, stats, Some(startup_tx), shutdown).await {
                 eprintln!("http proxy stopped: {err}");
             }
-        });
+        }));
     }
 
     for tcp_cfg in cfg.tcp.clone() {
@@ -66,11 +69,12 @@ async fn main() -> Result<(), BoxError> {
         let (startup_tx, startup_rx) = oneshot::channel();
         startup_checks.push((name, startup_rx));
         let stats = Arc::clone(&stats);
-        tokio::spawn(async move {
-            if let Err(err) = run_tcp_proxy(tcp_cfg, stats, Some(startup_tx)).await {
+        let shutdown = shutdown_rx.clone();
+        listener_tasks.push(tokio::spawn(async move {
+            if let Err(err) = run_tcp_proxy(tcp_cfg, stats, Some(startup_tx), shutdown).await {
                 eprintln!("tcp proxy stopped: {err}");
             }
-        });
+        }));
     }
 
     if startup_checks.is_empty() {
@@ -88,6 +92,11 @@ async fn main() -> Result<(), BoxError> {
 
     tokio::signal::ctrl_c().await?;
     eprintln!("shutdown signal received");
+    let _ = shutdown_tx.send(true);
+    for task in listener_tasks {
+        let _ = tokio::time::timeout(Duration::from_secs(5), task).await;
+    }
+    tokio::time::sleep(Duration::from_secs(2)).await;
     Ok(())
 }
 

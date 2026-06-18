@@ -3,7 +3,7 @@ use std::{net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{
     io::copy_bidirectional,
     net::{TcpListener, TcpStream},
-    sync::oneshot,
+    sync::{oneshot, watch},
     time::timeout,
 };
 
@@ -18,6 +18,7 @@ pub async fn run_tcp_proxy(
     cfg: TcpProxyConfig,
     stats: Arc<Stats>,
     startup: Option<oneshot::Sender<Result<(), String>>>,
+    mut shutdown: watch::Receiver<bool>,
 ) -> Result<(), BoxError> {
     let listen: SocketAddr = match cfg.listen.parse() {
         Ok(listen) => listen,
@@ -41,13 +42,23 @@ pub async fn run_tcp_proxy(
     notify_startup(startup, Ok(()));
 
     loop {
-        let (mut inbound, peer_addr) = match listener.accept().await {
-            Ok(conn) => conn,
-            Err(err) => {
-                eprintln!("tcp accept error: {err}");
-                tokio::time::sleep(Duration::from_millis(10)).await;
+        let (mut inbound, peer_addr) = tokio::select! {
+            biased;
+            changed = shutdown.changed() => {
+                if changed.is_ok() && *shutdown.borrow() {
+                    eprintln!("tcp proxy '{}' listener shutting down", cfg.name);
+                    break;
+                }
                 continue;
             }
+            accepted = listener.accept() => match accepted {
+                Ok(conn) => conn,
+                Err(err) => {
+                    eprintln!("tcp accept error: {err}");
+                    tokio::time::sleep(Duration::from_millis(10)).await;
+                    continue;
+                }
+            },
         };
         let limiter = Arc::clone(&limiter);
         let stats = Arc::clone(&stats);
@@ -92,6 +103,7 @@ pub async fn run_tcp_proxy(
             }
         });
     }
+    Ok(())
 }
 
 fn notify_startup(startup: Option<oneshot::Sender<Result<(), String>>>, result: Result<(), String>) {

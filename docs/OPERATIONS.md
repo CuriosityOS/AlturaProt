@@ -47,5 +47,6 @@ Blackholing is cheaper than host firewall processing, but it drops all matched t
 - Keep default listeners bound to explicit addresses.
 - Tune `per_ip_rps`, `global_rps`, and adaptive thresholds from real traffic.
 - Tune TCP `max_connection_duration_seconds` for long-lived socket services.
+- Send SIGINT for graceful listener shutdown; existing connection tasks get a short grace window before process exit.
 - Keep static filters narrow.
 - Review `runtime/attack_events.jsonl` and `runtime/filters.json` after incidents.

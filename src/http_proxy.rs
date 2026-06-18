@@ -17,7 +17,7 @@ use hyper_util::{
     rt::{TokioExecutor, TokioIo},
 };
 use tokio::net::TcpListener;
-use tokio::sync::oneshot;
+use tokio::sync::{oneshot, watch};
 
 use crate::{
     adaptive::AdaptiveDetector,
@@ -48,6 +48,7 @@ pub async fn run_http_proxy(
     detector: Arc<AdaptiveDetector>,
     stats: Arc<Stats>,
     startup: Option<oneshot::Sender<Result<(), String>>>,
+    mut shutdown: watch::Receiver<bool>,
 ) -> Result<(), BoxError> {
     let listen: SocketAddr = match cfg.listen.parse() {
         Ok(listen) => listen,
@@ -93,13 +94,23 @@ pub async fn run_http_proxy(
     notify_startup(startup, Ok(()));
 
     loop {
-        let (stream, peer_addr) = match listener.accept().await {
-            Ok(conn) => conn,
-            Err(err) => {
-                eprintln!("http accept error: {err}");
-                tokio::time::sleep(Duration::from_millis(10)).await;
+        let (stream, peer_addr) = tokio::select! {
+            biased;
+            changed = shutdown.changed() => {
+                if changed.is_ok() && *shutdown.borrow() {
+                    eprintln!("http proxy listener shutting down");
+                    break;
+                }
                 continue;
             }
+            accepted = listener.accept() => match accepted {
+                Ok(conn) => conn,
+                Err(err) => {
+                    eprintln!("http accept error: {err}");
+                    tokio::time::sleep(Duration::from_millis(10)).await;
+                    continue;
+                }
+            },
         };
         let io = TokioIo::new(stream);
         let conn_state = state.clone();
@@ -115,6 +126,7 @@ pub async fn run_http_proxy(
             }
         });
     }
+    Ok(())
 }
 
 fn notify_startup(startup: Option<oneshot::Sender<Result<(), String>>>, result: Result<(), String>) {
