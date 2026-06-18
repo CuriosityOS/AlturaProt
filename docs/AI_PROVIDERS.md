@@ -104,7 +104,7 @@ python3 tools/run_codexsdgate_e2e.py --no-codex
 
 To verify repeat-attack persistence, add `--verify-persistence`. The runner clears the event log after a filter is learned, lets CodexSDGate process a quiet interval, then replays the same attack pattern to confirm the dormant filter still reactivates.
 
-The scenario runner tests a basic flood, cache-busting query flood, rotating numeric path flood, and mixed user-agent flood. It reports collection-phase statuses, replay-phase statuses, learned filters, event reasons, and the analyzer log tail.
+The scenario runner tests a basic flood, cache-busting query flood, rotating numeric path flood, rotating UUID path flood, and mixed user-agent flood. It reports collection-phase statuses, replay-phase statuses, learned filters, event reasons, and the analyzer log tail.
 
 Latest Codex SDK persistence run on `core` used `gpt-5.5`, `reasoning_effort=high`, and `service_tier=fast` with `--verify-persistence`.
 

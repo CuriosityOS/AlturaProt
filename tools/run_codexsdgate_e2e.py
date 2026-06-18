@@ -143,6 +143,12 @@ def scenario_path_builder(scenario: str) -> Callable[[random.Random], str]:
         return lambda rng: f"/api/search?cachebust={rng.randrange(10**12)}&id={rng.randrange(1000)}"
     if scenario == "rotating-path":
         return lambda rng: f"/api/item/{rng.randrange(10**9)}?view=full"
+    if scenario == "uuid-path":
+        return lambda rng: (
+            f"/api/object/{rng.randrange(16**8):08x}-{rng.randrange(16**4):04x}-"
+            f"{rng.randrange(16**4):04x}-{rng.randrange(16**4):04x}-"
+            f"{rng.randrange(16**12):012x}?view=full"
+        )
     return lambda rng: "/api/login"
 
 
@@ -235,7 +241,7 @@ def main() -> None:
     binary = Path(args.binary)
     if not binary.exists():
         raise SystemExit(f"binary not found: {binary}")
-    scenarios = ["basic", "cachebuster", "rotating-path", "mixed-user-agent"]
+    scenarios = ["basic", "cachebuster", "rotating-path", "uuid-path", "mixed-user-agent"]
     proxy_port = free_port()
     upstream_port = free_port()
 

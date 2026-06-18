@@ -385,6 +385,8 @@ fn normalize_path(path: &str) -> String {
         }
         if segment.bytes().all(|b| b.is_ascii_digit()) {
             out.push_str(":num");
+        } else if is_uuid_segment(segment) {
+            out.push_str(":uuid");
         } else if segment.len() >= 16 && segment.bytes().all(|b| b.is_ascii_hexdigit()) {
             out.push_str(":hex");
         } else {
@@ -396,6 +398,23 @@ fn normalize_path(path: &str) -> String {
     } else {
         out
     }
+}
+
+fn is_uuid_segment(segment: &str) -> bool {
+    if segment.len() != 36 {
+        return false;
+    }
+    for (idx, byte) in segment.bytes().enumerate() {
+        let expected_hyphen = matches!(idx, 8 | 13 | 18 | 23);
+        if expected_hyphen {
+            if byte != b'-' {
+                return false;
+            }
+        } else if !byte.is_ascii_hexdigit() {
+            return false;
+        }
+    }
+    true
 }
 
 fn query_shape(query: &str) -> String {
@@ -546,6 +565,40 @@ mod tests {
         let headers = HeaderMap::new();
         let a = signature_basis("GET", "/users/123/profile", None, &headers);
         let b = signature_basis("GET", "/users/456/profile", None, &headers);
+        assert_eq!(a, b);
+    }
+
+    #[test]
+    fn signatures_normalize_uuid_paths() {
+        let headers = HeaderMap::new();
+        let a = signature_basis(
+            "GET",
+            "/objects/8b5f10e8-daf8-4c78-9db2-6af2fc92cb01/detail",
+            None,
+            &headers,
+        );
+        let b = signature_basis(
+            "GET",
+            "/objects/0A7B0FA7-616C-49B3-9E63-F09284F59770/detail",
+            None,
+            &headers,
+        );
+        assert_eq!(a, b);
+    }
+
+    #[test]
+    fn signatures_keep_readable_slugs_distinct() {
+        let headers = HeaderMap::new();
+        let a = signature_basis("GET", "/products/iphone-16-pro", None, &headers);
+        let b = signature_basis("GET", "/products/pixel-11-pro", None, &headers);
+        assert_ne!(a, b);
+    }
+
+    #[test]
+    fn signatures_sort_query_keys() {
+        let headers = HeaderMap::new();
+        let a = signature_basis("GET", "/search", Some("b=2&a=1"), &headers);
+        let b = signature_basis("GET", "/search", Some("a=3&b=4"), &headers);
         assert_eq!(a, b);
     }
 }
