@@ -21,7 +21,7 @@ The hot path must remain deterministic. AI providers never run inline with clien
 - Accept raw TCP connections with Tokio.
 - Apply per-IP connection-rate and concurrent-connection limits.
 - Connect to the configured upstream.
-- Copy bytes bidirectionally with an idle timeout.
+- Copy bytes bidirectionally with a configurable maximum connection duration.
 
 ## Filter Safety
 

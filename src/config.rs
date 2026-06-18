@@ -76,8 +76,8 @@ pub struct TcpProxyConfig {
     pub upstream: String,
     #[serde(default = "default_connect_timeout_ms")]
     pub connect_timeout_ms: u64,
-    #[serde(default = "default_tcp_idle_timeout_seconds")]
-    pub idle_timeout_seconds: u64,
+    #[serde(default = "default_tcp_max_connection_duration_seconds", alias = "idle_timeout_seconds")]
+    pub max_connection_duration_seconds: u64,
     #[serde(default)]
     pub limits: TcpLimitConfig,
 }
@@ -231,7 +231,7 @@ fn default_connect_timeout_ms() -> u64 {
     1000
 }
 
-fn default_tcp_idle_timeout_seconds() -> u64 {
+fn default_tcp_max_connection_duration_seconds() -> u64 {
     300
 }
 

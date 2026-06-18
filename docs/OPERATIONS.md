@@ -46,5 +46,6 @@ Blackholing is cheaper than host firewall processing, but it drops all matched t
 - Put metrics behind an admin token and private network.
 - Keep default listeners bound to explicit addresses.
 - Tune `per_ip_rps`, `global_rps`, and adaptive thresholds from real traffic.
+- Tune TCP `max_connection_duration_seconds` for long-lived socket services.
 - Keep static filters narrow.
 - Review `runtime/attack_events.jsonl` and `runtime/filters.json` after incidents.

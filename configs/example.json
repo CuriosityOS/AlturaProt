@@ -18,7 +18,7 @@
       "listen": "127.0.0.1:7000",
       "upstream": "127.0.0.1:7001",
       "connect_timeout_ms": 1000,
-      "idle_timeout_seconds": 300,
+      "max_connection_duration_seconds": 300,
       "limits": {
         "per_ip_connects_per_second": 50,
         "per_ip_connect_burst": 100,

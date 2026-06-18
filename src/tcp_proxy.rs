@@ -53,7 +53,7 @@ pub async fn run_tcp_proxy(
         let stats = Arc::clone(&stats);
         let upstream = cfg.upstream.clone();
         let connect_timeout = Duration::from_millis(cfg.connect_timeout_ms.max(1));
-        let idle_timeout = Duration::from_secs(cfg.idle_timeout_seconds.max(1));
+        let max_connection_duration = Duration::from_secs(cfg.max_connection_duration_seconds.max(1));
 
         let permit = match limiter.try_acquire(peer_addr.ip()) {
             Ok(permit) => permit,
@@ -85,10 +85,10 @@ pub async fn run_tcp_proxy(
 
             let _ = inbound.set_nodelay(true);
             let _ = outbound.set_nodelay(true);
-            match timeout(idle_timeout, copy_bidirectional(&mut inbound, &mut outbound)).await {
+            match timeout(max_connection_duration, copy_bidirectional(&mut inbound, &mut outbound)).await {
                 Ok(Ok(_)) => {}
                 Ok(Err(err)) => eprintln!("tcp proxy copy error for {peer_addr}: {err}"),
-                Err(_) => eprintln!("tcp proxy idle timeout for {peer_addr}"),
+                Err(_) => eprintln!("tcp proxy max connection duration reached for {peer_addr}"),
             }
         });
     }
