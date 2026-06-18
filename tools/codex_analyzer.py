@@ -47,8 +47,18 @@ DEFAULT_PROVIDER_CONFIG = {
 }
 
 SYSTEM_PROMPT = """You convert defensive HTTP flood telemetry into safe AlturaProt filter rules.
-Return JSON only. Prefer narrow signature-based adaptive filters. Do not generate commands,
-code execution, network instructions, broad IP blocks, or always-on catch-all filters."""
+Return JSON only. Prefer narrow signature-based adaptive filters. Treat rate_limited,
+global_rate_limited, per_ip_rate_limited, and filter_block events as strong evidence.
+Treat observed-only volume as weak evidence unless the prompt explicitly allows it.
+Do not generate commands, code execution, network instructions, broad IP blocks, or
+always-on catch-all filters."""
+
+STRONG_ATTACK_REASONS = {
+    "rate_limited",
+    "global_rate_limited",
+    "per_ip_rate_limited",
+    "filter_block",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -64,6 +74,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--provider", choices=["auto", "codex", "openai", "anthropic", "openrouter"], default="auto")
     parser.add_argument("--provider-config", default=str(default_provider_config_path()))
     parser.add_argument("--model", default=None)
+    parser.add_argument(
+        "--learn-observed",
+        action="store_true",
+        help="Allow observed-only high-volume signatures to become learned filters. Disabled by default to reduce false positives.",
+    )
     return parser.parse_args()
 
 
@@ -82,14 +97,20 @@ def read_events(path: Path, max_events: int) -> list[dict[str, Any]]:
     return events
 
 
-def deterministic_filters(events: list[dict[str, Any]], min_count: int, ttl_seconds: int) -> list[dict[str, Any]]:
+def deterministic_filters(
+    events: list[dict[str, Any]],
+    min_count: int,
+    ttl_seconds: int,
+    learn_observed: bool = False,
+) -> list[dict[str, Any]]:
     grouped: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
     for event in events:
         grouped[event["signature"]].append(event)
 
     filters = []
     for signature, group in sorted(grouped.items(), key=lambda item: len(item[1]), reverse=True):
-        if len(group) < min_count:
+        strong_count = sum(1 for event in group if event.get("reason") in STRONG_ATTACK_REASONS)
+        if strong_count < min_count and not (learn_observed and len(group) >= min_count):
             continue
         sample = group[-1]
         filters.append(
@@ -112,6 +133,7 @@ def deterministic_filters(events: list[dict[str, Any]], min_count: int, ttl_seco
                     "sample_path": sample.get("path"),
                     "sample_user_agent": sample.get("user_agent"),
                     "event_count": len(group),
+                    "strong_event_count": strong_count,
                 },
             }
         )
@@ -127,11 +149,14 @@ def build_prompt(events: list[dict[str, Any]], min_count: int, ttl_seconds: int)
             "FilterRule fields: id, enabled, adaptive, priority, ttl_seconds, condition, action.",
             "condition may only contain signature, methods, path_exact, path_prefix, path_contains, query_contains, user_agent_contains, headers.",
             "action must be {\"kind\":\"block\",\"status\":403,\"body\":\"blocked by adaptive filter\\n\"}.",
+            "Prefer events whose reason is rate_limited, global_rate_limited, per_ip_rate_limited, or filter_block.",
+            "Observed-only volume is weak evidence; use it only when allow_observed_learning is true.",
             "Prefer signature conditions. Add path/user-agent conditions only when they are obvious and reduce false positives.",
             "Do not suggest shell commands, code execution, network calls, broad always-on blocks, or always-active rules.",
         ],
         "min_count": min_count,
         "ttl_seconds": ttl_seconds,
+        "allow_observed_learning": False,
         "events": events,
     }
 
@@ -429,19 +454,20 @@ def analyze_once(args: argparse.Namespace) -> None:
         return
     filters: list[dict[str, Any]]
     prompt = build_prompt(events, args.min_count, args.ttl_seconds)
+    prompt["allow_observed_learning"] = bool(args.learn_observed)
     config = load_provider_config(args.provider_config)
     provider = resolve_provider(args, config)
     cfg = provider_config(config, provider, args.model)
     used_provider = provider
     if args.no_codex:
-        filters = deterministic_filters(events, args.min_count, args.ttl_seconds)
+        filters = deterministic_filters(events, args.min_count, args.ttl_seconds, args.learn_observed)
         used_provider = "deterministic"
     else:
         try:
             filters = run_provider(provider, prompt, cfg, args.ttl_seconds)
         except Exception as exc:
             print(f"{provider} analyzer unavailable, using deterministic fallback: {exc}")
-            filters = deterministic_filters(events, args.min_count, args.ttl_seconds)
+            filters = deterministic_filters(events, args.min_count, args.ttl_seconds, args.learn_observed)
             used_provider = "deterministic-fallback"
     filters = [sanitize_filter(item, args.ttl_seconds) for item in filters]
     write_filters(Path(args.filters), filters)

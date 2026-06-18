@@ -2,13 +2,12 @@ use std::{
     collections::HashMap,
     net::IpAddr,
     path::PathBuf,
-    sync::Arc,
+    sync::{Arc, RwLock},
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
 use http::{HeaderMap, HeaderValue};
 use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
 
 use crate::BoxError;
 
@@ -150,12 +149,19 @@ impl FilterEngine {
 
     pub async fn reload(&self) -> Result<(), BoxError> {
         let now = Instant::now();
-        let existing = self.rules.read().await;
-        let active_by_id: HashMap<String, Option<Instant>> = existing
-            .iter()
-            .map(|runtime| (runtime.rule.id.clone(), runtime.active_until))
-            .collect();
-        drop(existing);
+        let active_by_id: HashMap<String, Option<Instant>> = {
+            let existing = match self.rules.read() {
+                Ok(existing) => existing,
+                Err(poisoned) => {
+                    eprintln!("filter engine read lock poisoned during reload; recovering rules");
+                    poisoned.into_inner()
+                }
+            };
+            existing
+                .iter()
+                .map(|runtime| (runtime.rule.id.clone(), runtime.active_until))
+                .collect()
+        };
 
         let mut loaded = self.static_rules.clone();
         if tokio::fs::try_exists(&self.runtime_file).await? {
@@ -177,14 +183,27 @@ impl FilterEngine {
             runtime_rules.push(RuntimeRule::new(rule, active_until));
         }
 
-        *self.rules.write().await = runtime_rules;
+        let mut rules = match self.rules.write() {
+            Ok(rules) => rules,
+            Err(poisoned) => {
+                eprintln!("filter engine write lock poisoned during reload; recovering rules");
+                poisoned.into_inner()
+            }
+        };
+        *rules = runtime_rules;
         Ok(())
     }
 
-    pub async fn evaluate(&self, ctx: &RequestContext<'_>) -> Option<FilterDecision> {
+    pub fn evaluate(&self, ctx: &RequestContext<'_>) -> Option<FilterDecision> {
         let now = Instant::now();
         let unix_ms = unix_time_ms();
-        let rules = self.rules.read().await;
+        let rules = match self.rules.read() {
+            Ok(rules) => rules,
+            Err(poisoned) => {
+                eprintln!("filter engine read lock poisoned during evaluate; recovering rules");
+                poisoned.into_inner()
+            }
+        };
         for runtime in rules.iter() {
             let rule = &runtime.rule;
             if !rule.enabled || is_expired(rule, unix_ms) {
@@ -204,9 +223,15 @@ impl FilterEngine {
         None
     }
 
-    pub async fn activate_signature(&self, signature: &str, ttl: Option<Duration>) -> bool {
+    pub fn activate_signature(&self, signature: &str, ttl: Option<Duration>) -> bool {
         let mut activated = false;
-        let mut rules = self.rules.write().await;
+        let mut rules = match self.rules.write() {
+            Ok(rules) => rules,
+            Err(poisoned) => {
+                eprintln!("filter engine write lock poisoned during activate; recovering rules");
+                poisoned.into_inner()
+            }
+        };
         for runtime in rules.iter_mut() {
             if runtime.rule.enabled
                 && runtime.rule.adaptive
@@ -226,11 +251,16 @@ impl FilterEngine {
         activated
     }
 
-    pub async fn active_rule_count(&self) -> usize {
+    pub fn active_rule_count(&self) -> usize {
         let now = Instant::now();
-        self.rules
-            .read()
-            .await
+        let rules = match self.rules.read() {
+            Ok(rules) => rules,
+            Err(poisoned) => {
+                eprintln!("filter engine read lock poisoned during metrics; recovering rules");
+                poisoned.into_inner()
+            }
+        };
+        rules
             .iter()
             .filter(|rule| {
                 !rule.rule.adaptive || rule.active_until.is_some_and(|until| until > now)
@@ -474,7 +504,7 @@ mod tests {
             headers: &headers,
             signature: "sig".to_string(),
         };
-        assert_eq!(engine.evaluate(&ctx).await.unwrap().rule_id, "test");
+        assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "test");
     }
 
     #[tokio::test]
@@ -506,9 +536,9 @@ mod tests {
             headers: &headers,
             signature: "abc".to_string(),
         };
-        assert!(engine.evaluate(&ctx).await.is_none());
-        assert!(engine.activate_signature("abc", None).await);
-        assert!(engine.evaluate(&ctx).await.is_some());
+        assert!(engine.evaluate(&ctx).is_none());
+        assert!(engine.activate_signature("abc", None));
+        assert!(engine.evaluate(&ctx).is_some());
     }
 
     #[test]

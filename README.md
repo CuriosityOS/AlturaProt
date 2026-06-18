@@ -60,4 +60,5 @@ This is defensive software. The included flood script defaults to loopback-only 
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [AI providers and CodexSDGate](docs/AI_PROVIDERS.md)
+- [Benchmarks](docs/BENCHMARKS.md)
 - [Operations](docs/OPERATIONS.md)

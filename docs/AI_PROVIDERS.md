@@ -70,3 +70,13 @@ Providers can only suggest this sanitized filter shape:
 ```
 
 The proxy ignores unsupported behavior. Providers cannot execute commands, change networking, or install firewall rules through this filter file.
+
+## False Positive Controls
+
+CodexSDGate defaults to high-confidence learning. Deterministic fallback rules are created from strong evidence such as `per_ip_rate_limited`, `global_rate_limited`, `rate_limited`, or `filter_block` events. Observed-only high volume is treated as weak evidence because legitimate traffic can also be bursty.
+
+To intentionally learn from observed-only bursts during a controlled test, pass:
+
+```bash
+python3 tools/codexsdgate.py --learn-observed --once
+```

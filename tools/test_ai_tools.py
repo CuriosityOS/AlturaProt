@@ -13,8 +13,8 @@ import codex_analyzer
 class AnalyzerTests(unittest.TestCase):
     def test_deterministic_filters_are_adaptive_signature_rules(self) -> None:
         events = [
-            {"signature": "abc", "path": "/x", "user_agent": "bench"},
-            {"signature": "abc", "path": "/x", "user_agent": "bench"},
+            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "per_ip_rate_limited"},
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=2, ttl_seconds=45)
         self.assertEqual(len(filters), 1)
@@ -23,6 +23,17 @@ class AnalyzerTests(unittest.TestCase):
         self.assertEqual(clean["ttl_seconds"], 45)
         self.assertEqual(clean["condition"]["signature"], "abc")
         self.assertEqual(clean["action"]["status"], 403)
+
+    def test_observed_only_events_do_not_learn_by_default(self) -> None:
+        events = [
+            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "observed"},
+            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "observed"},
+        ]
+        self.assertEqual(codex_analyzer.deterministic_filters(events, min_count=2, ttl_seconds=45), [])
+        self.assertEqual(
+            len(codex_analyzer.deterministic_filters(events, min_count=2, ttl_seconds=45, learn_observed=True)),
+            1,
+        )
 
     def test_provider_config_merges_defaults(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

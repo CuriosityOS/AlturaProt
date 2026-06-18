@@ -148,7 +148,7 @@ async fn handle_http(
     let query = req.uri().query().map(ToString::to_string);
     let signature = request_signature(&method, &path, query.as_deref(), req.headers());
 
-    if let Some(admin) = maybe_admin_response(&state, &path, req.headers()).await {
+    if let Some(admin) = maybe_admin_response(&state, &path, req.headers()) {
         return Ok(admin);
     }
 
@@ -161,11 +161,11 @@ async fn handle_http(
         signature,
     };
 
-    state.detector.observe(&ctx, "observed").await;
+    state.detector.observe(&ctx, "observed");
 
-    if let Some(decision) = state.engine.evaluate(&ctx).await {
+    if let Some(decision) = state.engine.evaluate(&ctx) {
         Stats::inc(&state.stats.http_blocked);
-        state.detector.observe(&ctx, "filter_block").await;
+        state.detector.observe(&ctx, "filter_block");
         return Ok(simple_response(
             decision.status,
             decision.body,
@@ -185,8 +185,7 @@ async fn handle_http(
                     Some(LimitReason::PerIpRate) => "per_ip_rate_limited",
                     _ => "rate_limited",
                 },
-            )
-            .await;
+            );
         return Ok(simple_response(429, "rate limited\n", None));
     }
 
@@ -217,7 +216,7 @@ async fn handle_http(
     }
 }
 
-async fn maybe_admin_response(
+fn maybe_admin_response(
     state: &HttpProxyState,
     path: &str,
     headers: &HeaderMap<HeaderValue>,
@@ -235,7 +234,7 @@ async fn maybe_admin_response(
                 return Some(simple_response(403, "forbidden\n", None));
             }
         }
-        let active_filters = state.engine.active_rule_count().await;
+        let active_filters = state.engine.active_rule_count();
         return Some(simple_response(
             200,
             state.stats.render_prometheus(active_filters),
