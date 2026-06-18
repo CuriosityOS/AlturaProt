@@ -35,6 +35,24 @@ class AnalyzerTests(unittest.TestCase):
             1,
         )
 
+    def test_merge_strong_coverage_adds_missing_signatures(self) -> None:
+        events = [
+            {"signature": "covered", "path": "/a", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+            {"signature": "missing", "path": "/b", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+        ]
+        provider_filters = [
+            {
+                "id": "provider-covered",
+                "enabled": True,
+                "adaptive": True,
+                "condition": {"signature": "covered"},
+                "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
+            }
+        ]
+        merged = codex_analyzer.merge_strong_coverage(provider_filters, events, min_count=1, ttl_seconds=20)
+        signatures = {item["condition"]["signature"] for item in merged}
+        self.assertEqual(signatures, {"covered", "missing"})
+
     def test_provider_config_merges_defaults(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "providers.json"
@@ -44,6 +62,13 @@ class AnalyzerTests(unittest.TestCase):
             self.assertEqual(cfg["selected_provider"], "openrouter")
             self.assertEqual(provider["model"], "x/y")
             self.assertEqual(provider["base_url"], "https://openrouter.ai/api/v1")
+
+    def test_codex_defaults_are_gpt55_high_fast(self) -> None:
+        cfg = codex_analyzer.load_provider_config(Path("/tmp/nonexistent-altura-provider-config.json"))
+        provider = codex_analyzer.provider_config(cfg, "codex")
+        self.assertEqual(provider["model"], "gpt-5.5")
+        self.assertEqual(provider["reasoning_effort"], "high")
+        self.assertEqual(provider["service_tier"], "fast")
 
     def test_api_key_prefers_environment(self) -> None:
         old = os.environ.get("ALTURA_TEST_KEY")

@@ -25,7 +25,11 @@ SAFE_ID = re.compile(r"[^a-zA-Z0-9_.:-]+")
 DEFAULT_PROVIDER_CONFIG = {
     "selected_provider": "codex",
     "providers": {
-        "codex": {"model": "gpt-5.4"},
+        "codex": {
+            "model": "gpt-5.5",
+            "reasoning_effort": "high",
+            "service_tier": "fast",
+        },
         "openai": {
             "model": "gpt-5.5",
             "api_key_env": "OPENAI_API_KEY",
@@ -78,6 +82,11 @@ def parse_args() -> argparse.Namespace:
         "--learn-observed",
         action="store_true",
         help="Allow observed-only high-volume signatures to become learned filters. Disabled by default to reduce false positives.",
+    )
+    parser.add_argument(
+        "--disable-strong-coverage",
+        action="store_true",
+        help="Do not add deterministic high-confidence signature filters when a provider omits them.",
     )
     return parser.parse_args()
 
@@ -151,6 +160,7 @@ def build_prompt(events: list[dict[str, Any]], min_count: int, ttl_seconds: int)
             "action must be {\"kind\":\"block\",\"status\":403,\"body\":\"blocked by adaptive filter\\n\"}.",
             "Prefer events whose reason is rate_limited, global_rate_limited, per_ip_rate_limited, or filter_block.",
             "Observed-only volume is weak evidence; use it only when allow_observed_learning is true.",
+            "For every strong signature group at or above min_count, include at least one adaptive signature filter unless a narrower condition is clearly safer.",
             "Prefer signature conditions. Add path/user-agent conditions only when they are obvious and reduce false positives.",
             "Do not suggest shell commands, code execution, network calls, broad always-on blocks, or always-active rules.",
         ],
@@ -163,13 +173,40 @@ def build_prompt(events: list[dict[str, Any]], min_count: int, ttl_seconds: int)
 
 def codex_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_seconds: int) -> list[dict[str, Any]]:
     from openai_codex import Codex, Sandbox  # type: ignore
+    from openai_codex.types import ReasoningEffort  # type: ignore
+
+    service_tier = provider_cfg.get("service_tier")
+    effort = reasoning_effort(provider_cfg.get("reasoning_effort"), ReasoningEffort)
 
     with Codex() as codex:
-        thread = codex.thread_start(model=provider_cfg.get("model"), sandbox=Sandbox.read_only)
-        result = thread.run(json.dumps(prompt, separators=(",", ":")))
+        thread = codex.thread_start(
+            model=provider_cfg.get("model"),
+            sandbox=Sandbox.read_only,
+            service_tier=service_tier,
+        )
+        result = thread.run(
+            json.dumps(prompt, separators=(",", ":")),
+            effort=effort,
+            service_tier=service_tier,
+        )
     parsed = extract_json(result.final_response)
     filters = parsed.get("filters", []) if isinstance(parsed, dict) else []
     return [sanitize_filter(item, ttl_seconds) for item in filters if isinstance(item, dict)]
+
+
+def reasoning_effort(raw: Any, enum_cls: Any) -> Any:
+    if raw is None:
+        return None
+    value = str(raw).strip().lower()
+    if not value:
+        return None
+    try:
+        return enum_cls[value]
+    except Exception:
+        try:
+            return enum_cls(value)
+        except Exception as exc:
+            raise ValueError(f"unsupported Codex reasoning_effort: {raw}") from exc
 
 
 def openai_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_seconds: int) -> list[dict[str, Any]]:
@@ -432,6 +469,26 @@ def sanitize_filter(item: dict[str, Any], ttl_seconds: int) -> dict[str, Any]:
     }
 
 
+def merge_strong_coverage(
+    provider_filters: list[dict[str, Any]],
+    events: list[dict[str, Any]],
+    min_count: int,
+    ttl_seconds: int,
+) -> list[dict[str, Any]]:
+    merged = [sanitize_filter(item, ttl_seconds) for item in provider_filters]
+    covered_signatures = {
+        item.get("condition", {}).get("signature")
+        for item in merged
+        if isinstance(item.get("condition"), dict) and item.get("condition", {}).get("signature")
+    }
+    for fallback in deterministic_filters(events, min_count, ttl_seconds, learn_observed=False):
+        signature = fallback.get("condition", {}).get("signature")
+        if signature and signature not in covered_signatures:
+            merged.append(sanitize_filter(fallback, ttl_seconds))
+            covered_signatures.add(signature)
+    return merged
+
+
 def safe_id(value: str) -> str:
     return SAFE_ID.sub("-", value)[:96].strip("-") or "codex-learned-filter"
 
@@ -450,7 +507,7 @@ def analyze_once(args: argparse.Namespace) -> None:
     events = read_events(Path(args.events), args.max_events)
     if not events:
         write_filters(Path(args.filters), [])
-        print("no attack events found")
+        print("no attack events found", flush=True)
         return
     filters: list[dict[str, Any]]
     prompt = build_prompt(events, args.min_count, args.ttl_seconds)
@@ -466,12 +523,15 @@ def analyze_once(args: argparse.Namespace) -> None:
         try:
             filters = run_provider(provider, prompt, cfg, args.ttl_seconds)
         except Exception as exc:
-            print(f"{provider} analyzer unavailable, using deterministic fallback: {exc}")
+            print(f"{provider} analyzer unavailable, using deterministic fallback: {exc}", flush=True)
             filters = deterministic_filters(events, args.min_count, args.ttl_seconds, args.learn_observed)
             used_provider = "deterministic-fallback"
-    filters = [sanitize_filter(item, args.ttl_seconds) for item in filters]
+    if not args.no_codex and not args.disable_strong_coverage:
+        filters = merge_strong_coverage(filters, events, args.min_count, args.ttl_seconds)
+    else:
+        filters = [sanitize_filter(item, args.ttl_seconds) for item in filters]
     write_filters(Path(args.filters), filters)
-    print(f"wrote {len(filters)} filters to {args.filters} via {used_provider}")
+    print(f"wrote {len(filters)} filters to {args.filters} via {used_provider}", flush=True)
 
 
 def main() -> None:

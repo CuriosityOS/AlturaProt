@@ -77,7 +77,11 @@ def show_status() -> None:
         model = cfg.get("model", "")
         extra = ""
         if provider == "codex":
-            extra = codex_status()
+            extra = (
+                f"effort={cfg.get('reasoning_effort', '')} "
+                f"tier={cfg.get('service_tier', '')} "
+                f"{codex_status()}"
+            )
         else:
             extra = f"env {env_name}={env_status}, secret={secret_status}"
         marker = "*" if provider == selected else " "
@@ -109,8 +113,17 @@ def login_provider(provider: str) -> None:
 
     print(f"Configuring {provider}. Press Enter to keep the current value.")
     if provider == "codex":
-        model = prompt_default("Codex model", str(cfg.get("model", "gpt-5.4")))
-        providers.setdefault(provider, {})["model"] = model
+        provider_entry = providers.setdefault(provider, {})
+        provider_entry["model"] = prompt_required("Codex model", str(cfg.get("model", "gpt-5.5")))
+        provider_entry["reasoning_effort"] = prompt_choice(
+            "Reasoning effort",
+            str(cfg.get("reasoning_effort", "high")),
+            {"none", "minimal", "low", "medium", "high", "xhigh"},
+        )
+        provider_entry["service_tier"] = prompt_required(
+            "Service tier / fast mode",
+            str(cfg.get("service_tier", "fast")),
+        )
         config["selected_provider"] = provider
         write_provider_config(config)
         print(codex_status())
@@ -162,6 +175,15 @@ def prompt_required(label: str, current: str) -> str:
         if value:
             return value
         print(f"{label} is required.")
+
+
+def prompt_choice(label: str, current: str, allowed: set[str]) -> str:
+    allowed_hint = ", ".join(sorted(allowed))
+    while True:
+        value = prompt_required(f"{label} ({allowed_hint})", current).lower()
+        if value in allowed:
+            return value
+        print(f"{label} must be one of: {allowed_hint}")
 
 
 def codex_status() -> str:
