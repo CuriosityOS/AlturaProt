@@ -1,0 +1,56 @@
+{
+  "http": {
+    "listen": "127.0.0.1:8080",
+    "upstream": "http://127.0.0.1:9000",
+    "preserve_host": true,
+    "admin_token": "change-me",
+    "limits": {
+      "per_ip_rps": 250,
+      "per_ip_burst": 500,
+      "global_rps": 20000,
+      "global_burst": 40000,
+      "max_tracked_ips": 65536
+    }
+  },
+  "tcp": [
+    {
+      "name": "local-echo",
+      "listen": "127.0.0.1:7000",
+      "upstream": "127.0.0.1:7001",
+      "connect_timeout_ms": 1000,
+      "idle_timeout_seconds": 300,
+      "limits": {
+        "per_ip_connects_per_second": 50,
+        "per_ip_connect_burst": 100,
+        "max_connections_per_ip": 128,
+        "max_tracked_ips": 65536
+      }
+    }
+  ],
+  "filters": {
+    "runtime_file": "runtime/filters.json",
+    "reload_seconds": 2,
+    "static_rules": [
+      {
+        "id": "block-common-wordpress-login-probes",
+        "enabled": true,
+        "priority": 10,
+        "condition": {
+          "path_exact": "/wp-login.php"
+        },
+        "action": {
+          "kind": "block",
+          "status": 403,
+          "body": "blocked\n"
+        }
+      }
+    ]
+  },
+  "adaptive": {
+    "enabled": true,
+    "signature_threshold_per_second": 300,
+    "activation_ttl_seconds": 60,
+    "event_log": "runtime/attack_events.jsonl",
+    "event_cooldown_seconds": 5
+  }
+}
