@@ -1,6 +1,5 @@
 use std::{
     collections::HashMap,
-    fs,
     net::IpAddr,
     path::PathBuf,
     sync::Arc,
@@ -159,8 +158,8 @@ impl FilterEngine {
         drop(existing);
 
         let mut loaded = self.static_rules.clone();
-        if self.runtime_file.exists() {
-            let raw = fs::read_to_string(&self.runtime_file)?;
+        if tokio::fs::try_exists(&self.runtime_file).await? {
+            let raw = tokio::fs::read_to_string(&self.runtime_file).await?;
             if !raw.trim().is_empty() {
                 let file: FilterFile = serde_json::from_str(&raw)?;
                 loaded.extend(file.filters);
@@ -206,8 +205,6 @@ impl FilterEngine {
     }
 
     pub async fn activate_signature(&self, signature: &str, ttl: Option<Duration>) -> bool {
-        let ttl = ttl.unwrap_or(self.default_activation_ttl);
-        let active_until = Instant::now() + ttl;
         let mut activated = false;
         let mut rules = self.rules.write().await;
         for runtime in rules.iter_mut() {
@@ -215,6 +212,13 @@ impl FilterEngine {
                 && runtime.rule.adaptive
                 && runtime.rule.condition.signature.as_deref() == Some(signature)
             {
+                let rule_ttl = runtime
+                    .rule
+                    .ttl_seconds
+                    .map(Duration::from_secs)
+                    .or(ttl)
+                    .unwrap_or(self.default_activation_ttl);
+                let active_until = Instant::now() + rule_ttl;
                 runtime.active_until = Some(active_until);
                 activated = true;
             }

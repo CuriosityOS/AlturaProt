@@ -93,16 +93,33 @@ impl EventLogger {
         let Ok(line) = serde_json::to_string(event) else {
             return;
         };
-        let mut writer = self.writer.lock().expect("event logger poisoned");
-        let _ = writer.write_all(line.as_bytes());
-        let _ = writer.write_all(b"\n");
-        let _ = writer.flush();
+        let mut writer = match self.writer.lock() {
+            Ok(writer) => writer,
+            Err(poisoned) => {
+                eprintln!("event logger mutex poisoned; recovering writer");
+                poisoned.into_inner()
+            }
+        };
+        if let Err(err) = writer.write_all(line.as_bytes()) {
+            eprintln!("failed to write attack event: {err}");
+            return;
+        }
+        if let Err(err) = writer.write_all(b"\n") {
+            eprintln!("failed to write attack event newline: {err}");
+            return;
+        }
+        if let Err(err) = writer.flush() {
+            eprintln!("failed to flush attack event: {err}");
+        }
     }
 }
 
 pub fn unix_time_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis() as u64
+    match SystemTime::now().duration_since(UNIX_EPOCH) {
+        Ok(duration) => duration.as_millis() as u64,
+        Err(err) => {
+            eprintln!("system clock is before UNIX_EPOCH: {err}");
+            0
+        }
+    }
 }

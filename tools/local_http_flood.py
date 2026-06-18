@@ -49,12 +49,19 @@ def assert_loopback(url: str, allow_non_loopback: bool) -> urllib.parse.ParseRes
     if allow_non_loopback:
         return parsed
     infos = socket.getaddrinfo(parsed.hostname, parsed.port or default_port(parsed.scheme), type=socket.SOCK_STREAM)
+    resolved_ips = []
     for info in infos:
         ip = ipaddress.ip_address(info[4][0])
-        if ip.is_loopback:
-            return parsed
+        resolved_ips.append(str(ip))
+        if not ip.is_loopback:
+            raise SystemExit(
+                f"refusing non-loopback target {parsed.hostname} resolved to {ip}; "
+                "pass --allow-non-loopback only for authorized tests"
+            )
+    if resolved_ips:
+        return parsed
     raise SystemExit(
-        f"refusing non-loopback target {parsed.hostname}; pass --allow-non-loopback only for authorized tests"
+        f"refusing target {parsed.hostname}; no loopback addresses resolved"
     )
 
 

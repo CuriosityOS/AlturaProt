@@ -3,6 +3,7 @@ use std::{net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{
     io::copy_bidirectional,
     net::{TcpListener, TcpStream},
+    sync::oneshot,
     time::timeout,
 };
 
@@ -13,17 +14,41 @@ use crate::{
     BoxError,
 };
 
-pub async fn run_tcp_proxy(cfg: TcpProxyConfig, stats: Arc<Stats>) -> Result<(), BoxError> {
-    let listen: SocketAddr = cfg.listen.parse()?;
-    let listener = TcpListener::bind(listen).await?;
+pub async fn run_tcp_proxy(
+    cfg: TcpProxyConfig,
+    stats: Arc<Stats>,
+    startup: Option<oneshot::Sender<Result<(), String>>>,
+) -> Result<(), BoxError> {
+    let listen: SocketAddr = match cfg.listen.parse() {
+        Ok(listen) => listen,
+        Err(err) => {
+            notify_startup(startup, Err(format!("invalid listen address: {err}")));
+            return Err(Box::new(err));
+        }
+    };
+    let listener = match TcpListener::bind(listen).await {
+        Ok(listener) => listener,
+        Err(err) => {
+            notify_startup(startup, Err(format!("bind failed: {err}")));
+            return Err(Box::new(err));
+        }
+    };
     let limiter = ConnectionLimiter::new(&cfg.limits);
     eprintln!(
         "tcp proxy '{}' listening on {}, upstream {}",
         cfg.name, cfg.listen, cfg.upstream
     );
+    notify_startup(startup, Ok(()));
 
     loop {
-        let (mut inbound, peer_addr) = listener.accept().await?;
+        let (mut inbound, peer_addr) = match listener.accept().await {
+            Ok(conn) => conn,
+            Err(err) => {
+                eprintln!("tcp accept error: {err}");
+                tokio::time::sleep(Duration::from_millis(10)).await;
+                continue;
+            }
+        };
         let limiter = Arc::clone(&limiter);
         let stats = Arc::clone(&stats);
         let upstream = cfg.upstream.clone();
@@ -66,5 +91,11 @@ pub async fn run_tcp_proxy(cfg: TcpProxyConfig, stats: Arc<Stats>) -> Result<(),
                 Err(_) => eprintln!("tcp proxy idle timeout for {peer_addr}"),
             }
         });
+    }
+}
+
+fn notify_startup(startup: Option<oneshot::Sender<Result<(), String>>>, result: Result<(), String>) {
+    if let Some(startup) = startup {
+        let _ = startup.send(result);
     }
 }

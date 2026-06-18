@@ -117,8 +117,8 @@ def login_provider(provider: str) -> None:
         print("Codex uses your local Codex login/app-server; no API key was stored.")
         return
 
-    model = prompt_default("Model", str(cfg.get("model", "")))
-    env_name = prompt_default("API key environment variable", str(cfg.get("api_key_env", "")))
+    model = prompt_required("Model", str(cfg.get("model", "")))
+    env_name = prompt_required("API key environment variable", str(cfg.get("api_key_env", "")))
     base_url = prompt_default("Base URL", str(cfg.get("base_url", "")))
     providers.setdefault(provider, {})["model"] = model
     providers[provider]["api_key_env"] = env_name
@@ -154,6 +154,14 @@ def prompt_default(label: str, current: str) -> str:
     suffix = f" [{current}]" if current else ""
     raw = input(f"{label}{suffix}: ").strip()
     return raw or current
+
+
+def prompt_required(label: str, current: str) -> str:
+    while True:
+        value = prompt_default(label, current).strip()
+        if value:
+            return value
+        print(f"{label} is required.")
 
 
 def codex_status() -> str:

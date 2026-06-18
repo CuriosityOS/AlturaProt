@@ -2,6 +2,7 @@ use std::{
     convert::Infallible,
     net::SocketAddr,
     sync::Arc,
+    time::Duration,
 };
 
 use bytes::Bytes;
@@ -16,6 +17,7 @@ use hyper_util::{
     rt::{TokioExecutor, TokioIo},
 };
 use tokio::net::TcpListener;
+use tokio::sync::oneshot;
 
 use crate::{
     adaptive::AdaptiveDetector,
@@ -45,10 +47,24 @@ pub async fn run_http_proxy(
     engine: Arc<FilterEngine>,
     detector: Arc<AdaptiveDetector>,
     stats: Arc<Stats>,
+    startup: Option<oneshot::Sender<Result<(), String>>>,
 ) -> Result<(), BoxError> {
-    let listen: SocketAddr = cfg.listen.parse()?;
-    let upstream: Uri = cfg.upstream.parse()?;
+    let listen: SocketAddr = match cfg.listen.parse() {
+        Ok(listen) => listen,
+        Err(err) => {
+            notify_startup(startup, Err(format!("invalid listen address: {err}")));
+            return Err(Box::new(err));
+        }
+    };
+    let upstream: Uri = match cfg.upstream.parse() {
+        Ok(upstream) => upstream,
+        Err(err) => {
+            notify_startup(startup, Err(format!("invalid upstream URI: {err}")));
+            return Err(Box::new(err));
+        }
+    };
     if upstream.scheme().is_none() || upstream.authority().is_none() {
+        notify_startup(startup, Err("HTTP upstream must include scheme and authority".to_string()));
         return Err("HTTP upstream must include scheme and authority".into());
     }
 
@@ -66,11 +82,25 @@ pub async fn run_http_proxy(
         stats,
     };
 
-    let listener = TcpListener::bind(listen).await?;
+    let listener = match TcpListener::bind(listen).await {
+        Ok(listener) => listener,
+        Err(err) => {
+            notify_startup(startup, Err(format!("bind failed: {err}")));
+            return Err(Box::new(err));
+        }
+    };
     eprintln!("http proxy listening on {listen}, upstream {}", cfg.upstream);
+    notify_startup(startup, Ok(()));
 
     loop {
-        let (stream, peer_addr) = listener.accept().await?;
+        let (stream, peer_addr) = match listener.accept().await {
+            Ok(conn) => conn,
+            Err(err) => {
+                eprintln!("http accept error: {err}");
+                tokio::time::sleep(Duration::from_millis(10)).await;
+                continue;
+            }
+        };
         let io = TokioIo::new(stream);
         let conn_state = state.clone();
         tokio::spawn(async move {
@@ -84,6 +114,12 @@ pub async fn run_http_proxy(
                 eprintln!("http connection error from {peer_addr}: {err}");
             }
         });
+    }
+}
+
+fn notify_startup(startup: Option<oneshot::Sender<Result<(), String>>>, result: Result<(), String>) {
+    if let Some(startup) = startup {
+        let _ = startup.send(result);
     }
 }
 

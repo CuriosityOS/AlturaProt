@@ -1,4 +1,4 @@
-use std::{env, sync::Arc};
+use std::{env, sync::Arc, time::Duration};
 
 use altura_prot::{
     adaptive::AdaptiveDetector,
@@ -9,6 +9,7 @@ use altura_prot::{
     telemetry::{EventLogger, Stats},
     BoxError,
 };
+use tokio::sync::oneshot;
 
 #[tokio::main]
 async fn main() -> Result<(), BoxError> {
@@ -46,31 +47,43 @@ async fn main() -> Result<(), BoxError> {
         });
     }
 
-    let mut listeners = 0;
+    let mut startup_checks = Vec::new();
     if let Some(http_cfg) = cfg.http.clone() {
-        listeners += 1;
+        let (startup_tx, startup_rx) = oneshot::channel();
+        startup_checks.push(("http".to_string(), startup_rx));
         let engine = Arc::clone(&engine);
         let detector = Arc::clone(&detector);
         let stats = Arc::clone(&stats);
         tokio::spawn(async move {
-            if let Err(err) = run_http_proxy(http_cfg, engine, detector, stats).await {
+            if let Err(err) = run_http_proxy(http_cfg, engine, detector, stats, Some(startup_tx)).await {
                 eprintln!("http proxy stopped: {err}");
             }
         });
     }
 
     for tcp_cfg in cfg.tcp.clone() {
-        listeners += 1;
+        let name = format!("tcp:{}", tcp_cfg.name);
+        let (startup_tx, startup_rx) = oneshot::channel();
+        startup_checks.push((name, startup_rx));
         let stats = Arc::clone(&stats);
         tokio::spawn(async move {
-            if let Err(err) = run_tcp_proxy(tcp_cfg, stats).await {
+            if let Err(err) = run_tcp_proxy(tcp_cfg, stats, Some(startup_tx)).await {
                 eprintln!("tcp proxy stopped: {err}");
             }
         });
     }
 
-    if listeners == 0 {
+    if startup_checks.is_empty() {
         return Err("configuration has no listeners".into());
+    }
+
+    for (name, rx) in startup_checks {
+        match tokio::time::timeout(Duration::from_secs(5), rx).await {
+            Ok(Ok(Ok(()))) => {}
+            Ok(Ok(Err(err))) => return Err(format!("{name} startup failed: {err}").into()),
+            Ok(Err(_)) => return Err(format!("{name} startup task exited before reporting readiness").into()),
+            Err(_) => return Err(format!("{name} startup timed out").into()),
+        }
     }
 
     tokio::signal::ctrl_c().await?;
