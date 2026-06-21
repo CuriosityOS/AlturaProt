@@ -139,6 +139,28 @@ class AnalyzerTests(unittest.TestCase):
         self.assertEqual(provider["reasoning_effort"], "high")
         self.assertEqual(provider["service_tier"], "fast")
 
+    def test_deterministic_filters_learn_path_shape_for_polymorphic_events(self) -> None:
+        events = [
+            {
+                "signature": "sig-a",
+                "path": "/api/abcdefghij/1",
+                "path_shape": "/api/:token/:num",
+                "user_agent": "bench",
+                "reason": "global_observed",
+            },
+            {
+                "signature": "sig-b",
+                "path": "/api/klmnopqrst/2",
+                "path_shape": "/api/:token/:num",
+                "user_agent": "bench",
+                "reason": "global_observed",
+            },
+        ]
+        filters = codex_analyzer.deterministic_filters(events, min_count=2, ttl_seconds=45)
+        self.assertEqual(len(filters), 1)
+        clean = codex_analyzer.sanitize_filter(filters[0], ttl_seconds=45)
+        self.assertEqual(clean["condition"]["path_shape"], "/api/:token/:num")
+
     def test_api_key_prefers_environment(self) -> None:
         old = os.environ.get("ALTURA_TEST_KEY")
         os.environ["ALTURA_TEST_KEY"] = "from-env"

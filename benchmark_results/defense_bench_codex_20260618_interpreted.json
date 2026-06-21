@@ -1,0 +1,2030 @@
+{
+  "duration_seconds": 2.0,
+  "per_ip_rps": 80,
+  "provider": "codex",
+  "safety": "loopback-only; spoof cases use X-Forwarded-For headers from trusted localhost, not packet spoofing",
+  "scenarios": {
+    "basic": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 20,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 3.227,
+          "p95": 9.201,
+          "p99": 13.273
+        },
+        "limited_percent": 0.0,
+        "requests": 19393,
+        "requests_per_second": 9384.15,
+        "statuses": {
+          "204": 19393
+        }
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmp8rg_e15w/filters-54995.json via codex"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.446,
+            "p95": 0.484,
+            "p99": 0.521
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.5,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 1.02,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.012,
+          "latency_ms": {
+            "p50": 2.358,
+            "p95": 12.207,
+            "p99": 19.09
+          },
+          "limited_percent": 98.98,
+          "requests": 23477,
+          "requests_per_second": 11707.67,
+          "statuses": {
+            "204": 239,
+            "429": 23238
+          }
+        },
+        "events": {
+          "count": 8,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "filter_block": 3,
+            "observed": 3,
+            "per_ip_rate_limited": 2
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_f2a0bf9bccb4429f",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "f2a0bf9bccb4429f",
+            "signature_basis": "GET|/api/login|none|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 10.018,
+        "filters_learned": 1,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f2a0bf9bccb4429f"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_f2a0bf9bccb4429f",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.26,
+          "blocked_percent": 99.74,
+          "errors": 0,
+          "first_block_seconds": 0.008,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.231,
+            "p95": 13.097,
+            "p99": 21.87
+          },
+          "limited_percent": 0.0,
+          "requests": 22756,
+          "requests_per_second": 11348.31,
+          "statuses": {
+            "204": 59,
+            "403": 22697
+          }
+        },
+        "trusted_xff": false
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.349,
+            "p95": 10.904,
+            "p99": 15.244
+          },
+          "limited_percent": 0.0,
+          "requests": 18567,
+          "requests_per_second": 9256.96,
+          "statuses": {
+            "204": 18567
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 1.03,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.013,
+          "latency_ms": {
+            "p50": 2.211,
+            "p95": 12.524,
+            "p99": 21.04
+          },
+          "limited_percent": 98.97,
+          "requests": 23205,
+          "requests_per_second": 11569.72,
+          "statuses": {
+            "204": 240,
+            "429": 22965
+          }
+        },
+        "events": {
+          "count": 4,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "observed": 1,
+            "per_ip_rate_limited": 3
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.184,
+            "p95": 13.55,
+            "p99": 22.088
+          },
+          "limited_percent": 0.0,
+          "requests": 22733,
+          "requests_per_second": 11335.4,
+          "statuses": {
+            "403": 22733
+          }
+        },
+        "events": {
+          "count": 3,
+          "first_detection_seconds": 0.004,
+          "reasons": {
+            "filter_block": 3
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      }
+    },
+    "cachebuster": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 7,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 3.924,
+          "p95": 10.709,
+          "p99": 15.218
+        },
+        "limited_percent": 0.0,
+        "requests": 18820,
+        "requests_per_second": 9374.22,
+        "statuses": {
+          "204": 18820
+        }
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmp8rg_e15w/filters-41795.json via codex"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.436,
+            "p95": 0.509,
+            "p99": 0.584
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.49,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 1.04,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.025,
+          "latency_ms": {
+            "p50": 2.314,
+            "p95": 12.935,
+            "p99": 20.875
+          },
+          "limited_percent": 98.96,
+          "requests": 22928,
+          "requests_per_second": 11435.46,
+          "statuses": {
+            "204": 239,
+            "429": 22689
+          }
+        },
+        "events": {
+          "count": 8,
+          "first_detection_seconds": 0.01,
+          "reasons": {
+            "filter_block": 3,
+            "observed": 3,
+            "per_ip_rate_limited": 2
+          },
+          "signature_bases": {
+            "59067f9f97879015": "GET|/api/search|cachebust,id|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_59067f9f97879015",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "59067f9f97879015",
+            "signature_basis": "GET|/api/search|cachebust,id|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 10.769,
+        "filters_learned": 1,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "59067f9f97879015"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_59067f9f97879015",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.27,
+          "blocked_percent": 99.73,
+          "errors": 0,
+          "first_block_seconds": 0.009,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.243,
+            "p95": 14.003,
+            "p99": 23.489
+          },
+          "limited_percent": 0.0,
+          "requests": 22153,
+          "requests_per_second": 11046.3,
+          "statuses": {
+            "204": 59,
+            "403": 22094
+          }
+        },
+        "trusted_xff": false
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.416,
+            "p95": 11.061,
+            "p99": 15.351
+          },
+          "limited_percent": 0.0,
+          "requests": 18440,
+          "requests_per_second": 9193.88,
+          "statuses": {
+            "204": 18440
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 1.06,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.013,
+          "latency_ms": {
+            "p50": 2.255,
+            "p95": 13.403,
+            "p99": 21.572
+          },
+          "limited_percent": 98.94,
+          "requests": 22578,
+          "requests_per_second": 11257.82,
+          "statuses": {
+            "204": 239,
+            "429": 22339
+          }
+        },
+        "events": {
+          "count": 4,
+          "first_detection_seconds": 0.01,
+          "reasons": {
+            "observed": 2,
+            "per_ip_rate_limited": 2
+          },
+          "signature_bases": {
+            "59067f9f97879015": "GET|/api/search|cachebust,id|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.21,
+            "p95": 13.664,
+            "p99": 23.579
+          },
+          "limited_percent": 0.0,
+          "requests": 22278,
+          "requests_per_second": 11108.78,
+          "statuses": {
+            "403": 22278
+          }
+        },
+        "events": {
+          "count": 3,
+          "first_detection_seconds": 0.004,
+          "reasons": {
+            "filter_block": 3
+          },
+          "signature_bases": {
+            "59067f9f97879015": "GET|/api/search|cachebust,id|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      }
+    },
+    "mixed-user-agent": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 10,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 3.722,
+          "p95": 10.28,
+          "p99": 14.513
+        },
+        "limited_percent": 0.0,
+        "requests": 19092,
+        "requests_per_second": 9511.15,
+        "statuses": {
+          "204": 19092
+        }
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 4 filters to /tmp/tmp8rg_e15w/filters-59665.json via codex"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.444,
+            "p95": 0.505,
+            "p99": 0.514
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.52,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 1.02,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.012,
+          "latency_ms": {
+            "p50": 2.277,
+            "p95": 12.306,
+            "p99": 19.577
+          },
+          "limited_percent": 98.98,
+          "requests": 23419,
+          "requests_per_second": 11680.51,
+          "statuses": {
+            "204": 239,
+            "429": 23180
+          }
+        },
+        "events": {
+          "count": 28,
+          "first_detection_seconds": 0.016,
+          "reasons": {
+            "filter_block": 9,
+            "observed": 6,
+            "per_ip_rate_limited": 13
+          },
+          "signature_bases": {
+            "4303d78456087747": "GET|/api/login|none|python|*/*",
+            "48fa42cebf9fafed": "GET|/api/login|none|node|*/*",
+            "9d682f4f5d236109": "GET|/api/login|none|mozilla|*/*",
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_9d682f4f5d236109",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "9d682f4f5d236109",
+            "signature_basis": "GET|/api/login|none|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_4303d78456087747",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "4303d78456087747",
+            "signature_basis": "GET|/api/login|none|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_48fa42cebf9fafed",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "48fa42cebf9fafed",
+            "signature_basis": "GET|/api/login|none|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_f2a0bf9bccb4429f",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "f2a0bf9bccb4429f",
+            "signature_basis": "GET|/api/login|none|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 14.024,
+        "filters_learned": 4,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "9d682f4f5d236109"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_9d682f4f5d236109",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4303d78456087747"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_4303d78456087747",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "48fa42cebf9fafed"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_48fa42cebf9fafed",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f2a0bf9bccb4429f"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_f2a0bf9bccb4429f",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.36,
+          "blocked_percent": 99.29,
+          "errors": 0,
+          "first_block_seconds": 0.017,
+          "first_limit_seconds": 0.012,
+          "latency_ms": {
+            "p50": 2.349,
+            "p95": 12.934,
+            "p99": 20.512
+          },
+          "limited_percent": 0.35,
+          "requests": 22478,
+          "requests_per_second": 11208.53,
+          "statuses": {
+            "204": 81,
+            "403": 22318,
+            "429": 79
+          }
+        },
+        "trusted_xff": false
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.416,
+            "p95": 11.116,
+            "p99": 15.109
+          },
+          "limited_percent": 0.0,
+          "requests": 18632,
+          "requests_per_second": 9288.35,
+          "statuses": {
+            "204": 18632
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 1.04,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.012,
+          "latency_ms": {
+            "p50": 2.26,
+            "p95": 12.51,
+            "p99": 20.219
+          },
+          "limited_percent": 98.96,
+          "requests": 22974,
+          "requests_per_second": 11456.46,
+          "statuses": {
+            "204": 239,
+            "429": 22735
+          }
+        },
+        "events": {
+          "count": 15,
+          "first_detection_seconds": 0.018,
+          "reasons": {
+            "observed": 3,
+            "per_ip_rate_limited": 12
+          },
+          "signature_bases": {
+            "4303d78456087747": "GET|/api/login|none|python|*/*",
+            "48fa42cebf9fafed": "GET|/api/login|none|node|*/*",
+            "9d682f4f5d236109": "GET|/api/login|none|mozilla|*/*",
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.193,
+            "p95": 13.487,
+            "p99": 22.823
+          },
+          "limited_percent": 0.0,
+          "requests": 22662,
+          "requests_per_second": 11299.38,
+          "statuses": {
+            "403": 22662
+          }
+        },
+        "events": {
+          "count": 9,
+          "first_detection_seconds": 0.011,
+          "reasons": {
+            "filter_block": 9
+          },
+          "signature_bases": {
+            "4303d78456087747": "GET|/api/login|none|python|*/*",
+            "48fa42cebf9fafed": "GET|/api/login|none|node|*/*",
+            "9d682f4f5d236109": "GET|/api/login|none|mozilla|*/*",
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      }
+    },
+    "rotating-path": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 16,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 3.515,
+          "p95": 9.918,
+          "p99": 14.166
+        },
+        "limited_percent": 0.0,
+        "requests": 18895,
+        "requests_per_second": 9413.1,
+        "statuses": {
+          "204": 18895
+        }
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmp8rg_e15w/filters-55827.json via codex"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.416,
+            "p95": 0.462,
+            "p99": 0.5
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.56,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 1.02,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.013,
+          "latency_ms": {
+            "p50": 2.445,
+            "p95": 12.038,
+            "p99": 19.637
+          },
+          "limited_percent": 98.98,
+          "requests": 23468,
+          "requests_per_second": 11703.49,
+          "statuses": {
+            "204": 239,
+            "429": 23229
+          }
+        },
+        "events": {
+          "count": 8,
+          "first_detection_seconds": 0.01,
+          "reasons": {
+            "filter_block": 3,
+            "observed": 3,
+            "per_ip_rate_limited": 2
+          },
+          "signature_bases": {
+            "bf35d79610abf4c5": "GET|/api/item/:num|view|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_bf35d79610abf4c5",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "bf35d79610abf4c5",
+            "signature_basis": "GET|/api/item/:num|view|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 12.02,
+        "filters_learned": 1,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "bf35d79610abf4c5"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_bf35d79610abf4c5",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.26,
+          "blocked_percent": 99.74,
+          "errors": 0,
+          "first_block_seconds": 0.008,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.23,
+            "p95": 13.563,
+            "p99": 23.129
+          },
+          "limited_percent": 0.0,
+          "requests": 22561,
+          "requests_per_second": 11252.25,
+          "statuses": {
+            "204": 59,
+            "403": 22502
+          }
+        },
+        "trusted_xff": false
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.498,
+            "p95": 11.315,
+            "p99": 15.502
+          },
+          "limited_percent": 0.0,
+          "requests": 18205,
+          "requests_per_second": 9075.37,
+          "statuses": {
+            "204": 18205
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 1.03,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.013,
+          "latency_ms": {
+            "p50": 2.264,
+            "p95": 12.225,
+            "p99": 19.496
+          },
+          "limited_percent": 98.97,
+          "requests": 23247,
+          "requests_per_second": 11594.79,
+          "statuses": {
+            "204": 239,
+            "429": 23008
+          }
+        },
+        "events": {
+          "count": 4,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "observed": 2,
+            "per_ip_rate_limited": 2
+          },
+          "signature_bases": {
+            "bf35d79610abf4c5": "GET|/api/item/:num|view|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.222,
+            "p95": 13.36,
+            "p99": 21.073
+          },
+          "limited_percent": 0.0,
+          "requests": 22898,
+          "requests_per_second": 11418.11,
+          "statuses": {
+            "403": 22898
+          }
+        },
+        "events": {
+          "count": 3,
+          "first_detection_seconds": 0.005,
+          "reasons": {
+            "filter_block": 3
+          },
+          "signature_bases": {
+            "bf35d79610abf4c5": "GET|/api/item/:num|view|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      }
+    },
+    "uuid-path": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 2,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 4.13,
+          "p95": 11.466,
+          "p99": 15.947
+        },
+        "limited_percent": 0.0,
+        "requests": 18407,
+        "requests_per_second": 9169.09,
+        "statuses": {
+          "204": 18407
+        }
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmp8rg_e15w/filters-43723.json via codex"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.452,
+            "p95": 0.495,
+            "p99": 0.602
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.52,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 1.05,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.013,
+          "latency_ms": {
+            "p50": 2.473,
+            "p95": 12.409,
+            "p99": 19.456
+          },
+          "limited_percent": 98.95,
+          "requests": 22861,
+          "requests_per_second": 11399.45,
+          "statuses": {
+            "204": 239,
+            "429": 22622
+          }
+        },
+        "events": {
+          "count": 8,
+          "first_detection_seconds": 0.01,
+          "reasons": {
+            "filter_block": 3,
+            "observed": 3,
+            "per_ip_rate_limited": 2
+          },
+          "signature_bases": {
+            "e8550d9d6a675654": "GET|/api/object/:uuid|view|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_e8550d9d6a675654",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "e8550d9d6a675654",
+            "signature_basis": "GET|/api/object/:uuid|view|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 11.521,
+        "filters_learned": 1,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "e8550d9d6a675654"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_e8550d9d6a675654",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.27,
+          "blocked_percent": 99.73,
+          "errors": 0,
+          "first_block_seconds": 0.008,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.307,
+            "p95": 14.107,
+            "p99": 23.551
+          },
+          "limited_percent": 0.0,
+          "requests": 21516,
+          "requests_per_second": 10727.21,
+          "statuses": {
+            "204": 59,
+            "403": 21457
+          }
+        },
+        "trusted_xff": false
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.625,
+            "p95": 11.394,
+            "p99": 15.194
+          },
+          "limited_percent": 0.0,
+          "requests": 17779,
+          "requests_per_second": 8865.63,
+          "statuses": {
+            "204": 17779
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 1.07,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.013,
+          "latency_ms": {
+            "p50": 2.267,
+            "p95": 13.578,
+            "p99": 23.059
+          },
+          "limited_percent": 98.93,
+          "requests": 22274,
+          "requests_per_second": 11106.77,
+          "statuses": {
+            "204": 239,
+            "429": 22035
+          }
+        },
+        "events": {
+          "count": 4,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "observed": 2,
+            "per_ip_rate_limited": 2
+          },
+          "signature_bases": {
+            "e8550d9d6a675654": "GET|/api/object/:uuid|view|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.283,
+            "p95": 14.331,
+            "p99": 23.75
+          },
+          "limited_percent": 0.0,
+          "requests": 21755,
+          "requests_per_second": 10847.26,
+          "statuses": {
+            "403": 21755
+          }
+        },
+        "events": {
+          "count": 3,
+          "first_detection_seconds": 0.004,
+          "reasons": {
+            "filter_block": 3
+          },
+          "signature_bases": {
+            "e8550d9d6a675654": "GET|/api/object/:uuid|view|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": false
+      }
+    },
+    "xff-rotating": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 9,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 3.814,
+          "p95": 10.488,
+          "p99": 14.61
+        },
+        "limited_percent": 0.0,
+        "requests": 18739,
+        "requests_per_second": 9333.46,
+        "statuses": {
+          "204": 18739
+        }
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmp8rg_e15w/filters-34525.json via codex"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.456,
+            "p95": 0.512,
+            "p99": 0.528
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.53,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 6,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.099,
+            "p95": 10.274,
+            "p99": 15.008
+          },
+          "limited_percent": 0.0,
+          "requests": 18451,
+          "requests_per_second": 8781.41,
+          "statuses": {
+            "204": 18451
+          }
+        },
+        "events": {
+          "count": 6,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "filter_block": 3,
+            "observed": 3
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_f2a0bf9bccb4429f",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "f2a0bf9bccb4429f",
+            "signature_basis": "GET|/api/login|none|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 10.865,
+        "filters_learned": 1,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f2a0bf9bccb4429f"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_f2a0bf9bccb4429f",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.26,
+          "blocked_percent": 99.74,
+          "errors": 0,
+          "first_block_seconds": 0.009,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.33,
+            "p95": 13.039,
+            "p99": 21.309
+          },
+          "limited_percent": 0.0,
+          "requests": 22375,
+          "requests_per_second": 11157.03,
+          "statuses": {
+            "204": 59,
+            "403": 22316
+          }
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 0 filters to /tmp/tmp8rg_e15w/filters-57979.json via codex",
+          "wrote 0 filters to /tmp/tmp8rg_e15w/filters-57979.json via codex",
+          "wrote 0 filters to /tmp/tmp8rg_e15w/filters-57979.json via codex",
+          "wrote 0 filters to /tmp/tmp8rg_e15w/filters-57979.json via codex",
+          "wrote 0 filters to /tmp/tmp8rg_e15w/filters-57979.json via codex",
+          "wrote 0 filters to /tmp/tmp8rg_e15w/filters-57979.json via codex"
+        ],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.374,
+            "p95": 10.967,
+            "p99": 15.465
+          },
+          "limited_percent": 0.0,
+          "requests": 18593,
+          "requests_per_second": 9273.18,
+          "statuses": {
+            "204": 18593
+          }
+        },
+        "events": {
+          "count": 4,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "observed": 4
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.543,
+            "p95": 11.054,
+            "p99": 14.816
+          },
+          "limited_percent": 0.0,
+          "requests": 18311,
+          "requests_per_second": 9128.99,
+          "statuses": {
+            "204": 18311
+          }
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.448,
+            "p95": 11.033,
+            "p99": 15.292
+          },
+          "limited_percent": 0.0,
+          "requests": 18330,
+          "requests_per_second": 9139.7,
+          "statuses": {
+            "204": 18330
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 6,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.223,
+            "p95": 10.589,
+            "p99": 14.766
+          },
+          "limited_percent": 0.0,
+          "requests": 18246,
+          "requests_per_second": 8900.56,
+          "statuses": {
+            "204": 18246
+          }
+        },
+        "events": {
+          "count": 2,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "observed": 2
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.268,
+            "p95": 13.279,
+            "p99": 21.108
+          },
+          "limited_percent": 0.0,
+          "requests": 22384,
+          "requests_per_second": 11160.81,
+          "statuses": {
+            "403": 22384
+          }
+        },
+        "events": {
+          "count": 3,
+          "first_detection_seconds": 0.004,
+          "reasons": {
+            "filter_block": 3
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": true
+      }
+    },
+    "xff-single": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 9,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 3.735,
+          "p95": 10.412,
+          "p99": 15.02
+        },
+        "limited_percent": 0.0,
+        "requests": 18950,
+        "requests_per_second": 9439.6,
+        "statuses": {
+          "204": 18950
+        }
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmp8rg_e15w/filters-42753.json via codex"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.444,
+            "p95": 0.484,
+            "p99": 0.486
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.51,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 1.03,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.012,
+          "latency_ms": {
+            "p50": 2.292,
+            "p95": 12.12,
+            "p99": 19.661
+          },
+          "limited_percent": 98.97,
+          "requests": 23171,
+          "requests_per_second": 11556.73,
+          "statuses": {
+            "204": 239,
+            "429": 22932
+          }
+        },
+        "events": {
+          "count": 8,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "filter_block": 3,
+            "observed": 3,
+            "per_ip_rate_limited": 2
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_f2a0bf9bccb4429f",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "f2a0bf9bccb4429f",
+            "signature_basis": "GET|/api/login|none|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 13.024,
+        "filters_learned": 1,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f2a0bf9bccb4429f"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_f2a0bf9bccb4429f",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.26,
+          "blocked_percent": 99.74,
+          "errors": 0,
+          "first_block_seconds": 0.009,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.288,
+            "p95": 13.058,
+            "p99": 21.12
+          },
+          "limited_percent": 0.0,
+          "requests": 22417,
+          "requests_per_second": 11179.87,
+          "statuses": {
+            "204": 59,
+            "403": 22358
+          }
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmp8rg_e15w/filters-59471.json via codex"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.448,
+            "p95": 0.47,
+            "p99": 0.474
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.51,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 1.04,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.012,
+          "latency_ms": {
+            "p50": 2.322,
+            "p95": 12.411,
+            "p99": 20.441
+          },
+          "limited_percent": 98.96,
+          "requests": 23087,
+          "requests_per_second": 11512.91,
+          "statuses": {
+            "204": 239,
+            "429": 22848
+          }
+        },
+        "events": {
+          "count": 8,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "filter_block": 3,
+            "observed": 3,
+            "per_ip_rate_limited": 2
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive_sig_f2a0bf9bccb4429f",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "f2a0bf9bccb4429f",
+            "signature_basis": "GET|/api/login|none|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 8.514,
+        "filters_learned": 1,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f2a0bf9bccb4429f"
+            },
+            "enabled": true,
+            "id": "adaptive_sig_f2a0bf9bccb4429f",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.26,
+          "blocked_percent": 99.74,
+          "errors": 0,
+          "first_block_seconds": 0.008,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.268,
+            "p95": 12.492,
+            "p99": 20.305
+          },
+          "limited_percent": 0.0,
+          "requests": 23130,
+          "requests_per_second": 11534.87,
+          "statuses": {
+            "204": 59,
+            "403": 23071
+          }
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.486,
+            "p95": 11.123,
+            "p99": 15.553
+          },
+          "limited_percent": 0.0,
+          "requests": 18324,
+          "requests_per_second": 9135.74,
+          "statuses": {
+            "204": 18324
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 1.05,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.013,
+          "latency_ms": {
+            "p50": 2.274,
+            "p95": 12.802,
+            "p99": 21.11
+          },
+          "limited_percent": 98.95,
+          "requests": 22799,
+          "requests_per_second": 11368.43,
+          "statuses": {
+            "204": 239,
+            "429": 22560
+          }
+        },
+        "events": {
+          "count": 4,
+          "first_detection_seconds": 0.01,
+          "reasons": {
+            "observed": 2,
+            "per_ip_rate_limited": 2
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.252,
+            "p95": 13.519,
+            "p99": 22.242
+          },
+          "limited_percent": 0.0,
+          "requests": 22405,
+          "requests_per_second": 11172.24,
+          "statuses": {
+            "403": 22405
+          }
+        },
+        "events": {
+          "count": 3,
+          "first_detection_seconds": 0.004,
+          "reasons": {
+            "filter_block": 3
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "trusted_xff": true
+      }
+    }
+  },
+  "signature_threshold_per_second": 60,
+  "workdir": "/tmp/tmp8rg_e15w",
+  "workers": 48
+}

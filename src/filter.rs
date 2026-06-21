@@ -69,6 +69,8 @@ pub struct FilterCondition {
     #[serde(default)]
     pub query_contains: Option<String>,
     #[serde(default)]
+    pub path_shape: Option<String>,
+    #[serde(default)]
     pub user_agent_contains: Option<String>,
     #[serde(default)]
     pub headers: Vec<HeaderContains>,
@@ -251,6 +253,33 @@ impl FilterEngine {
         activated
     }
 
+    pub fn activate_path_shape(&self, path_shape: &str, ttl: Option<Duration>) -> bool {
+        let mut activated = false;
+        let mut rules = match self.rules.write() {
+            Ok(rules) => rules,
+            Err(poisoned) => {
+                eprintln!("filter engine write lock poisoned during activate; recovering rules");
+                poisoned.into_inner()
+            }
+        };
+        for runtime in rules.iter_mut() {
+            if runtime.rule.enabled
+                && runtime.rule.adaptive
+                && runtime.rule.condition.path_shape.as_deref() == Some(path_shape)
+            {
+                let rule_ttl = runtime
+                    .rule
+                    .ttl_seconds
+                    .map(Duration::from_secs)
+                    .or(ttl)
+                    .unwrap_or(self.default_activation_ttl);
+                runtime.active_until = Some(Instant::now() + rule_ttl);
+                activated = true;
+            }
+        }
+        activated
+    }
+
     pub fn active_rule_count(&self) -> usize {
         let now = Instant::now();
         let rules = match self.rules.read() {
@@ -335,6 +364,11 @@ fn rule_matches(rule: &FilterRule, ctx: &RequestContext<'_>) -> bool {
             return false;
         }
     }
+    if let Some(path_shape) = &rule.condition.path_shape {
+        if request_path_shape(ctx.path) != *path_shape {
+            return false;
+        }
+    }
     if let Some(query_contains) = &rule.condition.query_contains {
         if !ctx.query.unwrap_or("").contains(query_contains) {
             return false;
@@ -374,6 +408,14 @@ fn is_expired(rule: &FilterRule, unix_ms: u64) -> bool {
 }
 
 fn normalize_path(path: &str) -> String {
+    normalize_path_with(path, false)
+}
+
+pub fn request_path_shape(path: &str) -> String {
+    normalize_path_with(path, true)
+}
+
+fn normalize_path_with(path: &str, include_high_entropy_tokens: bool) -> String {
     let mut out = String::with_capacity(path.len());
     for segment in path.split('/') {
         if segment.is_empty() {
@@ -389,6 +431,8 @@ fn normalize_path(path: &str) -> String {
             out.push_str(":uuid");
         } else if segment.len() >= 16 && segment.bytes().all(|b| b.is_ascii_hexdigit()) {
             out.push_str(":hex");
+        } else if include_high_entropy_tokens && is_long_token_segment(segment) {
+            out.push_str(":token");
         } else {
             out.push_str(segment);
         }
@@ -398,6 +442,57 @@ fn normalize_path(path: &str) -> String {
     } else {
         out
     }
+}
+
+fn is_long_token_segment(segment: &str) -> bool {
+    if segment.len() < 10 || !segment.bytes().all(|b| b.is_ascii_alphanumeric()) {
+        return false;
+    }
+    if segment.bytes().any(|b| b.is_ascii_digit()) {
+        return true;
+    }
+    if segment.bytes().any(|b| b.is_ascii_uppercase()) {
+        return true;
+    }
+    !is_common_path_segment(segment)
+}
+
+fn is_common_path_segment(segment: &str) -> bool {
+    const COMMON_SEGMENTS: &[&str] = &[
+        "subscription",
+        "membership",
+        "onboarding",
+        "authentication",
+        "authorization",
+        "notification",
+        "notifications",
+        "preferences",
+        "marketplace",
+        "integration",
+        "integrations",
+        "transaction",
+        "transactions",
+        "organization",
+        "organizations",
+        "certificate",
+        "certificates",
+        "configuration",
+        "documentation",
+        "catalog",
+        "checkout",
+        "dashboard",
+        "inventory",
+        "customers",
+        "products",
+        "settings",
+        "profile",
+        "profiles",
+        "analytics",
+        "warehouse",
+        "fulfillment",
+        "warehouses",
+    ];
+    COMMON_SEGMENTS.contains(&segment)
 }
 
 fn is_uuid_segment(segment: &str) -> bool {
@@ -600,5 +695,98 @@ mod tests {
         let a = signature_basis("GET", "/search", Some("b=2&a=1"), &headers);
         let b = signature_basis("GET", "/search", Some("a=3&b=4"), &headers);
         assert_eq!(a, b);
+    }
+
+    #[test]
+    fn path_shape_generalizes_long_tokens_without_changing_signature_basis() {
+        let headers = HeaderMap::new();
+        assert_ne!(
+            signature_basis("GET", "/api/abcdefghij/123", None, &headers),
+            signature_basis("GET", "/api/klmnopqrst/456", None, &headers)
+        );
+        assert_eq!(
+            request_path_shape("/api/abcdefghij/123"),
+            request_path_shape("/api/klmnopqrst/456")
+        );
+        assert_eq!(request_path_shape("/api/catalog/123"), "/api/catalog/:num");
+        assert_eq!(
+            request_path_shape("/api/subscription/123"),
+            "/api/subscription/:num"
+        );
+    }
+
+    #[tokio::test]
+    async fn filter_matches_path_shape() {
+        let engine = FilterEngine::new(
+            vec![FilterRule {
+                id: "shape".to_string(),
+                enabled: true,
+                adaptive: false,
+                priority: 1,
+                ttl_seconds: None,
+                expires_at_unix_ms: None,
+                condition: FilterCondition {
+                    path_shape: Some("/api/:token/:num".to_string()),
+                    ..Default::default()
+                },
+                action: FilterAction::default(),
+            }],
+            PathBuf::from("/tmp/altura-prot-nonexistent-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let headers = HeaderMap::new();
+        let matching = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/api/abcdefghij/123",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        let benign = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/api/catalog/123",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        assert!(engine.evaluate(&matching).is_some());
+        assert!(engine.evaluate(&benign).is_none());
+    }
+
+    #[tokio::test]
+    async fn adaptive_path_shape_filter_activates() {
+        let engine = FilterEngine::new(
+            vec![FilterRule {
+                id: "shape".to_string(),
+                enabled: true,
+                adaptive: true,
+                priority: 1,
+                ttl_seconds: Some(30),
+                expires_at_unix_ms: None,
+                condition: FilterCondition {
+                    path_shape: Some("/api/:token/:num".to_string()),
+                    ..Default::default()
+                },
+                action: FilterAction::default(),
+            }],
+            PathBuf::from("/tmp/altura-prot-nonexistent-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let headers = HeaderMap::new();
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/api/abcdefghij/123",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        assert!(engine.evaluate(&ctx).is_none());
+        assert!(engine.activate_path_shape("/api/:token/:num", None));
+        assert!(engine.evaluate(&ctx).is_some());
     }
 }

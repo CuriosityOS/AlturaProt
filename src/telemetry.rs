@@ -58,12 +58,17 @@ impl Stats {
 
 #[derive(Debug, Serialize)]
 pub struct AttackEvent {
+    pub schema_version: u32,
     pub ts_unix_ms: u64,
     pub client_ip: String,
     pub method: String,
     pub path: String,
+    pub path_shape: String,
     pub query: Option<String>,
+    pub query_keys: Vec<String>,
     pub user_agent: String,
+    pub x_forwarded_for: Option<String>,
+    pub header_names: Vec<String>,
     pub signature: String,
     pub signature_basis: String,
     pub reason: String,

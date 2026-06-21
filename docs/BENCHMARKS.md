@@ -19,3 +19,7 @@ Latest measured snapshot on 2026-06-18:
 | admin health, sharded + sync hot path | 11852.77 | `200: 94956` | 0 | 31.811 ms |
 
 The Python flood client and Python upstream become bottlenecks around this range, so these numbers are useful for regression checks, not maximum capacity claims.
+
+Defense-layer/CodexSDGate flood benchmark snapshot: [Defense Benchmark 2026-06-18](DEFENSE_BENCHMARK_20260618.md).
+
+Smarter rotating-XFF/polymorphic flood snapshot: [Smart Defense Benchmark 2026-06-18](SMART_DEFENSE_BENCHMARK_20260618.md).

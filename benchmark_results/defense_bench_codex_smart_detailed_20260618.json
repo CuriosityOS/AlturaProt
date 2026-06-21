@@ -1,0 +1,2334 @@
+{
+  "duration_seconds": 2.0,
+  "per_ip_rps": 80,
+  "provider": "codex",
+  "safety": "loopback-only; spoof cases use X-Forwarded-For headers from trusted localhost, not packet spoofing",
+  "scenarios": {
+    "smart-api-mix": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 6,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 3.953,
+          "p95": 10.991,
+          "p99": 15.574
+        },
+        "limited_percent": 0.0,
+        "requests": 18474,
+        "requests_per_second": 9201.02,
+        "statuses": {
+          "204": 18474
+        }
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 0 filters to /tmp/tmpnadq88og/filters-39137.json via codex",
+          "wrote 24 filters to /tmp/tmpnadq88og/filters-39137.json via codex"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.441,
+            "p95": 0.482,
+            "p99": 0.579
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.49,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 1.05,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.012,
+          "latency_ms": {
+            "p50": 2.347,
+            "p95": 12.699,
+            "p99": 20.377
+          },
+          "limited_percent": 98.95,
+          "requests": 22742,
+          "requests_per_second": 11338.82,
+          "statuses": {
+            "204": 239,
+            "429": 22503
+          }
+        },
+        "events": {
+          "count": 436,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "filter_block": 51,
+            "global_observed": 287,
+            "observed": 30,
+            "per_ip_rate_limited": 68
+          },
+          "signature_bases": {
+            "3f00eafab8059ac0": "GET|/api/object/:uuid|view|python|*/*",
+            "425f0d1a88f24370": "GET|/api/profile/:num|include|mozilla|*/*",
+            "4303d78456087747": "GET|/api/login|none|python|*/*",
+            "48fa42cebf9fafed": "GET|/api/login|none|node|*/*",
+            "4e0e47af0fad162c": "GET|/api/profile/:num|include|curl|*/*",
+            "59067f9f97879015": "GET|/api/search|cachebust,id|curl|*/*",
+            "5938e8bcc7a038a6": "GET|/api/cart/:num/checkout|step|python|*/*",
+            "5b910c2f9979782b": "GET|/api/item/:num|view|mozilla|*/*",
+            "67501e985088a888": "GET|/api/profile/:num|include|python|*/*",
+            "9a7f31adfabd2ab8": "GET|/api/object/:uuid|view|mozilla|*/*",
+            "9d682f4f5d236109": "GET|/api/login|none|mozilla|*/*",
+            "ad92828c78e6b11a": "GET|/api/cart/:num/checkout|step|curl|*/*",
+            "bf35d79610abf4c5": "GET|/api/item/:num|view|curl|*/*",
+            "c13767534483d680": "GET|/api/cart/:num/checkout|step|node|*/*",
+            "c4ae7206bd6c2f15": "GET|/api/search|cachebust,id|python|*/*",
+            "c5916758ebf3f29a": "GET|/api/profile/:num|include|node|*/*",
+            "d0e4381285240f3a": "GET|/api/cart/:num/checkout|step|mozilla|*/*",
+            "d66c08c6977bef25": "GET|/api/item/:num|view|python|*/*",
+            "d7cbd310729f71c3": "GET|/api/item/:num|view|node|*/*",
+            "de0ff64585ef4b53": "GET|/api/search|cachebust,id|node|*/*",
+            "df02b77454e715b2": "GET|/api/object/:uuid|view|node|*/*",
+            "e014996a20487e7b": "GET|/api/search|cachebust,id|mozilla|*/*",
+            "e8550d9d6a675654": "GET|/api/object/:uuid|view|curl|*/*",
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 24
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-4303d78456087747",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "4303d78456087747",
+            "signature_basis": "GET|/api/login|none|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-48fa42cebf9fafed",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "48fa42cebf9fafed",
+            "signature_basis": "GET|/api/login|none|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-f2a0bf9bccb4429f",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "f2a0bf9bccb4429f",
+            "signature_basis": "GET|/api/login|none|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-9d682f4f5d236109",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "9d682f4f5d236109",
+            "signature_basis": "GET|/api/login|none|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-c4ae7206bd6c2f15",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "c4ae7206bd6c2f15",
+            "signature_basis": "GET|/api/search|cachebust,id|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-de0ff64585ef4b53",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "de0ff64585ef4b53",
+            "signature_basis": "GET|/api/search|cachebust,id|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-59067f9f97879015",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "59067f9f97879015",
+            "signature_basis": "GET|/api/search|cachebust,id|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-e014996a20487e7b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "e014996a20487e7b",
+            "signature_basis": "GET|/api/search|cachebust,id|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-d66c08c6977bef25",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "d66c08c6977bef25",
+            "signature_basis": "GET|/api/item/:num|view|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-d7cbd310729f71c3",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "d7cbd310729f71c3",
+            "signature_basis": "GET|/api/item/:num|view|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-bf35d79610abf4c5",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "bf35d79610abf4c5",
+            "signature_basis": "GET|/api/item/:num|view|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-5b910c2f9979782b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5b910c2f9979782b",
+            "signature_basis": "GET|/api/item/:num|view|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-3f00eafab8059ac0",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "3f00eafab8059ac0",
+            "signature_basis": "GET|/api/object/:uuid|view|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-df02b77454e715b2",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "df02b77454e715b2",
+            "signature_basis": "GET|/api/object/:uuid|view|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-e8550d9d6a675654",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "e8550d9d6a675654",
+            "signature_basis": "GET|/api/object/:uuid|view|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-9a7f31adfabd2ab8",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "9a7f31adfabd2ab8",
+            "signature_basis": "GET|/api/object/:uuid|view|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-5938e8bcc7a038a6",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5938e8bcc7a038a6",
+            "signature_basis": "GET|/api/cart/:num/checkout|step|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-c13767534483d680",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "c13767534483d680",
+            "signature_basis": "GET|/api/cart/:num/checkout|step|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-ad92828c78e6b11a",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "ad92828c78e6b11a",
+            "signature_basis": "GET|/api/cart/:num/checkout|step|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-d0e4381285240f3a",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "d0e4381285240f3a",
+            "signature_basis": "GET|/api/cart/:num/checkout|step|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-67501e985088a888",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "67501e985088a888",
+            "signature_basis": "GET|/api/profile/:num|include|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-c5916758ebf3f29a",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "c5916758ebf3f29a",
+            "signature_basis": "GET|/api/profile/:num|include|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-4e0e47af0fad162c",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4e0e47af0fad162c",
+            "signature_basis": "GET|/api/profile/:num|include|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "adaptive-sig-425f0d1a88f24370",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "425f0d1a88f24370",
+            "signature_basis": "GET|/api/profile/:num|include|mozilla|*/*"
+          }
+        ],
+        "filter_write_seconds": 49.324,
+        "filters_learned": 24,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4303d78456087747"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-4303d78456087747",
+            "priority": 1000,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "48fa42cebf9fafed"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-48fa42cebf9fafed",
+            "priority": 1000,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f2a0bf9bccb4429f"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-f2a0bf9bccb4429f",
+            "priority": 1000,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "9d682f4f5d236109"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-9d682f4f5d236109",
+            "priority": 1000,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "c4ae7206bd6c2f15"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-c4ae7206bd6c2f15",
+            "priority": 990,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "de0ff64585ef4b53"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-de0ff64585ef4b53",
+            "priority": 990,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "59067f9f97879015"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-59067f9f97879015",
+            "priority": 990,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "e014996a20487e7b"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-e014996a20487e7b",
+            "priority": 990,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "d66c08c6977bef25"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-d66c08c6977bef25",
+            "priority": 980,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "d7cbd310729f71c3"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-d7cbd310729f71c3",
+            "priority": 980,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "bf35d79610abf4c5"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-bf35d79610abf4c5",
+            "priority": 980,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5b910c2f9979782b"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-5b910c2f9979782b",
+            "priority": 980,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "3f00eafab8059ac0"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-3f00eafab8059ac0",
+            "priority": 970,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "df02b77454e715b2"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-df02b77454e715b2",
+            "priority": 970,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "e8550d9d6a675654"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-e8550d9d6a675654",
+            "priority": 970,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "9a7f31adfabd2ab8"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-9a7f31adfabd2ab8",
+            "priority": 970,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5938e8bcc7a038a6"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-5938e8bcc7a038a6",
+            "priority": 960,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "c13767534483d680"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-c13767534483d680",
+            "priority": 960,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "ad92828c78e6b11a"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-ad92828c78e6b11a",
+            "priority": 960,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "d0e4381285240f3a"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-d0e4381285240f3a",
+            "priority": 960,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "67501e985088a888"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-67501e985088a888",
+            "priority": 950,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "c5916758ebf3f29a"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-c5916758ebf3f29a",
+            "priority": 950,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4e0e47af0fad162c"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-4e0e47af0fad162c",
+            "priority": 950,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "425f0d1a88f24370"
+            },
+            "enabled": true,
+            "id": "adaptive-sig-425f0d1a88f24370",
+            "priority": 950,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.41,
+          "blocked_percent": 96.49,
+          "errors": 0,
+          "first_block_seconds": 0.046,
+          "first_limit_seconds": 0.013,
+          "latency_ms": {
+            "p50": 2.321,
+            "p95": 13.976,
+            "p99": 21.791
+          },
+          "limited_percent": 3.11,
+          "requests": 21544,
+          "requests_per_second": 10742.06,
+          "statuses": {
+            "204": 88,
+            "403": 20787,
+            "429": 669
+          }
+        },
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 96.49,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true
+        },
+        "trusted_xff": false
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.526,
+            "p95": 11.445,
+            "p99": 16.63
+          },
+          "limited_percent": 0.0,
+          "requests": 18011,
+          "requests_per_second": 8980.95,
+          "statuses": {
+            "204": 18011
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true
+        },
+        "trusted_xff": false
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 1.07,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.012,
+          "latency_ms": {
+            "p50": 2.242,
+            "p95": 13.918,
+            "p99": 23.519
+          },
+          "limited_percent": 98.93,
+          "requests": 22248,
+          "requests_per_second": 11093.33,
+          "statuses": {
+            "204": 239,
+            "429": 22009
+          }
+        },
+        "events": {
+          "count": 239,
+          "first_detection_seconds": 0.01,
+          "reasons": {
+            "global_observed": 163,
+            "observed": 14,
+            "per_ip_rate_limited": 62
+          },
+          "signature_bases": {
+            "3f00eafab8059ac0": "GET|/api/object/:uuid|view|python|*/*",
+            "425f0d1a88f24370": "GET|/api/profile/:num|include|mozilla|*/*",
+            "4303d78456087747": "GET|/api/login|none|python|*/*",
+            "48fa42cebf9fafed": "GET|/api/login|none|node|*/*",
+            "4e0e47af0fad162c": "GET|/api/profile/:num|include|curl|*/*",
+            "59067f9f97879015": "GET|/api/search|cachebust,id|curl|*/*",
+            "5938e8bcc7a038a6": "GET|/api/cart/:num/checkout|step|python|*/*",
+            "5b910c2f9979782b": "GET|/api/item/:num|view|mozilla|*/*",
+            "67501e985088a888": "GET|/api/profile/:num|include|python|*/*",
+            "9a7f31adfabd2ab8": "GET|/api/object/:uuid|view|mozilla|*/*",
+            "9d682f4f5d236109": "GET|/api/login|none|mozilla|*/*",
+            "ad92828c78e6b11a": "GET|/api/cart/:num/checkout|step|curl|*/*",
+            "bf35d79610abf4c5": "GET|/api/item/:num|view|curl|*/*",
+            "c13767534483d680": "GET|/api/cart/:num/checkout|step|node|*/*",
+            "c4ae7206bd6c2f15": "GET|/api/search|cachebust,id|python|*/*",
+            "c5916758ebf3f29a": "GET|/api/profile/:num|include|node|*/*",
+            "d0e4381285240f3a": "GET|/api/cart/:num/checkout|step|mozilla|*/*",
+            "d66c08c6977bef25": "GET|/api/item/:num|view|python|*/*",
+            "d7cbd310729f71c3": "GET|/api/item/:num|view|node|*/*",
+            "de0ff64585ef4b53": "GET|/api/search|cachebust,id|node|*/*",
+            "df02b77454e715b2": "GET|/api/object/:uuid|view|node|*/*",
+            "e014996a20487e7b": "GET|/api/search|cachebust,id|mozilla|*/*",
+            "e8550d9d6a675654": "GET|/api/object/:uuid|view|curl|*/*",
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 24
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true
+        },
+        "trusted_xff": false
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.227,
+            "p95": 13.927,
+            "p99": 23.598
+          },
+          "limited_percent": 0.0,
+          "requests": 22207,
+          "requests_per_second": 11072.28,
+          "statuses": {
+            "403": 22207
+          }
+        },
+        "events": {
+          "count": 222,
+          "first_detection_seconds": 0.004,
+          "reasons": {
+            "filter_block": 60,
+            "global_observed": 162
+          },
+          "signature_bases": {
+            "3f00eafab8059ac0": "GET|/api/object/:uuid|view|python|*/*",
+            "425f0d1a88f24370": "GET|/api/profile/:num|include|mozilla|*/*",
+            "4303d78456087747": "GET|/api/login|none|python|*/*",
+            "48fa42cebf9fafed": "GET|/api/login|none|node|*/*",
+            "4e0e47af0fad162c": "GET|/api/profile/:num|include|curl|*/*",
+            "59067f9f97879015": "GET|/api/search|cachebust,id|curl|*/*",
+            "5938e8bcc7a038a6": "GET|/api/cart/:num/checkout|step|python|*/*",
+            "5b910c2f9979782b": "GET|/api/item/:num|view|mozilla|*/*",
+            "67501e985088a888": "GET|/api/profile/:num|include|python|*/*",
+            "9a7f31adfabd2ab8": "GET|/api/object/:uuid|view|mozilla|*/*",
+            "9d682f4f5d236109": "GET|/api/login|none|mozilla|*/*",
+            "ad92828c78e6b11a": "GET|/api/cart/:num/checkout|step|curl|*/*",
+            "bf35d79610abf4c5": "GET|/api/item/:num|view|curl|*/*",
+            "c13767534483d680": "GET|/api/cart/:num/checkout|step|node|*/*",
+            "c4ae7206bd6c2f15": "GET|/api/search|cachebust,id|python|*/*",
+            "c5916758ebf3f29a": "GET|/api/profile/:num|include|node|*/*",
+            "d0e4381285240f3a": "GET|/api/cart/:num/checkout|step|mozilla|*/*",
+            "d66c08c6977bef25": "GET|/api/item/:num|view|python|*/*",
+            "d7cbd310729f71c3": "GET|/api/item/:num|view|node|*/*",
+            "de0ff64585ef4b53": "GET|/api/search|cachebust,id|node|*/*",
+            "df02b77454e715b2": "GET|/api/object/:uuid|view|node|*/*",
+            "e014996a20487e7b": "GET|/api/search|cachebust,id|mozilla|*/*",
+            "e8550d9d6a675654": "GET|/api/object/:uuid|view|curl|*/*",
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 24
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true
+        },
+        "trusted_xff": false
+      }
+    },
+    "xff-polymorphic": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 3,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 4.45,
+          "p95": 12.258,
+          "p99": 17.206
+        },
+        "limited_percent": 0.0,
+        "requests": 17123,
+        "requests_per_second": 8529.63,
+        "statuses": {
+          "204": 17123
+        }
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "wrote 6 filters to /tmp/tmpnadq88og/filters-42937.json via codex"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.478,
+            "p95": 0.63,
+            "p99": 0.634
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.46,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.95,
+            "p95": 12.322,
+            "p99": 16.931
+          },
+          "limited_percent": 0.0,
+          "requests": 16586,
+          "requests_per_second": 8270.71,
+          "statuses": {
+            "204": 16586
+          }
+        },
+        "events": {
+          "count": 270,
+          "first_detection_seconds": 0.009,
+          "reasons": {
+            "global_observed": 270
+          },
+          "signature_bases": {
+            "02673abcd44c402d": "GET|/api/bxisabpdvi/:num|cursor,ref,ts|mozilla|*/*",
+            "029cc3ffa8b1a59f": "GET|/api/rwwyvgcavp/:num|debug,feature,y|python|*/*",
+            "0347056392b16075": "GET|/api/ffcluuwkpg/:num|x|python|*/*",
+            "0351782e8a96f057": "GET|/api/rsueoyhzce/:num|feature,q,z|node|*/*",
+            "04b4410c611ff51c": "GET|/api/rjrqgfqmiu/:num|filter,q,session|python|*/*",
+            "04b6ada70c16afed": "GET|/api/btxnnhnngj/:num|view|python|*/*",
+            "0538a62d1f465461": "GET|/api/mkdsiigyop/:num|b|curl|*/*",
+            "055c6d9cc9298fd2": "GET|/api/sktwegktpm/:num|cursor,session,sort|curl|*/*",
+            "05b095a7a43d031f": "GET|/api/vgyfjkqtob/:num|debug|mozilla|*/*",
+            "062293b6cc0d821d": "GET|/api/ejzjqhdlth/:num|b,filter,sort|python|*/*",
+            "078b479223634fa8": "GET|/api/xwtdheipiu/:num|feature,id,q|python|*/*",
+            "0845f19bd6ffc97e": "GET|/api/qxjsxhwfpb/:num|x|python|*/*",
+            "08d6ce56179c62a7": "GET|/api/iusaqatqnj/:num|a,x|node|*/*",
+            "08fd3f9e2a9ec6f2": "GET|/api/musnepxkdb/:num|a,ref,sort|python|*/*",
+            "0bcf56a9bea05438": "GET|/api/klluqucbgb/:num|cursor,ts|python|*/*",
+            "0dab574c84f3280a": "GET|/api/nhhtagenen/:num|session,ts|mozilla|*/*",
+            "0e0d13e5501cc182": "GET|/api/blgkxiwwmh/:num|filter,id|curl|*/*",
+            "0e7670f342b0365a": "GET|/api/kmythtjtqz/:num|cache,client,ref,view|node|*/*",
+            "0f72d3de5184cb0a": "GET|/api/zfphpktinf/:num|b,q,sort,z|curl|*/*",
+            "130b9303ff32729f": "GET|/api/fbnsvajucb/:num|feature,page,y|curl|*/*",
+            "1373802ed64533a5": "GET|/api/nmapsrxlkg/:num|cache,debug,filter|python|*/*",
+            "13a3d38b8131b4ca": "GET|/api/gofijcgjat/:num|y|python|*/*",
+            "13f5bf80a2708e74": "GET|/api/vhqlabsrxe/:num|filter,id|mozilla|*/*",
+            "143218dea42ee9e9": "GET|/api/uwznpurtlb/:num|b,ref,z|mozilla|*/*",
+            "1492a2126cab15af": "GET|/api/zjjywzvpgw/:num|x|curl|*/*",
+            "15cb3cbfe3390a0a": "GET|/api/xraogqrxfd/:num|session,view|curl|*/*",
+            "16018d82afd8b85c": "GET|/api/xiahrdafom/:num|b,debug,view|python|*/*",
+            "16f1c08a5fbb8187": "GET|/api/qizahwgzzs/:num|filter|node|*/*",
+            "17c4326a5d98de5e": "GET|/api/nmavnceezq/:num|debug,ts,view|python|*/*",
+            "1878af6aa27e8c4f": "GET|/api/iqixcvmawl/:num|id,page,ref,x|python|*/*",
+            "19d224f1516533e1": "GET|/api/dotsvsicvh/:num|y|node|*/*",
+            "19e09d5909833ce6": "GET|/api/ndqqnlajbe/:num|cache,cursor,y|mozilla|*/*",
+            "19e4cbe50e9c7a7c": "GET|/api/ltjymdiltf/:num|cursor,page,sort,ts|python|*/*",
+            "1a308e9d0cbb74b1": "GET|/api/smgdsgajou/:num|cache|mozilla|*/*",
+            "1b8a30af3f37f635": "GET|/api/yshfsajlpo/:num|a,z|curl|*/*",
+            "1bbbddc10850d308": "GET|/api/nosazlkceu/:num|a,cursor,debug,x|mozilla|*/*",
+            "1c9b92321c696479": "GET|/api/wdyzsmddkq/:num|id,page,session|node|*/*",
+            "1cc80458d70b5172": "GET|/api/hktekqbbhg/:num|ref,sort,view|node|*/*",
+            "1d0717ffe02f3b4d": "GET|/api/xchnouqekr/:num|cache,cursor,filter|curl|*/*",
+            "2006833644fcdb52": "GET|/api/bpmbgcpexe/:num|region,x|python|*/*",
+            "20c77db008e13a15": "GET|/api/jqtzkrkezn/:num|a,ref,session|mozilla|*/*",
+            "24963765b0c2de3a": "GET|/api/zaqucopful/:num|view|python|*/*",
+            "25cefdab088e766a": "GET|/api/wlljszgjdv/:num|z|mozilla|*/*",
+            "26e8fe61173a94bf": "GET|/api/fnduixjfsd/:num|client,id,y|curl|*/*",
+            "2a55f237bd30756e": "GET|/api/pvmxszejte/:num|debug,filter,q,view|python|*/*",
+            "2a5fca28a4b6da13": "GET|/api/rcelpfnlun/:num|ref,region,sort|node|*/*",
+            "2ab437cea7783f0a": "GET|/api/lxuyqtmvza/:num|filter|mozilla|*/*",
+            "2ad31a9a7cbfca6e": "GET|/api/twjvzpxfcd/:num|feature,ref,x|node|*/*",
+            "2d479bc5787dea5b": "GET|/api/whszmgdyss/:num|q,z|python|*/*",
+            "2f8089a9927e3a79": "GET|/api/cjsrtrkhld/:num|debug|node|*/*",
+            "3014ce1575399169": "GET|/api/ukghlvxgig/:num|session|mozilla|*/*",
+            "30c030096dc3396d": "GET|/api/daxlsuruvg/:num|ref,region,z|node|*/*",
+            "3157f3b2bafdf5df": "GET|/api/kvmakjtgra/:num|filter|python|*/*",
+            "317670d8ebcadba9": "GET|/api/gqhycvacnz/:num|ts,x,y,z|python|*/*",
+            "31824dcdd48e322f": "GET|/api/zswstamocu/:num|debug,feature,id|python|*/*",
+            "31af4669896e2de9": "GET|/api/bdmnfpcfdq/:num|b,client,filter|python|*/*",
+            "3213a4f162e3963b": "GET|/api/cohkzwolfp/:num|feature,q,z|python|*/*",
+            "3221ab6840cc041f": "GET|/api/zpduchuchl/:num|feature,filter|mozilla|*/*",
+            "357117874ea9d251": "GET|/api/bpviybquoi/:num|a,page|mozilla|*/*",
+            "379d719829fd8b8e": "GET|/api/jsqftdcyyp/:num|client,ref,view,y|python|*/*",
+            "38067bccc1f465b9": "GET|/api/vqvqjwqrzx/:num|sort|python|*/*",
+            "3883b522062c52e5": "GET|/api/bktheycjiu/:num|id,ts|mozilla|*/*",
+            "3a59dcbc5e38856f": "GET|/api/unmwxrowdj/:num|page|node|*/*",
+            "3abe97e0c7868425": "GET|/api/pdapvpvznr/:num|a|python|*/*",
+            "3c732ad498939bb1": "GET|/api/rcmvzgjrfc/:num|cursor,sort|curl|*/*",
+            "3c9ce46bc34b19bd": "GET|/api/oodgfrbuow/:num|b,page,q,sort|python|*/*",
+            "3e5c55c55d46cc35": "GET|/api/rhwsiluymh/:num|client,id|curl|*/*",
+            "3eaea58bc124079f": "GET|/api/miiewcqaxo/:num|feature,page,session,sort|curl|*/*",
+            "42ff283549890811": "GET|/api/wyozhiztps/:num|id,q,ts|node|*/*",
+            "43c344d6735e98a8": "GET|/api/beakoezhre/:num|a,feature,page,q|python|*/*",
+            "43efcd4e800ae500": "GET|/api/hcklexttww/:num|a,q,region|python|*/*",
+            "453d6f1ce296b678": "GET|/api/tviirvhzoy/:num|page,ref,ts|mozilla|*/*",
+            "45d2653b0c351dc6": "GET|/api/fegcrrazil/:num|filter|curl|*/*",
+            "46579c4f5ade17ce": "GET|/api/tmxojohtvh/:num|feature,session|python|*/*",
+            "47720a512c1ffe45": "GET|/api/fyndpzlpsy/:num|debug|node|*/*",
+            "47c71b1e8fabcd4f": "GET|/api/iupsgohzri/:num|client,page,sort,z|node|*/*",
+            "4887937b815052fd": "GET|/api/qqrqeelcil/:num|a|mozilla|*/*",
+            "4a6131e549d4e02e": "GET|/api/vxloatlxli/:num|filter,region,z|python|*/*",
+            "4afca5e4c3f2500f": "GET|/api/zyaspbfgqe/:num|view,y|python|*/*",
+            "4b24889389b7da17": "GET|/api/thbzzjmuty/:num|feature,q,region,session|mozilla|*/*",
+            "4b4d9cb8b50e0130": "GET|/api/mlgvwhbaxb/:num|cache,region,y|curl|*/*",
+            "4b666223f462dee5": "GET|/api/exbvxjbazl/:num|filter,region,session,z|node|*/*",
+            "4bfcd1fc3b4c40f0": "GET|/api/xndialnbua/:num|y|python|*/*",
+            "4c11fbf2cef70831": "GET|/api/zruhzdwozx/:num|q|curl|*/*",
+            "4c201ede031ce07a": "GET|/api/rsxgyadnah/:num|a,session,y,z|mozilla|*/*",
+            "4c428b6196e7181b": "GET|/api/dqgvqjljyy/:num|view|curl|*/*",
+            "4d46bb3a17d0773e": "GET|/api/omvgsvkihw/:num|cache,filter,region|node|*/*",
+            "4e35c12ef232c42a": "GET|/api/avnpexrzmx/:num|cache,debug,ts|mozilla|*/*",
+            "4eedf8748c2bc48c": "GET|/api/expcrdktax/:num|q,sort,x|curl|*/*",
+            "4f2a7bb51f3311d3": "GET|/api/kuibldggze/:num|id,ref,z|node|*/*",
+            "4fd820be613ae1df": "GET|/api/favrfvymfd/:num|b,region,y|curl|*/*",
+            "502fc5c302b88be1": "GET|/api/wokjmyquvz/:num|ts|curl|*/*",
+            "50c62a1a53492b09": "GET|/api/ynpmoqdvbl/:num|x,z|python|*/*",
+            "52118cfa2fd4c539": "GET|/api/wnrkmrbrjo/:num|a,b,cursor,view|node|*/*",
+            "52484b7f2c5ab0ee": "GET|/api/shdfrcgbyn/:num|b,cache,y|mozilla|*/*",
+            "52574f5b8069b9b2": "GET|/api/hgvaivarmv/:num|cursor,z|curl|*/*",
+            "526543474c11fda2": "GET|/api/iavfrrczgc/:num|z|node|*/*",
+            "540e0470b424045e": "GET|/api/vjdtdboxuy/:num|region,x,z|node|*/*",
+            "54b1bf71961672d8": "GET|/api/qshydgkqvk/:num|cache,client,ts|python|*/*",
+            "550d7d378dcb91af": "GET|/api/svbzdrwjkd/:num|b,cache,view,x|python|*/*",
+            "55a34990da6959c4": "GET|/api/eztmqjlbgb/:num|cursor,filter,q|node|*/*",
+            "5616ddc056e99198": "GET|/api/vsumlgsofa/:num|a,ts,z|curl|*/*",
+            "574de928c3109bfd": "GET|/api/ssriztzqzj/:num|cache|curl|*/*",
+            "57d19fad76e282ad": "GET|/api/gfbmfqxxoz/:num|region|mozilla|*/*",
+            "58ffd079eb1513d5": "GET|/api/sjzlzugwpd/:num|feature|curl|*/*",
+            "5922eb8f3ab0f5a4": "GET|/api/zfpuaifrqh/:num|session,sort,view|curl|*/*",
+            "59ca192b3fd525f9": "GET|/api/lpjwzlumdt/:num|a,debug,ref,z|python|*/*",
+            "5d46cf4bdd33a2db": "GET|/api/dpaetkxvcv/:num|cursor,filter,sort|curl|*/*",
+            "5dbcae88dfdd92b4": "GET|/api/whhxblrwub/:num|cursor,filter,q,ref|python|*/*",
+            "5dd329504082539c": "GET|/api/xfzruhcoja/:num|b,client,region,sort|curl|*/*",
+            "5def9584fe973f66": "GET|/api/vndmufvosx/:num|debug,view,y|mozilla|*/*",
+            "5fb9f8a48bfbb729": "GET|/api/gjetrsbdee/:num|cursor,region,x,y|node|*/*",
+            "61874d719cb2ec91": "GET|/api/wjujpjwlat/:num|b,ref,session,y|curl|*/*",
+            "631f5bf83b688e71": "GET|/api/sydeeunqhg/:num|cursor,q,z|curl|*/*",
+            "63bd5758aed9f143": "GET|/api/zbkqxfehwx/:num|a,b,cache,ref|mozilla|*/*",
+            "6578fa6a9df7340d": "GET|/api/yvcegabjbi/:num|cache,region,view,y|curl|*/*",
+            "664720d9518bdd25": "GET|/api/tapbqsveya/:num|client,view,z|mozilla|*/*",
+            "6666666c239b02d7": "GET|/api/ddmybesipe/:num|cache|node|*/*",
+            "67070ee37821505d": "GET|/api/nmkwlpqznt/:num|cache,ts,y|python|*/*",
+            "68adfb7f342d42f7": "GET|/api/xusvolsaue/:num|debug,q,view|node|*/*",
+            "693bfa8ba73c5204": "GET|/api/cztlaxsrld/:num|client,id,z|curl|*/*",
+            "6a1399f10a6762ce": "GET|/api/jskrqrsovv/:num|cache,feature,filter,sort|mozilla|*/*",
+            "6aaea5f2dde22808": "GET|/api/fnujjvhxsl/:num|a,ts,view|python|*/*",
+            "6b0134407f7789e1": "GET|/api/sqwonacnqg/:num|x|curl|*/*",
+            "6bd11ddc8b6d13f4": "GET|/api/zhlkdidrai/:num|cache,q,region|node|*/*",
+            "6c0cc84545f68b28": "GET|/api/juuirhxlcl/:num|debug|curl|*/*",
+            "6d547ae582060f77": "GET|/api/yubdbzsxzj/:num|a,feature,ts,y|node|*/*",
+            "6dc575af45f3765a": "GET|/api/pwploipqze/:num|feature|curl|*/*",
+            "6e0e9b0adbb6e97d": "GET|/api/ysdienkorp/:num|cache|python|*/*",
+            "6ea5ee8b4cc8decf": "GET|/api/covzsajrcf/:num|feature,page,sort,z|python|*/*",
+            "6ebd251d3bea6fa5": "GET|/api/cxfsjonqse/:num|sort|python|*/*",
+            "72c25f8322774365": "GET|/api/hdkdlbjilx/:num|cache,filter|mozilla|*/*",
+            "74044c71be836623": "GET|/api/xgrtiuhmyd/:num|id,page,y,z|python|*/*",
+            "74341de7071b5136": "GET|/api/fuihxewabs/:num|a,ref,ts|python|*/*",
+            "7ab1a95943842d6e": "GET|/api/aweblhlwwa/:num|cache,cursor,page|node|*/*",
+            "7b85b9f92f4df742": "GET|/api/zmgrujqbms/:num|cursor,page,session,sort|python|*/*",
+            "7c7c25cb4d498cc6": "GET|/api/rewvodqwzj/:num|a,cursor,debug,session|mozilla|*/*",
+            "7dcee93452b09e61": "GET|/api/zxootezctv/:num|debug,page,ref,y|python|*/*",
+            "7e1a41e922461c96": "GET|/api/wqbxxpkrjw/:num|debug,page,ref,session|python|*/*",
+            "7e28aea7d08e6f1e": "GET|/api/xfmxmkpkux/:num|session|node|*/*",
+            "80c99836b7a76b52": "GET|/api/wayhkeahgz/:num|cache,debug,feature,y|curl|*/*",
+            "813520db53285215": "GET|/api/kjzindetby/:num|a,debug,ts,view|node|*/*",
+            "814a701c8155b3a5": "GET|/api/gbvwzqsuci/:num|b,debug,q,ref|python|*/*",
+            "815c742dc0ab3ed2": "GET|/api/qjcewesvxe/:num|filter,ref,ts|curl|*/*",
+            "827a16d5b9076059": "GET|/api/tpcfszkrst/:num|client,session,sort,y|node|*/*",
+            "839a578e702cd0b7": "GET|/api/vggaghhllp/:num|b|mozilla|*/*",
+            "83ff978db3213daf": "GET|/api/ituudndxil/:num|cursor|mozilla|*/*",
+            "8443a71321eae1d9": "GET|/api/rgydbstxav/:num|session,z|mozilla|*/*",
+            "84e20819f2b5fd9d": "GET|/api/nuvoefzigw/:num|b,debug,region,y|curl|*/*",
+            "8500572cc3ab720d": "GET|/api/jpigeknxkt/:num|cursor,debug,sort|python|*/*",
+            "85f60872e6a2313c": "GET|/api/fufwgtcqif/:num|ts|node|*/*",
+            "871c818c0e1fb8f0": "GET|/api/hxaestdbnl/:num|feature,page,y,z|python|*/*",
+            "87e947a7d19b1f8a": "GET|/api/ujhabsjdip/:num|filter,id,q,view|node|*/*",
+            "88b90215772067b2": "GET|/api/mhgowrjbzo/:num|id,ref,sort|python|*/*",
+            "896b786ad27a27ba": "GET|/api/dwllekaxda/:num|debug,id,ts,y|python|*/*",
+            "8b06ec567f8d746b": "GET|/api/pjyhvhlaou/:num|cursor,ref,region,y|python|*/*",
+            "8be06d12f14520c9": "GET|/api/nnjigevzqz/:num|cursor,feature,sort|python|*/*",
+            "8d6026ab1c10814f": "GET|/api/ebvxtgftpi/:num|client,feature,id,y|node|*/*",
+            "8d94501f8631beef": "GET|/api/itqycxuoiu/:num|sort|mozilla|*/*",
+            "8dcc6c89765ba5cf": "GET|/api/ngqoleyuoi/:num|x|node|*/*",
+            "8e031151bab9846c": "GET|/api/tvqebymjxa/:num|filter,q,ts|python|*/*",
+            "8ec377239f889680": "GET|/api/qukcijacdq/:num|session,sort,y|node|*/*",
+            "8f0cc051e57daad3": "GET|/api/tmxibzzbge/:num|cursor,ts,y|python|*/*",
+            "8fed3cd383dbdb96": "GET|/api/idqhqhmaez/:num|region,y|python|*/*",
+            "926009c8c6085115": "GET|/api/ukgnuqbswu/:num|a,debug,filter,session|python|*/*",
+            "9481128066fe5719": "GET|/api/eoxbflsbjt/:num|region,y|node|*/*",
+            "9510c6b08f6b1308": "GET|/api/nipinbfwow/:num|id,page,sort|node|*/*",
+            "9608b11dd3a50b26": "GET|/api/etfppbsdly/:num|b,ts,view,z|node|*/*",
+            "977b5a682b11fbf2": "GET|/api/onlgjgjulq/:num|client,ref,x,z|node|*/*",
+            "97923f8dd006f4bd": "GET|/api/qgshflpdkc/:num|debug|curl|*/*",
+            "98b56e50e6e23e3d": "GET|/api/gbslnxhfrx/:num|cache|python|*/*",
+            "9a4c7c9380f453fe": "GET|/api/jywuaeacsr/:num|filter,id,q,ts|python|*/*",
+            "a0451cb3c204376e": "GET|/api/quaswgpzul/:num|cache,region|node|*/*",
+            "a10a5fc76a2036c0": "GET|/api/miiafpzypr/:num|b,debug,region,ts|node|*/*",
+            "a1b25e4f6ca41547": "GET|/api/geunexwjlh/:num|ref|curl|*/*",
+            "a1fec0e63f88109d": "GET|/api/quskcvmpld/:num|client,region,ts|python|*/*",
+            "a2dc0ba8e8bb9473": "GET|/api/axoembfqru/:num|cursor|python|*/*",
+            "a4d82583afdbc827": "GET|/api/fgwdlpiylg/:num|cache,feature,y|node|*/*",
+            "a87c624c8d19e502": "GET|/api/jlfutbcqat/:num|cache,client,x,z|python|*/*",
+            "a8882f8a8a1840fe": "GET|/api/lcoraffhpb/:num|b,client,sort,ts|python|*/*",
+            "a9ee92b34c6409f1": "GET|/api/uskkfyszub/:num|filter,ref|python|*/*",
+            "ab4441e77bc3ba0c": "GET|/api/blwfusqxcq/:num|debug|curl|*/*",
+            "abf1edc1e242004f": "GET|/api/kxgjurmozv/:num|client,filter,ts,view|mozilla|*/*",
+            "ac0cbbf97cab31b2": "GET|/api/mosefsrkta/:num|filter,page,x,y|curl|*/*",
+            "ad1a9b34b409d61f": "GET|/api/mqsdmupdfa/:num|cache,region,x|python|*/*",
+            "ad3a9a084e8a7e1a": "GET|/api/xbzowhvcnf/:num|sort|node|*/*",
+            "ad4078ad2c183226": "GET|/api/gjbevfrldu/:num|cursor,session,view,y|curl|*/*",
+            "ae54b76412de08ee": "GET|/api/kgvqslnpgv/:num|ts,view,z|node|*/*",
+            "af779288e2f46d5f": "GET|/api/ifrfqztgil/:num|q,ts|python|*/*",
+            "b151b7ffc3373521": "GET|/api/tlvpbjdeis/:num|ts,x,z|curl|*/*",
+            "b234aeb87dd97155": "GET|/api/xxviafsndi/:num|b,x|python|*/*",
+            "b274f611df27028a": "GET|/api/ilerhsnloc/:num|b|curl|*/*",
+            "b330d531c41d993b": "GET|/api/kmhwzrufah/:num|cache,debug,filter,region|mozilla|*/*",
+            "b4c52cc9f55fd19d": "GET|/api/fcbowrfvbn/:num|feature,page|mozilla|*/*",
+            "b738e2b1ed481714": "GET|/api/wpsuhuwihg/:num|page,q|python|*/*",
+            "ba4b6c669ebf00d0": "GET|/api/iwxjpkcwnm/:num|b,client|python|*/*",
+            "bb7c8a51384fc850": "GET|/api/gshrrnbffy/:num|cursor,feature,region|node|*/*",
+            "be6675fa4d126fc0": "GET|/api/xclaapjkzu/:num|cache,cursor|mozilla|*/*",
+            "bebfbef81934e862": "GET|/api/qseytepnsg/:num|ref,view|mozilla|*/*",
+            "bf6935ab4b84740c": "GET|/api/yojbajosqs/:num|filter,region,z|node|*/*",
+            "c1f24c148d07d62d": "GET|/api/swtcduipqv/:num|cursor,session,ts,view|python|*/*",
+            "c26a068e574848fc": "GET|/api/swkvogwwcl/:num|b,ts|node|*/*",
+            "c32385378d9104e2": "GET|/api/kxnipjckps/:num|z|python|*/*",
+            "c650f4e02336c025": "GET|/api/ssvqcgzbrh/:num|ref,sort|mozilla|*/*",
+            "c8763114d419c758": "GET|/api/kykeuoolcd/:num|id,session,x|mozilla|*/*",
+            "ca40ce98a012c06e": "GET|/api/twcfcmpipr/:num|a,filter,ref|python|*/*",
+            "caa46619e127c90e": "GET|/api/kaaqvrngxg/:num|a|curl|*/*",
+            "cce8ff702800ba40": "GET|/api/afjzcuxlth/:num|ref,view|mozilla|*/*",
+            "ceaa5e5a1005e91a": "GET|/api/uqkqmsviiy/:num|filter|python|*/*",
+            "cf40b4ca500d58fa": "GET|/api/rnwzuynyod/:num|ref,ts|python|*/*",
+            "d0bace88503e32c0": "GET|/api/onkuhusqsq/:num|a,region,sort|python|*/*",
+            "d236ff1548527b11": "GET|/api/dclbvykidq/:num|filter,page,sort,x|curl|*/*",
+            "d248032254ffca6b": "GET|/api/vdrqsrjnrf/:num|b,id,view|mozilla|*/*",
+            "d415191899811c95": "GET|/api/axmpalrouo/:num|cursor,session|node|*/*",
+            "d47f81d7e999fc2d": "GET|/api/smcvzoadum/:num|b,filter,ref,sort|node|*/*",
+            "d5946e359a3595a2": "GET|/api/rshiehjven/:num|b,cache,feature,page|python|*/*",
+            "d598ea700ec544e2": "GET|/api/lzquhxtzkv/:num|region|mozilla|*/*",
+            "d78cad1aeeb67807": "GET|/api/mmddmfwlxw/:num|a|mozilla|*/*",
+            "d797d5f020d8e01c": "GET|/api/hlbmgcymwh/:num|debug|mozilla|*/*",
+            "d8c56dd18d057e94": "GET|/api/saobeovgms/:num|a,id,ref|node|*/*",
+            "d939ad5c4ca8ecb9": "GET|/api/jlukpvihce/:num|cache,session,y|curl|*/*",
+            "d9dbb3f9eb186a3e": "GET|/api/jylqkxwwlz/:num|debug,feature,ref,sort|node|*/*",
+            "dbb52fe2a2f90148": "GET|/api/ejcsnceqan/:num|cursor|python|*/*",
+            "dc8c8f230c0890df": "GET|/api/uakinutxal/:num|cache,filter,sort,z|python|*/*",
+            "dccf971087598390": "GET|/api/klbswjwevk/:num|cache,cursor,filter,ts|mozilla|*/*",
+            "dcefcfb56c6ed587": "GET|/api/vpnflqlzhk/:num|a,cache,ref,x|mozilla|*/*",
+            "ddc2aff5b41fe554": "GET|/api/lsqspacsch/:num|x|curl|*/*",
+            "dde2952a30c3ac5b": "GET|/api/nlffzxzeuv/:num|a,feature,filter,page|node|*/*",
+            "ddf49e50b32b7e4a": "GET|/api/qphfcqpxah/:num|q,session|node|*/*",
+            "de1d11e97a7c99b9": "GET|/api/mxsrtgwwcc/:num|cursor,debug,page,ref|python|*/*",
+            "de339de7c2ff9141": "GET|/api/dppeinsqky/:num|session|node|*/*",
+            "e0cf73323fbd7312": "GET|/api/vfqkhhgvmg/:num|a,ref|node|*/*",
+            "e17258874a67caa7": "GET|/api/wriimgdoxo/:num|cursor,debug,region,sort|mozilla|*/*",
+            "e1fc9956af6635db": "GET|/api/szxpzjmiui/:num|feature,q|mozilla|*/*",
+            "e228b1e3bf3ea3af": "GET|/api/knhsdixqvd/:num|id,q,session,sort|curl|*/*",
+            "e260c8901f55b2a4": "GET|/api/ntrxbxqtjb/:num|debug,q|python|*/*",
+            "e36d607439649d62": "GET|/api/mopjwkvbsf/:num|id,y|python|*/*",
+            "e6897438b2b3ce39": "GET|/api/wgvnbcefjj/:num|filter,session,ts,y|python|*/*",
+            "e7b3637ef7ff0869": "GET|/api/ylwoidlbcx/:num|a,session|python|*/*",
+            "e8d54ca4b77f02cd": "GET|/api/dawrcdswba/:num|b,ref,ts|python|*/*",
+            "e9637f4eb478ef3f": "GET|/api/angzujzeud/:num|debug,region|python|*/*",
+            "eb06a58140dd7467": "GET|/api/psvjjujuzv/:num|view|curl|*/*",
+            "eb16dd2a5ea4ce88": "GET|/api/ygrywjicjt/:num|a|curl|*/*",
+            "ec11c5083b093a17": "GET|/api/hjnhywmsxq/:num|b,debug,q,view|curl|*/*",
+            "ec9ae341f039018e": "GET|/api/dhwnhklary/:num|cache,id,sort|mozilla|*/*",
+            "ecceb812847b8d32": "GET|/api/otwnbwpnaz/:num|page,ref,ts|curl|*/*",
+            "ed78a92e2aa5aca5": "GET|/api/vzvwssprvk/:num|b,page,ref|mozilla|*/*",
+            "ee64916eea662b77": "GET|/api/yegtinknln/:num|cache,filter,view|node|*/*",
+            "eecd8e4c9c21fb02": "GET|/api/zuyjddjnry/:num|a,q,x|node|*/*",
+            "eeeea088cb9eb2b5": "GET|/api/kzemmgkiix/:num|cache,session|node|*/*",
+            "ef89854f0490ac15": "GET|/api/ihmcyfzywo/:num|filter,q,ref,ts|python|*/*",
+            "f1b52360520f1225": "GET|/api/xjowwhspfu/:num|debug|node|*/*",
+            "f2341639af271920": "GET|/api/mozoouabvn/:num|a,b,cache|node|*/*",
+            "f24e05d186883042": "GET|/api/szhbkxtlwi/:num|debug,region,ts,view|mozilla|*/*",
+            "f29a1880fc35a142": "GET|/api/nbiayojrtw/:num|a,q,session|node|*/*",
+            "f30f8d9ed81c2bf4": "GET|/api/ddllegobcp/:num|a,page,y|node|*/*",
+            "f45e0185e7fcff1e": "GET|/api/fdnziequgm/:num|feature,ref|node|*/*",
+            "f4a512f6f200052c": "GET|/api/ttimdnbqyo/:num|page,ref,sort|curl|*/*",
+            "f4c0aa89cdea9d9c": "GET|/api/fnatokvejx/:num|view,x|curl|*/*",
+            "f547b1ea412be709": "GET|/api/qldhehooul/:num|feature,filter,id,z|curl|*/*",
+            "f713e1357d6c2db8": "GET|/api/xmxdplnmwm/:num|y|mozilla|*/*",
+            "f7406d019e247f74": "GET|/api/drtezvxtte/:num|debug,id,sort,y|python|*/*",
+            "f892126fd23bdc1a": "GET|/api/ignmejtchn/:num|ref,ts,x|python|*/*",
+            "facfb11ef2ee2462": "GET|/api/hgvbivzblw/:num|debug,id,region,sort|curl|*/*",
+            "fb90d41fdf0af1ad": "GET|/api/qfxqeyhvvj/:num|feature,session|curl|*/*",
+            "fb99e9cce40f64e3": "GET|/api/loaazowxwu/:num|sort,y|curl|*/*",
+            "fca0c48553ddc491": "GET|/api/ncitmfagff/:num|filter,id,session,sort|node|*/*",
+            "fcfcb262ce47e1e2": "GET|/api/isviugdxkc/:num|z|curl|*/*",
+            "fd4f9cfe341ab5b4": "GET|/api/qvegcaejum/:num|q,session,x|mozilla|*/*"
+          },
+          "unique_signatures": 269
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "methods",
+              "signature"
+            ],
+            "id": "af_sig_3c732ad498939bb1",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "3c732ad498939bb1",
+            "signature_basis": "GET|/api/rcmvzgjrfc/:num|cursor,sort|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "methods",
+              "signature"
+            ],
+            "id": "af_sig_6aaea5f2dde22808",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "6aaea5f2dde22808",
+            "signature_basis": "GET|/api/fnujjvhxsl/:num|a,ts,view|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "methods",
+              "signature"
+            ],
+            "id": "af_sig_4eedf8748c2bc48c",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4eedf8748c2bc48c",
+            "signature_basis": "GET|/api/expcrdktax/:num|q,sort,x|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "methods",
+              "signature"
+            ],
+            "id": "af_sig_4b4d9cb8b50e0130",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4b4d9cb8b50e0130",
+            "signature_basis": "GET|/api/mlgvwhbaxb/:num|cache,region,y|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "methods",
+              "path_shape",
+              "user_agent_contains"
+            ],
+            "id": "af_shape_api_token_num_curl",
+            "kind": "compound_condition",
+            "not_ip_based": true,
+            "precision": "condition_based",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "methods",
+              "path_shape",
+              "user_agent_contains"
+            ],
+            "id": "af_shape_api_token_num_python",
+            "kind": "compound_condition",
+            "not_ip_based": true,
+            "precision": "condition_based",
+            "signature": null,
+            "signature_basis": null
+          }
+        ],
+        "filter_write_seconds": 29.3,
+        "filters_learned": 6,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "methods": [
+                "GET"
+              ],
+              "signature": "3c732ad498939bb1"
+            },
+            "enabled": true,
+            "id": "af_sig_3c732ad498939bb1",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "methods": [
+                "GET"
+              ],
+              "signature": "6aaea5f2dde22808"
+            },
+            "enabled": true,
+            "id": "af_sig_6aaea5f2dde22808",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "methods": [
+                "GET"
+              ],
+              "signature": "4eedf8748c2bc48c"
+            },
+            "enabled": true,
+            "id": "af_sig_4eedf8748c2bc48c",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "methods": [
+                "GET"
+              ],
+              "signature": "4b4d9cb8b50e0130"
+            },
+            "enabled": true,
+            "id": "af_sig_4b4d9cb8b50e0130",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "methods": [
+                "GET"
+              ],
+              "path_shape": "/api/:token/:num",
+              "user_agent_contains": "curl"
+            },
+            "enabled": true,
+            "id": "af_shape_api_token_num_curl",
+            "priority": 80,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "methods": [
+                "GET"
+              ],
+              "path_shape": "/api/:token/:num",
+              "user_agent_contains": "python-requests"
+            },
+            "enabled": true,
+            "id": "af_shape_api_token_num_python",
+            "priority": 80,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.018,
+            "p95": 12.239,
+            "p99": 16.593
+          },
+          "limited_percent": 0.0,
+          "requests": 16544,
+          "requests_per_second": 8243.42,
+          "statuses": {
+            "204": 16544
+          }
+        },
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 0 filters to /tmp/tmpnadq88og/filters-41261.json via codex",
+          "wrote 0 filters to /tmp/tmpnadq88og/filters-41261.json via codex",
+          "wrote 0 filters to /tmp/tmpnadq88og/filters-41261.json via codex",
+          "wrote 0 filters to /tmp/tmpnadq88og/filters-41261.json via codex",
+          "wrote 0 filters to /tmp/tmpnadq88og/filters-41261.json via codex",
+          "wrote 0 filters to /tmp/tmpnadq88og/filters-41261.json via codex",
+          "wrote 0 filters to /tmp/tmpnadq88og/filters-41261.json via codex",
+          "wrote 0 filters to /tmp/tmpnadq88og/filters-41261.json via codex"
+        ],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.891,
+            "p95": 12.202,
+            "p99": 17.195
+          },
+          "limited_percent": 0.0,
+          "requests": 16674,
+          "requests_per_second": 8314.77,
+          "statuses": {
+            "204": 16674
+          }
+        },
+        "events": {
+          "count": 269,
+          "first_detection_seconds": 0.01,
+          "reasons": {
+            "global_observed": 269
+          },
+          "signature_bases": {
+            "00c73705848e8e22": "GET|/api/mnapmrjqyt/:num|cursor,feature,page,y|python|*/*",
+            "0214e1ae4e29ceb7": "GET|/api/aodvvbknve/:num|ref,ts|python|*/*",
+            "022ec93a86138840": "GET|/api/ynzveblexz/:num|feature|curl|*/*",
+            "026108950949cd01": "GET|/api/hcfvsjsqjb/:num|b,cursor|mozilla|*/*",
+            "02d0489a545b1105": "GET|/api/qvykfpbfuz/:num|cache,session|mozilla|*/*",
+            "0357da0b51e694e1": "GET|/api/zpoawdmypa/:num|filter|python|*/*",
+            "0394a7450a4090f6": "GET|/api/rwyofojmyf/:num|debug,feature,id,q|mozilla|*/*",
+            "03b235e88089fb4e": "GET|/api/oiaqhankku/:num|debug,session|node|*/*",
+            "03cb5f51ba2ca8c6": "GET|/api/usvgpyidlr/:num|sort|curl|*/*",
+            "03d9f39c9aec2b40": "GET|/api/oiarparwob/:num|b,cache,debug,sort|node|*/*",
+            "07805ea402ef4763": "GET|/api/mhinyvsctu/:num|cache,debug,ref|curl|*/*",
+            "0907d70ee1c41cd5": "GET|/api/dpxxurylhx/:num|cache,x|mozilla|*/*",
+            "0966956a8d06f6b5": "GET|/api/mzgvmtuqvo/:num|cursor,z|python|*/*",
+            "0b7294f8ab8fffbe": "GET|/api/ohfzfcxdnq/:num|a,client|curl|*/*",
+            "0c333e3bbe623124": "GET|/api/ilfshrfzke/:num|ts,x|mozilla|*/*",
+            "0c9f6da12afdc232": "GET|/api/rdwkvgsfzp/:num|client,filter,x|python|*/*",
+            "0dd43bd078f93926": "GET|/api/wnnlufhgqg/:num|cursor|curl|*/*",
+            "0ef47f6a05f99171": "GET|/api/facertkqub/:num|a,feature,sort,y|node|*/*",
+            "10058258611e7c65": "GET|/api/yacwrcrdgz/:num|cursor,page,session,ts|python|*/*",
+            "107c964969d059aa": "GET|/api/mgivxzzqbk/:num|region,x|curl|*/*",
+            "10ac91e8b6a5adee": "GET|/api/ltvywgkgsw/:num|cursor,debug,page|node|*/*",
+            "110c86f789374059": "GET|/api/urjpxddvlc/:num|b|mozilla|*/*",
+            "11fa685eeaf20a84": "GET|/api/hkgphqyhfg/:num|client,filter,x,y|mozilla|*/*",
+            "1225842e36c66355": "GET|/api/cykcsbvdhs/:num|cache,page,sort,view|node|*/*",
+            "129ac3484e504bab": "GET|/api/syvhaodtod/:num|feature,view|node|*/*",
+            "12ff57c85af2e8ca": "GET|/api/wkllfzccvg/:num|ts,y|node|*/*",
+            "130b9303ff32729f": "GET|/api/fbnsvajucb/:num|feature,page,y|curl|*/*",
+            "13da0eaf59742e8f": "GET|/api/gzunphsldf/:num|id|node|*/*",
+            "1562ada6aff971eb": "GET|/api/zlvkooehxk/:num|a,cursor,feature,region|mozilla|*/*",
+            "157529582927766e": "GET|/api/leoiwdhwmo/:num|a,client,id,page|curl|*/*",
+            "16ab6ec9251bb78e": "GET|/api/pyydzndgnz/:num|session|node|*/*",
+            "177bd406dd839295": "GET|/api/hjzsgptdov/:num|cache,y|mozilla|*/*",
+            "1913bc157ac9cea2": "GET|/api/wusamttrtq/:num|cache,client,q,ts|curl|*/*",
+            "1968c94ab31ac58e": "GET|/api/ubqprrcpsi/:num|ref,y,z|python|*/*",
+            "198c40f1b0578b08": "GET|/api/kvqdhstvta/:num|view|mozilla|*/*",
+            "1d0717ffe02f3b4d": "GET|/api/xchnouqekr/:num|cache,cursor,filter|curl|*/*",
+            "1e32f82ff7f24e28": "GET|/api/pnigsxemfu/:num|y|python|*/*",
+            "2200255a90028634": "GET|/api/zkuvkxvcgv/:num|z|python|*/*",
+            "220e72bee3d1ecff": "GET|/api/obawatlwck/:num|cache,filter,ts,x|curl|*/*",
+            "22613bdbc5b5aea1": "GET|/api/fugfoucjkz/:num|b|python|*/*",
+            "2394e081215551e4": "GET|/api/czcyjdhnmc/:num|b,debug,view,z|mozilla|*/*",
+            "23a5914461757bf5": "GET|/api/ydstmtanhw/:num|a,feature,z|node|*/*",
+            "248c7be2780f8953": "GET|/api/zfqkuiieek/:num|debug,q|curl|*/*",
+            "24aa57a98b50cbf7": "GET|/api/aprfmofsvv/:num|b,cache|node|*/*",
+            "2645a77c371be859": "GET|/api/maeetfzmio/:num|cache,page|python|*/*",
+            "26990336a37ddf7c": "GET|/api/qqvyiujlhr/:num|z|curl|*/*",
+            "26a4fed11a4f3797": "GET|/api/xpfmnbcnun/:num|b,cache,id,session|node|*/*",
+            "273ef4f9cc4afd05": "GET|/api/varsqeouau/:num|feature,sort|node|*/*",
+            "28ecb238d5f84479": "GET|/api/ehmnhsgsxa/:num|region|curl|*/*",
+            "2912df78e175a12c": "GET|/api/okbixzlwow/:num|b,cursor,feature,view|python|*/*",
+            "2a3f9431af4cc3b1": "GET|/api/pgmixfjjuj/:num|cursor,sort|node|*/*",
+            "2dea2282faaa71f8": "GET|/api/evfzczebdo/:num|q|node|*/*",
+            "2e3c14592628e365": "GET|/api/qqbqyepdvy/:num|cursor,sort|curl|*/*",
+            "3014ce1575399169": "GET|/api/ukghlvxgig/:num|session|mozilla|*/*",
+            "316a6c72390644cc": "GET|/api/bdrrxgvmoo/:num|id|python|*/*",
+            "32eaca1ca1fc38cf": "GET|/api/ltuodjypgz/:num|b,sort|python|*/*",
+            "36ce61165063e34e": "GET|/api/hstepgtcnh/:num|a|curl|*/*",
+            "36db1ca962a2efaf": "GET|/api/yruygpataa/:num|id,sort|python|*/*",
+            "3891c18c9a76d18f": "GET|/api/szaheidlex/:num|b,id|python|*/*",
+            "393050edc78bd102": "GET|/api/ysyombfjnl/:num|cursor,debug,sort,y|curl|*/*",
+            "39422b728ecf304a": "GET|/api/zewufxsqym/:num|client,ts|python|*/*",
+            "39d21933e7c016ec": "GET|/api/wyhogeswgi/:num|a,page|curl|*/*",
+            "3ac6fa9c28fe2ded": "GET|/api/mucbfeihcj/:num|cursor|mozilla|*/*",
+            "3aefec6576bb8e3d": "GET|/api/aerbjyhtvq/:num|cache,filter,ref,ts|mozilla|*/*",
+            "3ba700f9efde8969": "GET|/api/ijlfrgsoxp/:num|sort|mozilla|*/*",
+            "3c6928f56c6d6ea9": "GET|/api/wxkfuqsief/:num|b,filter,q|mozilla|*/*",
+            "3e0a25cdf7fca4ac": "GET|/api/kemwzmkdho/:num|a,q|curl|*/*",
+            "3f3646a25c54d03f": "GET|/api/hlqfbnlbqa/:num|q|node|*/*",
+            "3fe270a396145e89": "GET|/api/lasfocpmbg/:num|b,page,view|curl|*/*",
+            "40e3b43841bff5b3": "GET|/api/tbujkwpjpm/:num|cursor,id,ref,session|curl|*/*",
+            "417a6cd034ae8468": "GET|/api/ynusyylrdf/:num|filter|node|*/*",
+            "4226f0a4d727e2fd": "GET|/api/bqmgkxuspr/:num|q,session,y|node|*/*",
+            "43392fc9cfe09de6": "GET|/api/kcyqndluye/:num|cursor|node|*/*",
+            "44c85c93c7f70eb2": "GET|/api/bbxeitgpis/:num|debug,id,x,z|python|*/*",
+            "455082997bf6009b": "GET|/api/mjrchafojb/:num|id,x,y|node|*/*",
+            "4562ec14bc3c5f7a": "GET|/api/wvexztjqrn/:num|b,filter,page,q|node|*/*",
+            "45e217fdda18df55": "GET|/api/fzkdezysew/:num|cursor|python|*/*",
+            "4600a76cc53ad2d6": "GET|/api/klnhknahwd/:num|filter,ref,region|curl|*/*",
+            "46bcf95f221b2477": "GET|/api/aoftnjwfet/:num|cache,region,session|python|*/*",
+            "499955ba97807790": "GET|/api/tdpdqcdofa/:num|cursor,debug|mozilla|*/*",
+            "4b5d7d78c1970b54": "GET|/api/xlbtpwqqae/:num|a,debug,x|python|*/*",
+            "4d7393a6ff970ca5": "GET|/api/tmadnaduwm/:num|region,sort|node|*/*",
+            "4dd909e62f2a616d": "GET|/api/jkqrzfnnwe/:num|id,page,z|curl|*/*",
+            "4e216842b53955c8": "GET|/api/oyzmvzalla/:num|filter|python|*/*",
+            "4e6015cb13fc5aea": "GET|/api/sscqmltrbe/:num|a,cursor,filter,x|mozilla|*/*",
+            "4faeec95b2abfba0": "GET|/api/zyeegigkij/:num|client,session|curl|*/*",
+            "4fd820be613ae1df": "GET|/api/favrfvymfd/:num|b,region,y|curl|*/*",
+            "508ea9490f804250": "GET|/api/lhvcjndutb/:num|session,view|node|*/*",
+            "511046361960c337": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|*/*",
+            "5140a4cce10e1c29": "GET|/api/oehxixfrof/:num|region|mozilla|*/*",
+            "537b3a67f689c944": "GET|/api/ufdwkqpfwd/:num|cursor|curl|*/*",
+            "5548b3304c8409bb": "GET|/api/eqexrhhjmc/:num|a,cursor,z|mozilla|*/*",
+            "558f28d296142231": "GET|/api/zowefwwcqh/:num|client,filter,session,x|python|*/*",
+            "56e2a16c6842d973": "GET|/api/pwqtymfvra/:num|cursor,filter,id|node|*/*",
+            "577df665edb78048": "GET|/api/fjoaeztltt/:num|id,q,x|mozilla|*/*",
+            "577f44d4de7d3b93": "GET|/api/sfzsbddceu/:num|b,cache,page,x|curl|*/*",
+            "578102a6379ae7bf": "GET|/api/dqusjvadnr/:num|client,debug,region,sort|node|*/*",
+            "588959cc0f6bd279": "GET|/api/beondourvj/:num|cache|node|*/*",
+            "58b2415000abe91f": "GET|/api/dfirlgalub/:num|client,debug|mozilla|*/*",
+            "58b8335a6ec7c6b5": "GET|/api/oejjwmwfek/:num|page|curl|*/*",
+            "59957570636858da": "GET|/api/dsrkuzqsus/:num|filter|mozilla|*/*",
+            "59ca192b3fd525f9": "GET|/api/lpjwzlumdt/:num|a,debug,ref,z|python|*/*",
+            "5aa5f4b60266af57": "GET|/api/uuekvdaoqy/:num|cache,region|curl|*/*",
+            "5ac01b49bedc1816": "GET|/api/dueeofajak/:num|filter,sort|curl|*/*",
+            "5d28fe387aa668f9": "GET|/api/dsfgdujksm/:num|cache,feature,id,ts|node|*/*",
+            "5db9ed78c78d3e45": "GET|/api/tfrqujhjcc/:num|cursor,debug,feature,ref|curl|*/*",
+            "5e104c77c9aa1975": "GET|/api/nmdtaesmmf/:num|cache,session|python|*/*",
+            "5e16b42a71248e50": "GET|/api/tlpoedwovq/:num|cache,page,ts,z|python|*/*",
+            "5ef97d5768363e7d": "GET|/api/itjcsuruhj/:num|filter,ts|node|*/*",
+            "60f29f23efdf2203": "GET|/api/efoqiczgeh/:num|client,ref,region,view|node|*/*",
+            "612c96b5f597288a": "GET|/api/cqdzbhzrru/:num|cursor,view,y,z|node|*/*",
+            "637d788b61a3b32f": "GET|/api/gpdbvucaai/:num|filter|python|*/*",
+            "63a168bb85cc06a9": "GET|/api/udmmnwfoww/:num|id,region,z|python|*/*",
+            "69c24e63b775a07e": "GET|/api/njmtrvotxy/:num|ref,sort,ts|curl|*/*",
+            "6acec8879f574e12": "GET|/api/baruwrrcsi/:num|cursor,ts|node|*/*",
+            "6b0e15de874f74a9": "GET|/api/zzalksumoj/:num|page,region,x,y|python|*/*",
+            "6be45bfc7dd2994d": "GET|/api/zbxpcvwtqd/:num|filter,page,z|curl|*/*",
+            "6bf26ef88336339b": "GET|/api/yggtqjnwsx/:num|a,ts,x|python|*/*",
+            "6d5d1969978c0067": "GET|/api/mjmzurxnxx/:num|client|mozilla|*/*",
+            "6e76d0ea48d2712c": "GET|/api/dtvgzhrbxq/:num|client,page,ts|mozilla|*/*",
+            "6ec0a1fc8e3fba04": "GET|/api/dpjthzdwoj/:num|client,page,view,x|node|*/*",
+            "6f1fbb86b762babc": "GET|/api/wqmlnjptbi/:num|filter,q,x|python|*/*",
+            "718645cec9c7d0e2": "GET|/api/pqppnjxvtf/:num|q,ts|curl|*/*",
+            "7202af83d6c01856": "GET|/api/gfmdbbimic/:num|a,cache|curl|*/*",
+            "72c0a7dcad559171": "GET|/api/jqmxvqeaff/:num|debug,id,ref|curl|*/*",
+            "7308fa13d19aa0d8": "GET|/api/veszkzeoxt/:num|id,ref,sort,z|mozilla|*/*",
+            "7470f973a5b913de": "GET|/api/uzqulbjbsm/:num|cursor,debug,id|curl|*/*",
+            "74f619ad4c7f2081": "GET|/api/cjhbrucrup/:num|cache,region|node|*/*",
+            "75a3e1b8f42ae484": "GET|/api/jrpxdntrfd/:num|ref|node|*/*",
+            "76a73f2d35b6d7fc": "GET|/api/evhladgsyy/:num|client,debug,filter,ts|mozilla|*/*",
+            "770202889991b986": "GET|/api/oeclxbascp/:num|page,sort,x|curl|*/*",
+            "78134f8c3e6950e5": "GET|/api/yvzecedkdb/:num|view|mozilla|*/*",
+            "78162188f43f0a2b": "GET|/api/oabecqfuhw/:num|a,z|mozilla|*/*",
+            "783470e70d7900c7": "GET|/api/hnptpgfcnq/:num|a,b|node|*/*",
+            "79d3b8bf3c007b14": "GET|/api/ooiebiomnf/:num|page,ref,ts,view|mozilla|*/*",
+            "7bc7d69e8ae1958e": "GET|/api/mreixkzjxj/:num|b,feature,filter,page|curl|*/*",
+            "7be90b23717af647": "GET|/api/oikgmegnrv/:num|debug|python|*/*",
+            "7c015c6119fa85be": "GET|/api/urtslyrrfv/:num|b,ref,ts|node|*/*",
+            "7c5337977278981a": "GET|/api/gngglaaqtk/:num|page,sort,y|python|*/*",
+            "7daef1df2bac2145": "GET|/api/abkgsfvyrw/:num|cursor|mozilla|*/*",
+            "7db31b286c6fec7f": "GET|/api/ozfeistcqt/:num|cursor|node|*/*",
+            "7df2c4a733ae7b6a": "GET|/api/qbudvchcuo/:num|a,region,sort|mozilla|*/*",
+            "7e38601b50ff47cf": "GET|/api/fxvsrtxduc/:num|view|node|*/*",
+            "7e808cbfff7e80dd": "GET|/api/tsiegzpoqb/:num|a,debug|mozilla|*/*",
+            "7eee866cb4ac3a39": "GET|/api/zeuvpqyflf/:num|b,z|node|*/*",
+            "823cd3b92790d365": "GET|/api/lybzmrznjk/:num|cursor,id|curl|*/*",
+            "82504fd8985f1391": "GET|/api/gaxffwdbwr/:num|a,cursor,debug,sort|python|*/*",
+            "85ae061af58d9f1a": "GET|/api/yghjqrwhso/:num|b,feature,ref,z|python|*/*",
+            "85e50f0cb34c6802": "GET|/api/docxduhwmz/:num|a,b,filter,ts|mozilla|*/*",
+            "88eff37bf5ec7209": "GET|/api/ilbsxpfifd/:num|q|mozilla|*/*",
+            "8a5d12502efe0efd": "GET|/api/tgbppldohh/:num|a,ts|python|*/*",
+            "8bb13dead1c32469": "GET|/api/lzenghjhqe/:num|b,x|node|*/*",
+            "8c1ba5f692d273ea": "GET|/api/oumlzfivkk/:num|ref,sort|curl|*/*",
+            "8c3a4fe4eb0d6434": "GET|/api/vddzeudqwo/:num|sort,z|python|*/*",
+            "8cf12b428f480745": "GET|/api/lhoqaihsle/:num|a,client,region,sort|curl|*/*",
+            "8d71ff16d04e3c46": "GET|/api/eyhudveqvr/:num|cache,client,filter,view|curl|*/*",
+            "8da77f5799b6ddfa": "GET|/api/bzctkglpdc/:num|cursor,region,view,x|curl|*/*",
+            "8db055e5bb539ee3": "GET|/api/vwykefpvxq/:num|b,filter,page|curl|*/*",
+            "8dbe27d24a0e2fdd": "GET|/api/frmxpnghhz/:num|region|python|*/*",
+            "8f0cf61514aab68c": "GET|/api/qftfujefmz/:num|region,sort,view|node|*/*",
+            "8f19c2ec535bc898": "GET|/api/bvrwrxldax/:num|sort,ts,x|curl|*/*",
+            "8fccd0588867c229": "GET|/api/jxrnabcxbn/:num|b,debug,filter,y|node|*/*",
+            "9029e349af7d967a": "GET|/api/idxggvvyae/:num|view|curl|*/*",
+            "92edaef558805c35": "GET|/api/lqnwjbppgj/:num|client|python|*/*",
+            "931de81408f55ea6": "GET|/api/nnjhawzysm/:num|cache,page,view|mozilla|*/*",
+            "95eaa38ab4b51eb2": "GET|/api/dutgfodnbn/:num|filter,q,ref|curl|*/*",
+            "9747c2a5ea4903ed": "GET|/api/gfgdlguubz/:num|b,client,view,y|python|*/*",
+            "979c496b2ee4f3c2": "GET|/api/aoyubnygqp/:num|filter,session|node|*/*",
+            "97eda4d85ecc036b": "GET|/api/downekkhbo/:num|b,cursor,page,y|python|*/*",
+            "97fe9b9b9aae1f66": "GET|/api/pksqmgkmzw/:num|b,feature,q,z|mozilla|*/*",
+            "99ca7e67aee1280e": "GET|/api/fklqxxiyda/:num|a,feature,q,session|node|*/*",
+            "9b0a184a4735f904": "GET|/api/nlarunauds/:num|cursor,region|mozilla|*/*",
+            "9b2492122d77e726": "GET|/api/sscezhsexf/:num|client,debug,view|curl|*/*",
+            "9b64d39779ff7043": "GET|/api/itdeogqemo/:num|feature,session|curl|*/*",
+            "9beb90d9ccbe4bbd": "GET|/api/cfetejifwo/:num|debug,page|mozilla|*/*",
+            "9d8e6d8f93eceeb4": "GET|/api/gghwckrqad/:num|sort|python|*/*",
+            "9dee990745c13825": "GET|/api/egwdvfyxlp/:num|cursor,feature|python|*/*",
+            "9e07b9792d8b0759": "GET|/api/pihbnwpgtp/:num|b,filter,region,y|curl|*/*",
+            "9e984d3b2a3895df": "GET|/api/gufuyzckrj/:num|q,ref,region,session|mozilla|*/*",
+            "9f27a3ec95db2e5c": "GET|/api/kjeascpriq/:num|cache,id,ts,x|node|*/*",
+            "9f9a0994ac478fc7": "GET|/api/gkbzjdztbl/:num|cache,cursor|curl|*/*",
+            "a034922828a224d4": "GET|/api/ddwyomxhjv/:num|a,q,y,z|python|*/*",
+            "a0409f2a5a3a96fc": "GET|/api/ubpsxvjhyp/:num|sort|node|*/*",
+            "a1339fb75be382b1": "GET|/api/qyzruptdsu/:num|a,region,sort|python|*/*",
+            "a25100d103f5da0d": "GET|/api/onyfkehrgk/:num|session|python|*/*",
+            "a27051f7f8123e8d": "GET|/api/uutghdeece/:num|client,page,q,x|python|*/*",
+            "a37971cb389bf1ab": "GET|/api/xtlmfwjcir/:num|ref,session,ts|mozilla|*/*",
+            "a4a5314fbee7b5b1": "GET|/api/gtmpgirffc/:num|cache,client,region|mozilla|*/*",
+            "a56b146bc50ae983": "GET|/api/kksiiabgqv/:num|client,ref|mozilla|*/*",
+            "a75cf3018e2cfa38": "GET|/api/ttdkttntik/:num|a,cursor,id,region|node|*/*",
+            "a7cfd1e90973116d": "GET|/api/sdkgtlivvs/:num|view,x|mozilla|*/*",
+            "aac34c6eecb3514b": "GET|/api/fwhhdabdpf/:num|cache|mozilla|*/*",
+            "ad26ad8488e90b01": "GET|/api/qfqpiovurb/:num|view|python|*/*",
+            "aeea74fbf37f1e04": "GET|/api/sfbssqzbap/:num|feature,filter,z|python|*/*",
+            "af8bce1828178e40": "GET|/api/ocrdaosrxr/:num|client,feature,region,ts|node|*/*",
+            "afdd135037febdbd": "GET|/api/jryrapwyee/:num|filter,page,ts|curl|*/*",
+            "b071071e65029a9c": "GET|/api/cmbjscadpy/:num|view|curl|*/*",
+            "b1294f1c1e6a11fb": "GET|/api/nmvonvobsp/:num|debug,page|mozilla|*/*",
+            "b41f075c5e21f199": "GET|/api/xnebkrbzan/:num|ts,x|python|*/*",
+            "b4b1ed982c554bbf": "GET|/api/rjrbskezgi/:num|debug,feature,z|curl|*/*",
+            "b605afa328b9e039": "GET|/api/hipaavyqzn/:num|filter,region,ts,x|python|*/*",
+            "b6963c5c56a1b630": "GET|/api/qnuylqwaoc/:num|ref|python|*/*",
+            "b6a792371bd5e64f": "GET|/api/xxxssyvsce/:num|cache,page,ts|curl|*/*",
+            "b736d41b04566841": "GET|/api/jvnvgdxwzq/:num|filter,region,ts,x|node|*/*",
+            "b9285d2936460a27": "GET|/api/ccjtjmjpwo/:num|feature,q|node|*/*",
+            "bc60391cf595bdf3": "GET|/api/qocbnmustp/:num|sort|python|*/*",
+            "bd362eb5c7dca939": "GET|/api/dptydvtlvm/:num|feature,q,y|python|*/*",
+            "c1efacd879d79e93": "GET|/api/ofeksnklvt/:num|q|python|*/*",
+            "c1ffd511c8fd3261": "GET|/api/mbolijypga/:num|b,client,id|mozilla|*/*",
+            "c21cb365af6dc0f4": "GET|/api/naiebspran/:num|debug,filter,q|curl|*/*",
+            "c3c39716ad50a1e9": "GET|/api/ejpgueehio/:num|q,region|node|*/*",
+            "c510b744881529da": "GET|/api/ehlxmztehu/:num|b,client|curl|*/*",
+            "c665465b4f16ab8d": "GET|/api/hagofyurpb/:num|cache,cursor,q,x|curl|*/*",
+            "c7de52da111e8535": "GET|/api/adajvvygua/:num|debug,ref,z|mozilla|*/*",
+            "c84c3ac431708b2f": "GET|/api/xcbogtoaij/:num|b,ts,view|mozilla|*/*",
+            "c8f8db52f3df43d2": "GET|/api/qhsxgueyif/:num|region,z|node|*/*",
+            "c9df17e6e02d8a4e": "GET|/api/amukpwtmsw/:num|client,region,session|python|*/*",
+            "cb59ca805cd00d1f": "GET|/api/qdfxlppuhs/:num|cursor,id|python|*/*",
+            "cd27c25721780ca7": "GET|/api/juvgtfsdux/:num|feature,z|node|*/*",
+            "cd5b630b70f15528": "GET|/api/aspfyjokzj/:num|feature,sort,ts,view|node|*/*",
+            "cdd03da8c42e0828": "GET|/api/dzmtjpainh/:num|region|python|*/*",
+            "cf34afb48f1c97ae": "GET|/api/qwrnlijkvn/:num|a,b,client,q|curl|*/*",
+            "cf3ce35d04bc5703": "GET|/api/urcwspames/:num|filter,region,x|node|*/*",
+            "cf3eef4abbdaad24": "GET|/api/asnhlnshmg/:num|b,cursor,session,sort|mozilla|*/*",
+            "d144607ee8a9cf2f": "GET|/api/nsyufoebcx/:num|id,view|curl|*/*",
+            "d20de86a9fcaa0ab": "GET|/api/rpfwwkfuzn/:num|client,cursor,id,sort|node|*/*",
+            "d2b6593b8e5b593e": "GET|/api/tyeqrovrzp/:num|ts|node|*/*",
+            "d2d65c49f951e784": "GET|/api/jrranshgas/:num|a,debug,feature,filter|node|*/*",
+            "d3cc2b85f4ea7e4f": "GET|/api/wqfidrimpb/:num|cursor,filter,ts|mozilla|*/*",
+            "d40ddcc5bfa12f47": "GET|/api/cxoibhdvla/:num|sort|python|*/*",
+            "d4ea202e936adbc0": "GET|/api/fsfplihzql/:num|a,debug,sort,x|curl|*/*",
+            "d56cf05f4542bc61": "GET|/api/cehaiwmcfq/:num|filter,region,sort|mozilla|*/*",
+            "d5f2a050ee806b34": "GET|/api/vhhfhihmrq/:num|b,client,debug,region|python|*/*",
+            "d628d8b84b40dbcf": "GET|/api/jbmwtzwfrx/:num|q,z|mozilla|*/*",
+            "d73e14bd0b037fe6": "GET|/api/vcghggwgdt/:num|q|curl|*/*",
+            "d78dd3eec9b17d29": "GET|/api/ldwbwutzxi/:num|filter|curl|*/*",
+            "da780116d995ebe5": "GET|/api/bvztvumzmu/:num|b,region,sort,x|mozilla|*/*",
+            "dd01120ea86623eb": "GET|/api/cexevcnzdm/:num|b,id|python|*/*",
+            "ddfd4540816cc817": "GET|/api/maoqdlbvga/:num|cursor,id,q,region|node|*/*",
+            "de1223583986f301": "GET|/api/dvlogrspnp/:num|q,ref,region,ts|curl|*/*",
+            "df9bff2b58ef9256": "GET|/api/cuoynihqwo/:num|id,z|python|*/*",
+            "e0f3fa028caf6935": "GET|/api/qgahrnyjux/:num|b,filter,page|python|*/*",
+            "e15c10af283a5f24": "GET|/api/ihwwvlrtgq/:num|session|mozilla|*/*",
+            "e1822225341eb06f": "GET|/api/wncopwnllx/:num|session|curl|*/*",
+            "e1c4b9bd61418fb5": "GET|/api/cvnewbjhpc/:num|cursor,debug,ref,x|curl|*/*",
+            "e28706a7c0334664": "GET|/api/utoeomqcbq/:num|b,filter,ref|curl|*/*",
+            "e3156f6b4e8f98b5": "GET|/api/uwsgvxbmnp/:num|q|python|*/*",
+            "e3f7958041065913": "GET|/api/ehkufcpwaa/:num|ts|curl|*/*",
+            "e5b7946becbb7a55": "GET|/api/vbhrolxiyd/:num|debug,page,q,session|python|*/*",
+            "e5c6582d2fbba108": "GET|/api/urhymvyeck/:num|id,page,x|curl|*/*",
+            "e6e2f5e5649cbc2f": "GET|/api/dvxkferlvc/:num|cursor,id,region|node|*/*",
+            "e78c7228bc29e4ea": "GET|/api/pgygsqrdqn/:num|cursor,debug,q,ts|curl|*/*",
+            "ebaa22c28b801d4d": "GET|/api/ymmrtlotbj/:num|region,view,y|node|*/*",
+            "ec3408de3c131ed0": "GET|/api/kspvvkhede/:num|b,ref,ts|node|*/*",
+            "ecda7d16f1def898": "GET|/api/owqysluoqm/:num|cursor,z|python|*/*",
+            "f014fb2923295abc": "GET|/api/urdvokdubd/:num|debug|mozilla|*/*",
+            "f09c41590928200f": "GET|/api/ezimgqitnf/:num|sort|python|*/*",
+            "f13a20fc56c6fa06": "GET|/api/vvyblhbacv/:num|b,debug,page,session|mozilla|*/*",
+            "f1faa4da76712cbb": "GET|/api/puimeohbgu/:num|region,sort,y,z|curl|*/*",
+            "f583a032e7d4ea56": "GET|/api/nvluppthhq/:num|a|curl|*/*",
+            "f5f7938743c94be3": "GET|/api/ksgxzofdhd/:num|debug,q,region,z|mozilla|*/*",
+            "f79bcd91b42a8393": "GET|/api/rgghkytuiz/:num|a,cache,cursor,id|node|*/*",
+            "fb51cba787beaa8b": "GET|/api/nthswyuzas/:num|sort,z|node|*/*"
+          },
+          "unique_signatures": 263
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.082,
+            "p95": 12.459,
+            "p99": 17.025
+          },
+          "limited_percent": 0.0,
+          "requests": 16346,
+          "requests_per_second": 8149.76,
+          "statuses": {
+            "204": 16346
+          }
+        },
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.796,
+            "p95": 12.302,
+            "p99": 17.289
+          },
+          "limited_percent": 0.0,
+          "requests": 16475,
+          "requests_per_second": 8213.33,
+          "statuses": {
+            "204": 16475
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true
+        },
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.975,
+            "p95": 12.326,
+            "p99": 17.909
+          },
+          "limited_percent": 0.0,
+          "requests": 16371,
+          "requests_per_second": 8161.17,
+          "statuses": {
+            "204": 16371
+          }
+        },
+        "events": {
+          "count": 141,
+          "first_detection_seconds": 0.01,
+          "reasons": {
+            "global_observed": 141
+          },
+          "signature_bases": {
+            "012787810f3932ee": "GET|/api/ipacyeczol/:num|cache,sort|curl|*/*",
+            "01b63d48b86f46a0": "GET|/api/olduohvfyr/:num|client,feature,filter|curl|*/*",
+            "0239da71784594f1": "GET|/api/ajioctiade/:num|filter,y|node|*/*",
+            "02e0e672242d9ed4": "GET|/api/rpdtygejsr/:num|feature,q,sort|node|*/*",
+            "0b7e14c9edf7f5fd": "GET|/api/ztpachdarf/:num|ts|mozilla|*/*",
+            "0cec0b39633f9a53": "GET|/api/zlijvujwim/:num|feature,page,ts,view|node|*/*",
+            "0e1d93bec9472413": "GET|/api/xhthffsxvo/:num|sort|python|*/*",
+            "104eeb7ee10479f3": "GET|/api/zbldoffwah/:num|a,b,sort|curl|*/*",
+            "1098846e76c6bc52": "GET|/api/zgppdvucgf/:num|b,cache,cursor,view|mozilla|*/*",
+            "12c3947c9be66b2a": "GET|/api/wdxxemcuos/:num|feature,x|mozilla|*/*",
+            "1347dbfb5f2aa7b9": "GET|/api/oclaaylflz/:num|cache,page,sort|curl|*/*",
+            "15f50588c0b18dc7": "GET|/api/lreqvqbclm/:num|cursor,ts,z|node|*/*",
+            "17e9f79b01d4fa05": "GET|/api/srikvdmlsz/:num|a,debug,q,sort|python|*/*",
+            "1b771df0ba713a26": "GET|/api/xdailmmztj/:num|a,q,view|node|*/*",
+            "1cc9a2664e2b6d8d": "GET|/api/lfbrwgjzrs/:num|debug|curl|*/*",
+            "25147e8e87538936": "GET|/api/zsulxsexqt/:num|filter|node|*/*",
+            "25ea1b0b0339c112": "GET|/api/pxllzjeqkp/:num|b,id,ts|mozilla|*/*",
+            "2645a77c371be859": "GET|/api/maeetfzmio/:num|cache,page|python|*/*",
+            "2652c6a98bf93300": "GET|/api/kusjowduhq/:num|sort|node|*/*",
+            "2716124ab7a5f28c": "GET|/api/ghxtufkdpt/:num|cache,feature|python|*/*",
+            "28c274ddcec7e779": "GET|/api/xsaddvgwbp/:num|client,ref|mozilla|*/*",
+            "2c3ba5843be9f69d": "GET|/api/bvktiquqxa/:num|x|node|*/*",
+            "2cb1d85ab60b1973": "GET|/api/roxqpmjubb/:num|a,y,z|curl|*/*",
+            "2dfe6add4a25aa96": "GET|/api/lfiabimxyg/:num|filter,q,x,z|python|*/*",
+            "3087022bc3f4e285": "GET|/api/rhajebgzxn/:num|debug,filter,q,y|curl|*/*",
+            "348d2a1a6f84c1b4": "GET|/api/ufktpipvlj/:num|filter|mozilla|*/*",
+            "37e29cd751249314": "GET|/api/vqcspdwpny/:num|x,z|mozilla|*/*",
+            "38b41306c27316b6": "GET|/api/kkpimaecya/:num|cache|node|*/*",
+            "394011d0bbde914d": "GET|/api/hkxewppmki/:num|id,ref|python|*/*",
+            "3b847683b6befcfd": "GET|/api/ovtexyhbdy/:num|id,y|python|*/*",
+            "40e3b43841bff5b3": "GET|/api/tbujkwpjpm/:num|cursor,id,ref,session|curl|*/*",
+            "4159ad28661821ee": "GET|/api/krzzeqajvc/:num|feature|curl|*/*",
+            "44c78faf95c41753": "GET|/api/hoyatxxogd/:num|page,sort,z|curl|*/*",
+            "465effd6e73a0f2e": "GET|/api/lmhyilskyh/:num|q,ref,session,ts|node|*/*",
+            "48ab6399511ba3e8": "GET|/api/qeetlsiiqm/:num|a,feature,region|mozilla|*/*",
+            "4911beb5bb28e7a7": "GET|/api/vbtsxtdggy/:num|q,ref|mozilla|*/*",
+            "4bfd0c9d2be5e8aa": "GET|/api/vctvznakqw/:num|id,ts|node|*/*",
+            "4e35c12ef232c42a": "GET|/api/avnpexrzmx/:num|cache,debug,ts|mozilla|*/*",
+            "4f54e0dcaeafef47": "GET|/api/scjawpcenf/:num|cache,debug,page,sort|python|*/*",
+            "55c964b06b2e58ad": "GET|/api/xifefmeekb/:num|a,q,session,z|curl|*/*",
+            "563fd5bf86e2257f": "GET|/api/kmyajtxhxt/:num|a,cache,cursor,y|node|*/*",
+            "574277a3324c84cb": "GET|/api/xtziefpqzf/:num|cursor,feature,ts|mozilla|*/*",
+            "5b0ba143b16156e0": "GET|/api/tnndrpwbwc/:num|debug,view|mozilla|*/*",
+            "5d116690d76d4f95": "GET|/api/oikaheeqbm/:num|sort|node|*/*",
+            "5dbdbbeba52e60b3": "GET|/api/axplepqbdg/:num|page,region,x,y|python|*/*",
+            "5e53006662dd5856": "GET|/api/gplgdrnufc/:num|a|node|*/*",
+            "6219e8da04eb6593": "GET|/api/hwawomldix/:num|region,sort|curl|*/*",
+            "62fb5efd1b24eb30": "GET|/api/yucsdrmbnh/:num|cursor,ref,sort,view|python|*/*",
+            "63f1b01866b647e2": "GET|/api/gjintcrbtx/:num|cursor,debug,ts|python|*/*",
+            "651ebbd50a81199a": "GET|/api/vqxzfrpyog/:num|region,view|mozilla|*/*",
+            "689f7322186107c1": "GET|/api/pvyffehekp/:num|filter,x|python|*/*",
+            "68b48664d3a13544": "GET|/api/xzohbzzttm/:num|debug,feature,ref,ts|curl|*/*",
+            "6a831823b9b2f669": "GET|/api/hhenrukryv/:num|filter,session|python|*/*",
+            "6be778d6f88d851a": "GET|/api/jhcfwwhfbd/:num|debug,filter,y,z|python|*/*",
+            "6ccf4f18a3fa4ea0": "GET|/api/kzsgovxtxl/:num|a,debug,page|mozilla|*/*",
+            "6ce73ec28d9ddf75": "GET|/api/qcdsylcwra/:num|client,debug,q|node|*/*",
+            "6d20a5b37c0a150e": "GET|/api/kvtawsjpmc/:num|ts|mozilla|*/*",
+            "700fce9e3603e488": "GET|/api/kqihlfztbk/:num|debug,x|curl|*/*",
+            "7348e6a0827ddd65": "GET|/api/uorffpzwio/:num|a,debug,ref|python|*/*",
+            "73ad0582240bd94f": "GET|/api/jqymgnklte/:num|id,ref,sort|mozilla|*/*",
+            "7b2445364b77a8ca": "GET|/api/nniczjshio/:num|q,sort,view|curl|*/*",
+            "7bdf4d94f6bb83a6": "GET|/api/mksekpudcv/:num|sort|curl|*/*",
+            "7ec1f56c60691bd2": "GET|/api/riperlmbkl/:num|client,debug,ref|node|*/*",
+            "7f4850dc7beb52bc": "GET|/api/rlkleviuns/:num|b,sort,x|python|*/*",
+            "80853bf4ed8ba68d": "GET|/api/fqdqeknclh/:num|cache,id|python|*/*",
+            "80ce4375e92ede4e": "GET|/api/fwqwcofwqi/:num|a,cursor|python|*/*",
+            "81021f89e65d4e6a": "GET|/api/vcrbjgzzuh/:num|b,page,ref,sort|mozilla|*/*",
+            "8165c791c38182cd": "GET|/api/szjuowtnik/:num|cursor,q,ref,sort|mozilla|*/*",
+            "827d589d900db53f": "GET|/api/txdafvjrqi/:num|debug,id,region,view|python|*/*",
+            "82aceeeac17e8c83": "GET|/api/vgrijdnhvo/:num|id,region|python|*/*",
+            "86132beddcfad648": "GET|/api/uappctscfb/:num|client,session,view,z|node|*/*",
+            "8be7f170f11ffa23": "GET|/api/zrtdvgfkit/:num|page,ref,x,y|python|*/*",
+            "8cc2d104e60c2ffe": "GET|/api/uhvfltbdzb/:num|region|curl|*/*",
+            "8ed0c4b96ec3a8cb": "GET|/api/vcpdlkjtse/:num|b,client,filter,ref|python|*/*",
+            "8f10bd6a5b1f7534": "GET|/api/csakmhtfpo/:num|client,session,ts,y|node|*/*",
+            "934f375bef51251e": "GET|/api/vqppjrlbzq/:num|ts|python|*/*",
+            "95713adb719ec550": "GET|/api/vznuohfokg/:num|cursor|python|*/*",
+            "989d7be50f94e14a": "GET|/api/ouilsubact/:num|b,filter,region,sort|mozilla|*/*",
+            "98aa4183e0003d6a": "GET|/api/uzbjoooxni/:num|filter,id,ref|python|*/*",
+            "98c9d44adde591df": "GET|/api/cgrwmyggcs/:num|a|mozilla|*/*",
+            "9936390e82809302": "GET|/api/bwomdhgmwg/:num|cursor,feature,page,y|curl|*/*",
+            "99af351f67deead7": "GET|/api/jurzsrydto/:num|filter,sort|mozilla|*/*",
+            "9aa457608d0bcff4": "GET|/api/vquqgswatc/:num|b,page|curl|*/*",
+            "9b0f14f8774c73c8": "GET|/api/dultuxchsn/:num|client,feature|mozilla|*/*",
+            "9b856369a3481206": "GET|/api/peotrcpgpq/:num|debug,filter,page|node|*/*",
+            "9bb555dad1c09a14": "GET|/api/pzlnvtotjv/:num|client,q,x|mozilla|*/*",
+            "a0ac8ac7fafba8fa": "GET|/api/ydbmwzfmvw/:num|a,client,cursor,region|python|*/*",
+            "a2100a5f5f0cf7a7": "GET|/api/kuxuklguyb/:num|debug,id,ref|node|*/*",
+            "a23ef04cfe574f9d": "GET|/api/wbodikgdpu/:num|a,id,sort|curl|*/*",
+            "a2d7830dbeae7a6a": "GET|/api/rizgfgmlde/:num|a,cache,client|python|*/*",
+            "a60a8d82c8e70228": "GET|/api/pkiyrlijtn/:num|client|node|*/*",
+            "a7a797260e96d3ce": "GET|/api/tjcrrepiwf/:num|cursor,session,ts|curl|*/*",
+            "a7b38c767b9c0f9f": "GET|/api/nfaoosztiw/:num|b,sort|node|*/*",
+            "a8185356abcd75c5": "GET|/api/zoyoxsryvr/:num|a|curl|*/*",
+            "a81b52c611feb206": "GET|/api/btkatfqjuw/:num|feature|python|*/*",
+            "a829a425d153c32b": "GET|/api/payhlcwwox/:num|cache|python|*/*",
+            "a87721b09d5aea1b": "GET|/api/jqeajwhxof/:num|b,cursor,q|mozilla|*/*",
+            "ac9c1f6517a6ce20": "GET|/api/cwqpmobcxq/:num|feature,sort|python|*/*",
+            "b165a5a5fad7969f": "GET|/api/uyyijrmmab/:num|filter,id,view,y|mozilla|*/*",
+            "b27a84b7a98af6df": "GET|/api/sgjvdmlitj/:num|cursor,ref,y,z|node|*/*",
+            "b309e6f035d51a7a": "GET|/api/dbtxwlexqm/:num|a,id,ref,session|curl|*/*",
+            "b3b24254386657d1": "GET|/api/fmqgzsmekl/:num|cache,debug,feature,x|python|*/*",
+            "b4b4bf0c6fa93bc3": "GET|/api/xljfjavbuk/:num|debug,x|curl|*/*",
+            "b76ed07ef54f7a9b": "GET|/api/hdzjbdmcdy/:num|cursor,id,z|node|*/*",
+            "b7ed1bbbd98cf7ab": "GET|/api/mrjxktwygb/:num|a,sort,z|python|*/*",
+            "bb1b587f4efddffb": "GET|/api/makpougwbu/:num|b,cache|node|*/*",
+            "bb2cd21a3c3aae13": "GET|/api/wvspnwpwzx/:num|cursor,debug,y|curl|*/*",
+            "bb44eb9726a83823": "GET|/api/bohlpavyka/:num|cache,page,region|curl|*/*",
+            "bbb30247983b65eb": "GET|/api/rdtuuabcwa/:num|x|curl|*/*",
+            "bed10964847febbc": "GET|/api/srxafyzxug/:num|a,q|node|*/*",
+            "bef404eaba6cc041": "GET|/api/jmcbfarrpa/:num|b,session|mozilla|*/*",
+            "c2b4b774a41c5644": "GET|/api/yxbsnvjufu/:num|b,id|mozilla|*/*",
+            "c57ab9a5cdf9df8e": "GET|/api/sstxqdzxqt/:num|cursor,sort,ts|curl|*/*",
+            "c60a11e878e73723": "GET|/api/dewtruqxze/:num|client,page,y|mozilla|*/*",
+            "c7e79ba685360c34": "GET|/api/mqmucywtsh/:num|filter,ts|node|*/*",
+            "cd270854e0ebc3b0": "GET|/api/kwpebcmwqx/:num|b,q,view|python|*/*",
+            "cf400be34c8a1b7f": "GET|/api/kcfmbbwrpb/:num|cache,region|node|*/*",
+            "d03903aa014556b3": "GET|/api/txszcxzjuu/:num|filter|mozilla|*/*",
+            "d1af83284f5ac6c1": "GET|/api/cigpfgfoza/:num|a,id|python|*/*",
+            "d22142c018ff1267": "GET|/api/lufmsiohvb/:num|id,region|curl|*/*",
+            "d38c6b7c99d3fc7a": "GET|/api/jabnedeazi/:num|cursor|node|*/*",
+            "d56d08467e919c15": "GET|/api/xcorvynjjo/:num|region,session|python|*/*",
+            "d61c44ed75636e79": "GET|/api/mkdkjponup/:num|cursor,q,ref,view|mozilla|*/*",
+            "d625642455b68a20": "GET|/api/ioosnlepsa/:num|cache,feature,ref,view|node|*/*",
+            "d631e35b8904407e": "GET|/api/kkpzgelonk/:num|q,sort|curl|*/*",
+            "d8827bdc5c97e5fc": "GET|/api/rmwwoesgch/:num|view|node|*/*",
+            "ddfd4540816cc817": "GET|/api/maoqdlbvga/:num|cursor,id,q,region|node|*/*",
+            "e1ba09bf9ebc20ed": "GET|/api/kqvaqotjcx/:num|filter|python|*/*",
+            "e628e329a0b29519": "GET|/api/vizthdvpmc/:num|b,cache,view,z|curl|*/*",
+            "ec6fbb16148cae23": "GET|/api/ynzdmflnum/:num|feature,filter,q,y|node|*/*",
+            "ecc02b54941dd9d7": "GET|/api/rtgzyiyugq/:num|client,filter,region|node|*/*",
+            "eddee53fba9a10c0": "GET|/api/cqxafmtfvx/:num|b,sort,y|node|*/*",
+            "ee798b64b08de08b": "GET|/api/uevymoqjzo/:num|debug,sort|node|*/*",
+            "ef8c2ebe767a47fb": "GET|/api/rokborsokb/:num|filter,z|python|*/*",
+            "f1c1da98b2e0a1da": "GET|/api/rsomhfaznb/:num|y|node|*/*",
+            "f1ea7fa20c5385dc": "GET|/api/nsmwckvfuy/:num|z|node|*/*",
+            "f283204fce154ba3": "GET|/api/yscghjlzyk/:num|page,ref|curl|*/*",
+            "f69158c841ba5bf8": "GET|/api/ufzxhjnftj/:num|a,view|python|*/*",
+            "f931dbfe7608940d": "GET|/api/kzjvydlhjf/:num|client,feature,ref,session|node|*/*",
+            "fa87c87a6933bc1d": "GET|/api/qhktriglhr/:num|sort|python|*/*",
+            "ff0d62ce5fd0a9e0": "GET|/api/avgzunidqk/:num|filter,region,view,z|curl|*/*"
+          },
+          "unique_signatures": 141
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true
+        },
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 2.454,
+            "p95": 15.631,
+            "p99": 25.859
+          },
+          "limited_percent": 0.0,
+          "requests": 19976,
+          "requests_per_second": 9961.32,
+          "statuses": {
+            "403": 19976
+          }
+        },
+        "events": {
+          "count": 161,
+          "first_detection_seconds": 0.004,
+          "reasons": {
+            "global_observed": 161
+          },
+          "signature_bases": {
+            "007444facf95c63e": "GET|/api/sevoamzyzw/:num|a,id,q,ts|node|*/*",
+            "01485bfc12e20aa2": "GET|/api/ylsrkrdccu/:num|filter,q,region|mozilla|*/*",
+            "03a518942b1b3771": "GET|/api/fhzkwcuysi/:num|ref,view,y|node|*/*",
+            "0453fe492ae6d8e7": "GET|/api/mdctsqcsaq/:num|region|mozilla|*/*",
+            "0578f7eec2d92622": "GET|/api/vnkxwkkerh/:num|client,session,view|node|*/*",
+            "07a96e36b2de2b6d": "GET|/api/lkgxovbwdy/:num|view|curl|*/*",
+            "0af02a73116d9040": "GET|/api/rdkzircngl/:num|cache,view,x|mozilla|*/*",
+            "0b67c6854d7a0291": "GET|/api/iyypgxqzdk/:num|debug,ts|curl|*/*",
+            "0e1298f0a6edc187": "GET|/api/bfnhiidgeu/:num|feature,page,x|node|*/*",
+            "0fbb6192c41d3567": "GET|/api/rqnpddryka/:num|sort|node|*/*",
+            "106eb89d7bd7b89f": "GET|/api/dcgarduavd/:num|cache,filter,view,z|mozilla|*/*",
+            "11507248cc184e1f": "GET|/api/eyorbkeuga/:num|cache|curl|*/*",
+            "14fc6feff72f6cbe": "GET|/api/xwntgmtwhi/:num|x|curl|*/*",
+            "159927d535d16654": "GET|/api/lgyvpeszey/:num|page|mozilla|*/*",
+            "16941822f9c22b8c": "GET|/api/mjjlitomry/:num|client,debug|curl|*/*",
+            "18d3166c33b77a81": "GET|/api/ibdyriikhp/:num|b,session,ts,z|mozilla|*/*",
+            "1a8d55d636bb97a3": "GET|/api/ryycpktgrp/:num|cache,ref,session|node|*/*",
+            "1a94392634b1407b": "GET|/api/otipbrucpo/:num|a,filter|python|*/*",
+            "1aabc6abacc78941": "GET|/api/fmmvoihpxz/:num|cursor,feature,sort|mozilla|*/*",
+            "1b35b983e1788fbb": "GET|/api/wbawdnetyv/:num|region,x,y|node|*/*",
+            "1c52a93bf4b12623": "GET|/api/gemcuepkjk/:num|region,session|python|*/*",
+            "202a72f7d1a1c735": "GET|/api/upqkvwfleb/:num|cache,client,session,sort|python|*/*",
+            "20ab9b3c4fd5e46f": "GET|/api/pcbiqpeudr/:num|ts|python|*/*",
+            "221a09d9523177e0": "GET|/api/wqgoemdjvv/:num|b,ts|mozilla|*/*",
+            "245d8c187a31c286": "GET|/api/ddtovgpocc/:num|x|curl|*/*",
+            "26c153d4a108a9da": "GET|/api/nbqybydafh/:num|client,debug,ref|mozilla|*/*",
+            "28e2fc715cfc6488": "GET|/api/ocdrqwuvhj/:num|ref,sort,view|node|*/*",
+            "2affbae3e15a9148": "GET|/api/eohsnvpiev/:num|b,cursor|python|*/*",
+            "2c3470fad2193baf": "GET|/api/asghkapkyw/:num|x|mozilla|*/*",
+            "2cd88e9e4c0ddf4a": "GET|/api/jemxmgywvj/:num|region,view,z|python|*/*",
+            "2e2dfcc32224e368": "GET|/api/iqvhhtwmun/:num|sort,view,y|node|*/*",
+            "306468b03e0e11de": "GET|/api/dpbzhvautk/:num|session,sort|node|*/*",
+            "32eaca1ca1fc38cf": "GET|/api/ltuodjypgz/:num|b,sort|python|*/*",
+            "33f4e37b57d4f189": "GET|/api/tlwqpieawc/:num|cursor,q,session,sort|curl|*/*",
+            "396ba04fb5f3ca51": "GET|/api/mmjsahnivk/:num|filter,view,y,z|mozilla|*/*",
+            "39d0e00affd3234e": "GET|/api/yzxgrkddmg/:num|client,feature,q,x|python|*/*",
+            "3d6946eeeb46bbe8": "GET|/api/lorqpmxfwf/:num|client,filter,region|curl|*/*",
+            "3d75520fdc5061f4": "GET|/api/nxjnloyktz/:num|region,session|python|*/*",
+            "429862d279cd3950": "GET|/api/ayjlzfnowo/:num|filter,page,ref,sort|curl|*/*",
+            "42c781eea03efa98": "GET|/api/nnaqrvoehf/:num|region,ts,x|python|*/*",
+            "439f12832483d370": "GET|/api/apdgtpixvb/:num|debug,q,sort|curl|*/*",
+            "465c82211cc0666d": "GET|/api/kmlozhcmrf/:num|a,client,cursor,id|curl|*/*",
+            "46bcf95f221b2477": "GET|/api/aoftnjwfet/:num|cache,region,session|python|*/*",
+            "4be1ba6b4315fbbd": "GET|/api/rgnvrllxaj/:num|page,x,y|curl|*/*",
+            "4c62c316cf9b8050": "GET|/api/ksmzjnbkut/:num|region,z|mozilla|*/*",
+            "4ddc93bffabf5a6a": "GET|/api/stmxmgszbz/:num|debug,view,x|mozilla|*/*",
+            "4e8a3a3de76ec106": "GET|/api/janbrsxmxu/:num|id,view,y|curl|*/*",
+            "51766e3e474d83b8": "GET|/api/etevcltkwb/:num|id,ts,x|curl|*/*",
+            "5216112967f9638a": "GET|/api/dbbnrbvydz/:num|b,z|curl|*/*",
+            "52681f560ebaa2ca": "GET|/api/pnnxnmafgh/:num|session|curl|*/*",
+            "526e057adfed86ce": "GET|/api/ikbdkwlujt/:num|client,debug,filter,region|python|*/*",
+            "545bf893b1ecb0e3": "GET|/api/mfttgvhlrm/:num|feature,ts,z|mozilla|*/*",
+            "54d0f51445fae4b1": "GET|/api/msasangyhq/:num|debug,view|mozilla|*/*",
+            "55fc3b960c701c8a": "GET|/api/fctlcydszr/:num|feature,page|curl|*/*",
+            "5931cbc53d84a83b": "GET|/api/xkvavvcnst/:num|page,sort,ts,x|python|*/*",
+            "5946f46549e7f31e": "GET|/api/tecxjdwjah/:num|cache,q,ts,view|node|*/*",
+            "5ba5061017220552": "GET|/api/kojfljpzfz/:num|filter,page,session|python|*/*",
+            "603c5d30960fe5c7": "GET|/api/kpkbndokno/:num|cache,q,region|mozilla|*/*",
+            "60fca96dbb0be917": "GET|/api/cbiwuzqnsr/:num|feature,q,view|mozilla|*/*",
+            "63cb14060384645c": "GET|/api/dcqeyvswub/:num|z|mozilla|*/*",
+            "63cd63784124be8e": "GET|/api/rahwpuwats/:num|a,cache,filter,x|curl|*/*",
+            "64920fafa7b3f96a": "GET|/api/vkshxymnjj/:num|filter,ts|mozilla|*/*",
+            "6515355eeacbb00a": "GET|/api/jdvxodzdyn/:num|ts|mozilla|*/*",
+            "65f546a02c1c11c8": "GET|/api/ejmgwilvko/:num|a,b,sort,ts|python|*/*",
+            "685781c63ad48ebb": "GET|/api/ikoqqotrwz/:num|b,session,ts,x|python|*/*",
+            "6897881433eda30e": "GET|/api/ezquakmdov/:num|region,z|mozilla|*/*",
+            "6950aa4c9b6a7ccf": "GET|/api/elphquvzdg/:num|debug,filter,id,region|node|*/*",
+            "6b07a07049649bad": "GET|/api/vcgwbfmruo/:num|feature,session,view,y|curl|*/*",
+            "6cee48f566132c0c": "GET|/api/bbauzffyfy/:num|feature,ref,session|mozilla|*/*",
+            "6d39583df7c35530": "GET|/api/uyadfozkph/:num|client,ref,session|mozilla|*/*",
+            "6d751bedda6dca26": "GET|/api/nehftbttzf/:num|cursor|mozilla|*/*",
+            "6e1957beb64c3153": "GET|/api/hszcnxztpi/:num|filter,q,x|python|*/*",
+            "6efb83f2d3fd8d9e": "GET|/api/iwweadgbny/:num|debug,sort,y|python|*/*",
+            "6fa5e97bab70323c": "GET|/api/tfikrfojrp/:num|q,session,view|mozilla|*/*",
+            "70cd83d486db63b8": "GET|/api/hgdwjzstpv/:num|page,ref,ts,view|curl|*/*",
+            "715872bfb9c2fed0": "GET|/api/jetufyerpy/:num|client,y|node|*/*",
+            "72516c88a4f3fff5": "GET|/api/noauihddfq/:num|b,feature,filter,q|node|*/*",
+            "725d13feb3d27ed8": "GET|/api/zwfmknwsea/:num|client,debug,ref,y|python|*/*",
+            "7535d454c5c419fc": "GET|/api/tmmhborypj/:num|y|curl|*/*",
+            "7818d291c6508bfc": "GET|/api/bnkgdgcdqi/:num|client,page,view|mozilla|*/*",
+            "7983ed14b0621e85": "GET|/api/rkpmgifcbw/:num|b|curl|*/*",
+            "79f1f258dc2d5212": "GET|/api/hrgxeplidw/:num|region,sort,view|curl|*/*",
+            "7a5ae7e6ba8db691": "GET|/api/vldhtgnykh/:num|id|node|*/*",
+            "7cc8bc452564a748": "GET|/api/azfeizfofh/:num|debug,sort|mozilla|*/*",
+            "7eaedcfd3eb88cac": "GET|/api/yvuuvicond/:num|b,cache,view|curl|*/*",
+            "7eb1408e650afd23": "GET|/api/izlfzlxhwk/:num|a|curl|*/*",
+            "8057039b51946d07": "GET|/api/ryfihwkkjn/:num|b,filter,q|python|*/*",
+            "8085f0c1401beec2": "GET|/api/mdsvsaooep/:num|q,view|curl|*/*",
+            "80d3eb722e92e8c4": "GET|/api/puupmkfoqj/:num|id,region|mozilla|*/*",
+            "83e78ff107ddabcf": "GET|/api/dqrjhndtgv/:num|client,debug|curl|*/*",
+            "8573821f95565eef": "GET|/api/yfrlyntnln/:num|client,cursor,q,sort|mozilla|*/*",
+            "8696919deec70cba": "GET|/api/wrnfykmgnu/:num|filter,ref,region,z|mozilla|*/*",
+            "880dd7bce5b96d4a": "GET|/api/amqhigdrmz/:num|debug,session,x,z|python|*/*",
+            "8b6f0a8254a23d67": "GET|/api/dljrmomucl/:num|debug|python|*/*",
+            "8cf12b428f480745": "GET|/api/lhoqaihsle/:num|a,client,region,sort|curl|*/*",
+            "8d1af861ca002abe": "GET|/api/ycernubjvh/:num|a,feature,session,x|node|*/*",
+            "8e031151bab9846c": "GET|/api/tvqebymjxa/:num|filter,q,ts|python|*/*",
+            "8e84321c95cc02ec": "GET|/api/mbvqqnrqce/:num|debug,q,region,ts|mozilla|*/*",
+            "8ece08efe604f768": "GET|/api/ximklcgsjf/:num|page,ref,sort,view|node|*/*",
+            "920eed0348065008": "GET|/api/hhsprrddzr/:num|session,x|python|*/*",
+            "93191a1dce0fb4aa": "GET|/api/wdvompwnir/:num|cursor,ref,ts|node|*/*",
+            "95b791124300ef28": "GET|/api/fajschaidu/:num|a,z|curl|*/*",
+            "96cbbe2738305064": "GET|/api/fhkrcjutop/:num|view|mozilla|*/*",
+            "97782d04e047c3d4": "GET|/api/xtbkdtyqya/:num|page,q,z|curl|*/*",
+            "999f9d8d86eb5a82": "GET|/api/owmvyskgyq/:num|filter,ref,ts|python|*/*",
+            "9aa457608d0bcff4": "GET|/api/vquqgswatc/:num|b,page|curl|*/*",
+            "9ab9e84eda4d8529": "GET|/api/aqcxxdvxus/:num|view|curl|*/*",
+            "9b8dc1ac8e1caeaa": "GET|/api/kyprxuutzm/:num|client,feature,region,y|curl|*/*",
+            "9c0d09e25a73ef00": "GET|/api/amozjzmdun/:num|cache|curl|*/*",
+            "9fada1e7bf061ce1": "GET|/api/argrzirnzc/:num|a,page|python|*/*",
+            "a10cb093ab087d48": "GET|/api/oixhpbhlgd/:num|id,region,ts|mozilla|*/*",
+            "a43557746351b5e4": "GET|/api/huhbhblpfj/:num|feature,ts,x,y|node|*/*",
+            "a5756b5ddedea9e6": "GET|/api/ltaawjntru/:num|y|python|*/*",
+            "a61ad383f685c8c1": "GET|/api/igoovuitxl/:num|region|python|*/*",
+            "a982a27642455793": "GET|/api/enynmxbiup/:num|region,view,z|python|*/*",
+            "aa750da2d97d029c": "GET|/api/hihwvbaffa/:num|region,sort,view,x|mozilla|*/*",
+            "ac5535ce7b922b72": "GET|/api/xwrxujqrsi/:num|feature,x|curl|*/*",
+            "ad3da7bef5207a2c": "GET|/api/kxkxptcmpf/:num|id|node|*/*",
+            "adee7f99412d68c9": "GET|/api/yuondhbflr/:num|y|mozilla|*/*",
+            "b153f86295aa43ec": "GET|/api/inxpcdixxo/:num|ref|mozilla|*/*",
+            "b2914d6cf3ade548": "GET|/api/edqblgypul/:num|b,feature,id,y|python|*/*",
+            "b51a8c2760784777": "GET|/api/ellqczjfck/:num|id|python|*/*",
+            "b577a7ce8872a0a6": "GET|/api/meifbohucf/:num|cache,client,debug,ts|curl|*/*",
+            "b5829eac34e96e71": "GET|/api/gvjumibxad/:num|b,view,x|curl|*/*",
+            "b9cc5f8fba5982fc": "GET|/api/sdhbdbwwfg/:num|feature,id,x|python|*/*",
+            "baaaa07646fa03b9": "GET|/api/wgrlaibrii/:num|a,cache,debug|python|*/*",
+            "bb28da88bc5e4784": "GET|/api/fvnufnjuth/:num|b,q|python|*/*",
+            "bb8292aef175ad5e": "GET|/api/zwdflwpxcn/:num|page,view,x|mozilla|*/*",
+            "bd0787bb995efc98": "GET|/api/xduptieflq/:num|cache,ts|mozilla|*/*",
+            "be51e3f98e361a39": "GET|/api/qovkoemkaf/:num|b,ref,region,view|curl|*/*",
+            "c5bdff233808472d": "GET|/api/hmyffcgbne/:num|view,x|python|*/*",
+            "c6cc245bfede62e1": "GET|/api/bbperdlciw/:num|session|mozilla|*/*",
+            "c6d160a1f082f4b1": "GET|/api/suacvqhzbi/:num|cache,q,ref,x|python|*/*",
+            "c91944fd60156c6f": "GET|/api/mdsfsignqk/:num|debug,view,y|mozilla|*/*",
+            "cc71b12c38f35f4b": "GET|/api/fhxxdqyqbp/:num|page|mozilla|*/*",
+            "cce4cd99f514a580": "GET|/api/svbmuawmtc/:num|b,z|curl|*/*",
+            "ce7bd8e3aa61b15a": "GET|/api/cfyfemaofk/:num|a,cursor,q|curl|*/*",
+            "d1a10756becf8f6f": "GET|/api/uvwqzpsoax/:num|client,sort,y|python|*/*",
+            "d3606378404b103e": "GET|/api/nhfttvsdoz/:num|page|mozilla|*/*",
+            "d4e6b3f03e6ca5a4": "GET|/api/gnfrqhhlln/:num|cache,y|node|*/*",
+            "d68572f9da59d4e8": "GET|/api/pevlliinlh/:num|feature|curl|*/*",
+            "da5beeccb845664d": "GET|/api/rmgqicedyc/:num|b,debug,y|curl|*/*",
+            "e03da93f1ecfd098": "GET|/api/aatmxaaftk/:num|cursor,sort,y|mozilla|*/*",
+            "e0d6b354f6660caa": "GET|/api/wyrggxmjyg/:num|debug,ref|curl|*/*",
+            "e202ef88688d3ed2": "GET|/api/inamaytyli/:num|client,id|node|*/*",
+            "e2ff37977a528a57": "GET|/api/qszfmzoosa/:num|b,ref,x|python|*/*",
+            "e8d5e88ad3c00309": "GET|/api/alughlxnar/:num|cursor,page,ref|node|*/*",
+            "ef66d5cef67ebca4": "GET|/api/gsixnatspt/:num|cache,filter,z|python|*/*",
+            "f24e05d186883042": "GET|/api/szhbkxtlwi/:num|debug,region,ts,view|mozilla|*/*",
+            "f2bc6bec328d44fd": "GET|/api/rosqwamwbz/:num|id|curl|*/*",
+            "f2f1a7cf87496477": "GET|/api/noimaezmwf/:num|cache,page,q,ref|curl|*/*",
+            "f6697dea2ac5eb29": "GET|/api/lrvlwotxcy/:num|page,q,ts,view|mozilla|*/*",
+            "f7910039700d3d65": "GET|/api/yuvjxmarun/:num|ref,region,session|curl|*/*",
+            "f7c24141e1ca9acb": "GET|/api/tgslqzttyy/:num|feature,page|mozilla|*/*",
+            "f86737ec910abb5d": "GET|/api/ltcgtcufxi/:num|q|curl|*/*",
+            "f876b5945eafcb18": "GET|/api/osmyatixyw/:num|debug,z|curl|*/*",
+            "fa79f3a336f5d476": "GET|/api/xcfnucmfud/:num|z|mozilla|*/*",
+            "fb38b16e947464aa": "GET|/api/qpyzutcoql/:num|a,cache,x|node|*/*",
+            "fe26911630f00700": "GET|/api/mqkixyadbj/:num|debug,id,y,z|curl|*/*",
+            "fea559b368899cb3": "GET|/api/saibxvbzbb/:num|b,ref,session|python|*/*",
+            "ff8345cd380b81a1": "GET|/api/thcwhtmfjn/:num|cache,client,debug,page|python|*/*"
+          },
+          "unique_signatures": 161
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true
+        },
+        "trusted_xff": true
+      }
+    }
+  },
+  "signature_threshold_per_second": 60,
+  "workdir": "/tmp/tmpnadq88og",
+  "workers": 48
+}

@@ -55,7 +55,8 @@ Return JSON only. Prefer narrow signature-based adaptive filters. Treat rate_lim
 global_rate_limited, per_ip_rate_limited, and filter_block events as strong evidence.
 Treat observed-only volume as weak evidence unless the prompt explicitly allows it.
 Do not generate commands, code execution, network instructions, broad IP blocks, or
-always-on catch-all filters."""
+always-on catch-all filters. Prefer path_shape over broad path_prefix filters when
+many unique signatures share the same high-entropy path shape."""
 
 STRONG_ATTACK_REASONS = {
     "rate_limited",
@@ -107,7 +108,7 @@ def read_events(path: Path, max_events: int) -> list[dict[str, Any]]:
     return events
 
 
-def deterministic_filters(
+def deterministic_signature_filters(
     events: list[dict[str, Any]],
     min_count: int,
     ttl_seconds: int,
@@ -150,6 +151,77 @@ def deterministic_filters(
     return filters
 
 
+def deterministic_path_shape_filters(
+    events: list[dict[str, Any]],
+    min_count: int,
+    ttl_seconds: int,
+    learn_observed: bool = False,
+) -> list[dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
+    for event in events:
+        shape = event.get("path_shape")
+        if isinstance(shape, str) and shape and ":token" in shape:
+            grouped[shape].append(event)
+
+    filters = []
+    for shape, group in sorted(grouped.items(), key=lambda item: len(item[1]), reverse=True):
+        signatures = {event["signature"] for event in group if isinstance(event.get("signature"), str)}
+        if len(signatures) < min_count:
+            continue
+        strong_count = sum(1 for event in group if event.get("reason") in STRONG_ATTACK_REASONS)
+        global_count = sum(1 for event in group if event.get("reason") == "global_observed")
+        if (
+            strong_count < min_count
+            and global_count < min_count
+            and not (learn_observed and len(group) >= min_count)
+        ):
+            continue
+        sample = group[-1]
+        filters.append(
+            {
+                "id": safe_id(f"codex-learned-shape-{shape}"),
+                "enabled": True,
+                "adaptive": True,
+                "priority": 90,
+                "ttl_seconds": ttl_seconds,
+                "condition": {
+                    "path_shape": shape,
+                },
+                "action": {
+                    "kind": "block",
+                    "status": 403,
+                    "body": "blocked by adaptive filter\n",
+                },
+                "metadata": {
+                    "source": "deterministic-path-shape",
+                    "sample_path": sample.get("path"),
+                    "sample_user_agent": sample.get("user_agent"),
+                    "event_count": len(group),
+                    "unique_signatures": len(signatures),
+                    "strong_event_count": strong_count,
+                    "global_observed_count": global_count,
+                },
+            }
+        )
+    return filters
+
+
+def deterministic_filters(
+    events: list[dict[str, Any]],
+    min_count: int,
+    ttl_seconds: int,
+    learn_observed: bool = False,
+) -> list[dict[str, Any]]:
+    shape_filters = deterministic_path_shape_filters(events, min_count, ttl_seconds, learn_observed)
+    signature_filters = deterministic_signature_filters(events, min_count, ttl_seconds, learn_observed)
+    merged: dict[str, dict[str, Any]] = {}
+    for item in shape_filters + signature_filters:
+        key = filter_key(sanitize_filter(item, ttl_seconds))
+        if key != "id:":
+            merged[key] = item
+    return list(merged.values())
+
+
 def build_prompt(events: list[dict[str, Any]], min_count: int, ttl_seconds: int) -> dict[str, Any]:
     return {
         "task": "Analyze these AlturaProt HTTP attack events and propose defensive adaptive filters.",
@@ -157,12 +229,13 @@ def build_prompt(events: list[dict[str, Any]], min_count: int, ttl_seconds: int)
             "Output JSON only.",
             "Use only this schema: {\"filters\":[FilterRule...]}",
             "FilterRule fields: id, enabled, adaptive, priority, ttl_seconds, condition, action.",
-            "condition may only contain signature, methods, path_exact, path_prefix, path_contains, query_contains, user_agent_contains, headers.",
+            "condition may only contain signature, methods, path_exact, path_prefix, path_contains, path_shape, query_contains, user_agent_contains, headers.",
             "action must be {\"kind\":\"block\",\"status\":403,\"body\":\"blocked by adaptive filter\\n\"}.",
             "Prefer events whose reason is rate_limited, global_rate_limited, per_ip_rate_limited, or filter_block.",
             "Observed-only volume is weak evidence; use it only when allow_observed_learning is true.",
             "For every strong signature group at or above min_count, include at least one adaptive signature filter unless a narrower condition is clearly safer.",
             "Prefer signature conditions. Add path/user-agent conditions only when they are obvious and reduce false positives.",
+            "If many observed events have unique signatures but the same path_shape, prefer a path_shape filter over a broad /api path_prefix filter.",
             "Do not suggest shell commands, code execution, network calls, broad always-on blocks, or always-active rules.",
         ],
         "min_count": min_count,
@@ -430,6 +503,7 @@ def sanitize_filter(item: dict[str, Any], ttl_seconds: int) -> dict[str, Any]:
         "path_exact",
         "path_prefix",
         "path_contains",
+        "path_shape",
         "query_contains",
         "user_agent_contains",
     ]:
@@ -477,16 +551,13 @@ def merge_strong_coverage(
     ttl_seconds: int,
 ) -> list[dict[str, Any]]:
     merged = [sanitize_filter(item, ttl_seconds) for item in provider_filters]
-    covered_signatures = {
-        item.get("condition", {}).get("signature")
-        for item in merged
-        if isinstance(item.get("condition"), dict) and item.get("condition", {}).get("signature")
-    }
+    covered_keys = {filter_key(sanitize_filter(item, ttl_seconds)) for item in merged}
     for fallback in deterministic_filters(events, min_count, ttl_seconds, learn_observed=False):
-        signature = fallback.get("condition", {}).get("signature")
-        if signature and signature not in covered_signatures:
-            merged.append(sanitize_filter(fallback, ttl_seconds))
-            covered_signatures.add(signature)
+        clean = sanitize_filter(fallback, ttl_seconds)
+        key = filter_key(clean)
+        if key != "id:" and key not in covered_keys:
+            merged.append(clean)
+            covered_keys.add(key)
     return merged
 
 
@@ -517,8 +588,12 @@ def read_filter_file(path: Path) -> list[dict[str, Any]]:
 
 def filter_key(item: dict[str, Any]) -> str:
     condition = item.get("condition", {})
-    if isinstance(condition, dict) and isinstance(condition.get("signature"), str):
+    if not isinstance(condition, dict):
+        return f"id:{item.get('id', '')}"
+    if isinstance(condition.get("signature"), str):
         return f"signature:{condition['signature']}"
+    if isinstance(condition.get("path_shape"), str):
+        return f"path_shape:{condition['path_shape']}"
     return f"id:{item.get('id', '')}"
 
 
