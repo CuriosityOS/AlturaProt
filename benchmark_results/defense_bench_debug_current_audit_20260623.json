@@ -1,0 +1,3073 @@
+{
+  "analyzer_wait_seconds": 30.0,
+  "duration_seconds": 1.0,
+  "generated_at_utc": "2026-06-23T06:19:24Z",
+  "path_shape_rps": 80,
+  "per_ip_rps": 80,
+  "preset": "custom",
+  "provider": "deterministic",
+  "safety": "loopback-only; spoof cases use X-Forwarded-For headers from trusted localhost, not packet spoofing",
+  "scenarios": {
+    "catalog-mimic-xff": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "error_samples": [],
+        "errors": 0,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "hung_workers": 0,
+        "latency_ms": {
+          "p50": 0.562,
+          "p95": 1.348,
+          "p99": 1.788
+        },
+        "limited_percent": 0.0,
+        "requests": 12481,
+        "requests_per_second": 12466.57,
+        "statuses": {
+          "204": 12481
+        },
+        "workers": 8
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-45907.json via deterministic",
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-45907.json via deterministic",
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-45907.json via deterministic",
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-45907.json via deterministic",
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-45907.json via deterministic",
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-45907.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.534,
+            "p95": 0.607,
+            "p99": 0.641
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.34,
+          "statuses": {
+            "403": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.03,
+          "blocked_percent": 0.09,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.913,
+          "first_limit_seconds": 0.016,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.018,
+            "p95": 1.709,
+            "p99": 2.051
+          },
+          "limited_percent": 97.88,
+          "requests": 7504,
+          "requests_per_second": 7496.17,
+          "statuses": {
+            "204": 152,
+            "403": 7,
+            "429": 7345
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.16,
+          "attacker_limited_percent": 97.84,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 140,
+          "first_detection_seconds": 0.012,
+          "reasons": {
+            "filter_block": 2,
+            "global_observed": 127,
+            "observed": 3,
+            "trusted_proxy_rate_limited": 8
+          },
+          "signature_bases": {
+            "468be90e5bccfe55": "GET|/api/catalog/:num|page,sort|python|*/*",
+            "5eb798107da66b93": "GET|/api/catalog/:num|page,sort|node|*/*",
+            "88914be7dea91355": "GET|/api/catalog/:num|page,sort|curl|*/*",
+            "fd80e711c8b8dfbb": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-catalog-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-fd80e711c8b8dfbb",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "fd80e711c8b8dfbb",
+            "signature_basis": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-468be90e5bccfe55",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "468be90e5bccfe55",
+            "signature_basis": "GET|/api/catalog/:num|page,sort|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-88914be7dea91355",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "88914be7dea91355",
+            "signature_basis": "GET|/api/catalog/:num|page,sort|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5eb798107da66b93",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5eb798107da66b93",
+            "signature_basis": "GET|/api/catalog/:num|page,sort|node|*/*"
+          }
+        ],
+        "filter_write_seconds": 1.001,
+        "filters_learned": 5,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/catalog/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-catalog-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "fd80e711c8b8dfbb"
+            },
+            "enabled": true,
+            "id": "codex-learned-fd80e711c8b8dfbb",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "468be90e5bccfe55"
+            },
+            "enabled": true,
+            "id": "codex-learned-468be90e5bccfe55",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "88914be7dea91355"
+            },
+            "enabled": true,
+            "id": "codex-learned-88914be7dea91355",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5eb798107da66b93"
+            },
+            "enabled": true,
+            "id": "codex-learned-5eb798107da66b93",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "metrics_delta": {
+          "altura_http_blocked": 192,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 14577,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 14577
+        },
+        "metrics_errors": [],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 2.16,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": 0.015,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.025,
+            "p95": 1.748,
+            "p99": 2.148
+          },
+          "limited_percent": 97.84,
+          "requests": 7392,
+          "requests_per_second": 7384.58,
+          "statuses": {
+            "403": 160,
+            "429": 7232
+          },
+          "workers": 8
+        },
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.16,
+          "attacker_limited_percent": 97.84,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 2 filters to /tmp/tmpyvtzdnor/filters-56501.json via deterministic",
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-56501.json via deterministic",
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-56501.json via deterministic",
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-56501.json via deterministic",
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-56501.json via deterministic",
+          "wrote 5 filters to /tmp/tmpyvtzdnor/filters-56501.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.537,
+            "p95": 0.606,
+            "p99": 0.651
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.38,
+          "statuses": {
+            "403": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.03,
+          "blocked_percent": 0.11,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.914,
+          "first_limit_seconds": 0.016,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.013,
+            "p95": 1.725,
+            "p99": 2.137
+          },
+          "limited_percent": 97.86,
+          "requests": 7472,
+          "requests_per_second": 7465.57,
+          "statuses": {
+            "204": 152,
+            "403": 8,
+            "429": 7312
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.13,
+          "attacker_limited_percent": 97.87,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 143,
+          "first_detection_seconds": 0.013,
+          "reasons": {
+            "filter_block": 3,
+            "global_observed": 127,
+            "observed": 4,
+            "trusted_proxy_rate_limited": 9
+          },
+          "signature_bases": {
+            "468be90e5bccfe55": "GET|/api/catalog/:num|page,sort|python|*/*",
+            "5eb798107da66b93": "GET|/api/catalog/:num|page,sort|node|*/*",
+            "88914be7dea91355": "GET|/api/catalog/:num|page,sort|curl|*/*",
+            "fd80e711c8b8dfbb": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-catalog-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-88914be7dea91355",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "88914be7dea91355",
+            "signature_basis": "GET|/api/catalog/:num|page,sort|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 1.001,
+        "filters_learned": 2,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/catalog/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-catalog-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "88914be7dea91355"
+            },
+            "enabled": true,
+            "id": "codex-learned-88914be7dea91355",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "metrics_delta": {
+          "altura_http_blocked": 192,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 14620,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 14620
+        },
+        "metrics_errors": [],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 2.13,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.002,
+          "first_limit_seconds": 0.015,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.02,
+            "p95": 1.726,
+            "p99": 2.124
+          },
+          "limited_percent": 97.87,
+          "requests": 7467,
+          "requests_per_second": 7459.87,
+          "statuses": {
+            "403": 159,
+            "429": 7308
+          },
+          "workers": 8
+        },
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.13,
+          "attacker_limited_percent": 97.87,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "path_shape_rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.649,
+            "p95": 0.699,
+            "p99": 0.755
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.23,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.18,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.016,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.037,
+            "p95": 1.777,
+            "p99": 2.181
+          },
+          "limited_percent": 97.82,
+          "requests": 7342,
+          "requests_per_second": 7333.98,
+          "statuses": {
+            "204": 160,
+            "429": 7182
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 97.82,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 97.82,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 72,
+          "first_detection_seconds": 0.012,
+          "reasons": {
+            "global_observed": 64,
+            "observed": 4,
+            "path_shape_rate_limited": 4
+          },
+          "signature_bases": {
+            "468be90e5bccfe55": "GET|/api/catalog/:num|page,sort|python|*/*",
+            "5eb798107da66b93": "GET|/api/catalog/:num|page,sort|node|*/*",
+            "88914be7dea91355": "GET|/api/catalog/:num|page,sort|curl|*/*",
+            "fd80e711c8b8dfbb": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "path-shape-rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 7182,
+          "altura_http_rate_limited": 7182,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.642,
+            "p95": 0.709,
+            "p99": 0.754
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.26,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.102,
+            "p95": 1.792,
+            "p99": 2.131
+          },
+          "limited_percent": 0.0,
+          "requests": 6980,
+          "requests_per_second": 6973.62,
+          "statuses": {
+            "204": 6980
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 0,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.655,
+            "p95": 0.682,
+            "p99": 0.692
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.24,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.24,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.017,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.061,
+            "p95": 1.844,
+            "p99": 2.321
+          },
+          "limited_percent": 97.76,
+          "requests": 7108,
+          "requests_per_second": 7100.54,
+          "statuses": {
+            "204": 159,
+            "429": 6949
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 97.76,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 97.76,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 70,
+          "first_detection_seconds": 0.012,
+          "reasons": {
+            "global_observed": 64,
+            "observed": 2,
+            "trusted_proxy_rate_limited": 4
+          },
+          "signature_bases": {
+            "468be90e5bccfe55": "GET|/api/catalog/:num|page,sort|python|*/*",
+            "5eb798107da66b93": "GET|/api/catalog/:num|page,sort|node|*/*",
+            "88914be7dea91355": "GET|/api/catalog/:num|page,sort|curl|*/*",
+            "fd80e711c8b8dfbb": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 6949,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 6949
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.534,
+            "p95": 0.619,
+            "p99": 0.677
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.36,
+          "statuses": {
+            "403": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.051,
+            "p95": 1.804,
+            "p99": 2.178
+          },
+          "limited_percent": 0.0,
+          "requests": 7233,
+          "requests_per_second": 7225.7,
+          "statuses": {
+            "403": 7233
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 100.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 71,
+          "first_detection_seconds": 0.006,
+          "reasons": {
+            "filter_block": 6,
+            "global_observed": 62,
+            "observed": 3
+          },
+          "signature_bases": {
+            "468be90e5bccfe55": "GET|/api/catalog/:num|page,sort|python|*/*",
+            "5eb798107da66b93": "GET|/api/catalog/:num|page,sort|node|*/*",
+            "88914be7dea91355": "GET|/api/catalog/:num|page,sort|curl|*/*",
+            "fd80e711c8b8dfbb": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 7258,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 0,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      }
+    },
+    "xff-polymorphic": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "error_samples": [],
+        "errors": 0,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "hung_workers": 0,
+        "latency_ms": {
+          "p50": 0.778,
+          "p95": 1.838,
+          "p99": 2.514
+        },
+        "limited_percent": 0.0,
+        "requests": 9017,
+        "requests_per_second": 9005.07,
+        "statuses": {
+          "204": 9017
+        },
+        "workers": 8
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "wrote 44 filters to /tmp/tmpyvtzdnor/filters-46847.json via deterministic",
+          "wrote 46 filters to /tmp/tmpyvtzdnor/filters-46847.json via deterministic",
+          "wrote 48 filters to /tmp/tmpyvtzdnor/filters-46847.json via deterministic",
+          "wrote 77 filters to /tmp/tmpyvtzdnor/filters-46847.json via deterministic",
+          "wrote 77 filters to /tmp/tmpyvtzdnor/filters-46847.json via deterministic",
+          "wrote 77 filters to /tmp/tmpyvtzdnor/filters-46847.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.652,
+            "p95": 0.742,
+            "p99": 0.838
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.22,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.16,
+          "blocked_percent": 0.11,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.913,
+          "first_limit_seconds": 0.016,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.076,
+            "p95": 1.856,
+            "p99": 2.3
+          },
+          "limited_percent": 97.73,
+          "requests": 7037,
+          "requests_per_second": 7029.5,
+          "statuses": {
+            "204": 152,
+            "403": 8,
+            "429": 6877
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.22,
+          "attacker_limited_percent": 97.78,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 133,
+          "first_detection_seconds": 0.013,
+          "reasons": {
+            "filter_block": 3,
+            "global_observed": 128,
+            "trusted_proxy_rate_limited": 2
+          },
+          "signature_bases": {
+            "021f9d0eb9168d42": "GET|/api/mrtalmpmfh/:num|b,cache,page,sort|mozilla|*/*",
+            "0223b16641a28341": "GET|/api/wcvzptjced/:num|x|mozilla|*/*",
+            "0328b431cb15be18": "GET|/api/aqpuixjtvo/:num|a,cursor,feature,view|mozilla|*/*",
+            "041042251aab5b9f": "GET|/api/znkpfcjjtk/:num|feature,id,q,ref|curl|*/*",
+            "08385e1e8fce5ed2": "GET|/api/jdydzelnci/:num|ref|node|*/*",
+            "08fb6e4432807ada": "GET|/api/obamlqdqqk/:num|b|curl|*/*",
+            "1492a2126cab15af": "GET|/api/zjjywzvpgw/:num|x|curl|*/*",
+            "15a6d3b1cda90f31": "GET|/api/aronciqsfw/:num|client|curl|*/*",
+            "15f193452b0a6852": "GET|/api/qogefseugw/:num|sort,x,z|node|*/*",
+            "16850c466a792147": "GET|/api/oneutaxwqq/:num|cache,view|python|*/*",
+            "17bb7009542cadb7": "GET|/api/wsejdcjbmi/:num|z|curl|*/*",
+            "18f29a9be53fcaa5": "GET|/api/qmqaexyvbh/:num|cache,client,q|python|*/*",
+            "206d6795e567e689": "GET|/api/voasfzfmum/:num|debug,q,z|python|*/*",
+            "24b5636fcb339f25": "GET|/api/zhkcejwfzk/:num|q|node|*/*",
+            "2618334a4c11565f": "GET|/api/jwxeqgidab/:num|feature|curl|*/*",
+            "2b49a63ac3a1c36e": "GET|/api/sbsmxzgojd/:num|client,cursor,view|python|*/*",
+            "323955902b1fc0b8": "GET|/api/dkugsnznah/:num|a,ref|mozilla|*/*",
+            "39422b728ecf304a": "GET|/api/zewufxsqym/:num|client,ts|python|*/*",
+            "3c732ad498939bb1": "GET|/api/rcmvzgjrfc/:num|cursor,sort|curl|*/*",
+            "3d1d90a8dd699c41": "GET|/api/kmbtopomte/:num|view,y|node|*/*",
+            "3e0403e0d745cc56": "GET|/api/wnxlmxfjkd/:num|debug,feature,sort,y|curl|*/*",
+            "3e77cb190e4fdff5": "GET|/api/cwzhtcrryc/:num|view,x|node|*/*",
+            "44dbb34c001d644f": "GET|/api/iopfehioic/:num|y|mozilla|*/*",
+            "49fed3fc80637bf6": "GET|/api/swjepdvzsv/:num|cache,client,ref,ts|curl|*/*",
+            "4de78a9d63bd53e7": "GET|/api/fsyotnjgmx/:num|b,client,sort|node|*/*",
+            "511046361960c337": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|*/*",
+            "5272ef9fcad914ba": "GET|/api/ultzeqirbk/:num|id,view,x,z|curl|*/*",
+            "560f7723adabc331": "GET|/api/aptdiaqxcx/:num|feature,q|curl|*/*",
+            "56d4e7298f4a868a": "GET|/api/uaxepkghsw/:num|a,feature,ts|mozilla|*/*",
+            "59468be38f09ee70": "GET|/api/iorkaoyzwf/:num|debug,filter,sort,y|python|*/*",
+            "5df8735c90a1576e": "GET|/api/frdygyxumb/:num|a,cache,q|python|*/*",
+            "5e1b8d71790c0d58": "GET|/api/bkoqsztgzo/:num|b,cache,id|curl|*/*",
+            "6191f2462f9978e5": "GET|/api/wtobikueho/:num|b,view|python|*/*",
+            "64a7e9e1417c9597": "GET|/api/muwgllpbjg/:num|session,ts,x|python|*/*",
+            "6b07a07049649bad": "GET|/api/vcgwbfmruo/:num|feature,session,view,y|curl|*/*",
+            "6b774315452788df": "GET|/api/xcbwtelwuq/:num|cursor,page,q,sort|python|*/*",
+            "6cb86b6a2d88263e": "GET|/api/gfbqrerbut/:num|client,debug,y|curl|*/*",
+            "6e769aa2b3923ad6": "GET|/api/mlofvwhzrd/:num|z|mozilla|*/*",
+            "74c4a8802c72d171": "GET|/api/pbkliiohhs/:num|y|node|*/*",
+            "7573ff3807d9ecbf": "GET|/api/nhrcatunbq/:num|page,ts|mozilla|*/*",
+            "7af33dc2436584a9": "GET|/api/rpyqccygvs/:num|feature,id,region,session|python|*/*",
+            "7f810b04c654610b": "GET|/api/yjhgsrskwa/:num|ref|node|*/*",
+            "81342587af40d011": "GET|/api/gqwfwwtyta/:num|client|mozilla|*/*",
+            "85bba5fdf45c6f35": "GET|/api/yglbobvwjg/:num|debug|curl|*/*",
+            "8c3a4fe4eb0d6434": "GET|/api/vddzeudqwo/:num|sort,z|python|*/*",
+            "93595116bf1289fa": "GET|/api/kojgqjhxtr/:num|a,cache,region,z|node|*/*",
+            "991b6a658acb22b4": "GET|/api/bbcummdspn/:num|debug,region,view|curl|*/*",
+            "a3880dab08825e99": "GET|/api/isomynjfor/:num|cache,feature|python|*/*",
+            "aa2020cc2e05b101": "GET|/api/vechavhqth/:num|filter,id,y|python|*/*",
+            "ab813da755d33396": "GET|/api/tgmccusbzg/:num|cursor|node|*/*",
+            "abdbc41b776d581e": "GET|/api/ghbsgzoaor/:num|y|mozilla|*/*",
+            "b042b06c1a5b59be": "GET|/api/safrorofaz/:num|cursor,feature,sort|node|*/*",
+            "b28fabe2588322fb": "GET|/api/hgunprrrdq/:num|page|curl|*/*",
+            "bb30799191671ba0": "GET|/api/egcizjfcso/:num|cursor,view,y|node|*/*",
+            "bd51422a6a90b9a2": "GET|/api/fkwpirfjml/:num|region,ts|python|*/*",
+            "bed745673ca62ab9": "GET|/api/setmnmmmiv/:num|filter,y|curl|*/*",
+            "c770107581f0a46f": "GET|/api/ysqhhunxzz/:num|b|node|*/*",
+            "c7d027211d6b44df": "GET|/api/tvjhgbjtjw/:num|b,client,sort,y|python|*/*",
+            "c835ea840237f280": "GET|/api/sjbettiauf/:num|a,debug,feature|mozilla|*/*",
+            "cee34740341be7fb": "GET|/api/wtjzucimbe/:num|x|curl|*/*",
+            "cf400be34c8a1b7f": "GET|/api/kcfmbbwrpb/:num|cache,region|node|*/*",
+            "d1179eda7529f655": "GET|/api/ywwmximkku/:num|cursor,ref,region,session|node|*/*",
+            "d3797ee8fb40d299": "GET|/api/ygehcoenxr/:num|feature,session|mozilla|*/*",
+            "d465e75ad3596b85": "GET|/api/bvlascikcx/:num|feature,filter|python|*/*",
+            "d97ef9c6b5f5ffa9": "GET|/api/fgzavyywqp/:num|z|mozilla|*/*",
+            "ddfd4540816cc817": "GET|/api/maoqdlbvga/:num|cursor,id,q,region|node|*/*",
+            "e25705b1b92d1a8e": "GET|/api/qrubovjmwm/:num|a,view,x,y|curl|*/*",
+            "e7275ae78a7cfa37": "GET|/api/vopvrtlgjz/:num|a,client,region,z|mozilla|*/*",
+            "ecbacc74a9f12c5b": "GET|/api/hxfkzvgcrb/:num|a,cache,client,page|python|*/*",
+            "eec812c5d9db54df": "GET|/api/deqaptwzjn/:num|cache,client,page|curl|*/*",
+            "ef676fa1b281a85e": "GET|/api/zfpvnaietn/:num|session,x,z|curl|*/*",
+            "eff1146de3de0dc8": "GET|/api/pfpqhrpwei/:num|client,cursor,region|curl|*/*",
+            "f2341639af271920": "GET|/api/mozoouabvn/:num|a,b,cache|node|*/*",
+            "f4132affe61b9cd3": "GET|/api/egppnmzzqs/:num|a,x|python|*/*",
+            "fc5a955be60aecf8": "GET|/api/lruubufrnu/:num|ref|curl|*/*",
+            "fc81e99a354191b7": "GET|/api/kqarykbppk/:num|z|mozilla|*/*"
+          },
+          "unique_signatures": 76
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-:token-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5df8735c90a1576e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5df8735c90a1576e",
+            "signature_basis": "GET|/api/frdygyxumb/:num|a,cache,q|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-f4132affe61b9cd3",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "f4132affe61b9cd3",
+            "signature_basis": "GET|/api/egppnmzzqs/:num|a,x|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-6cb86b6a2d88263e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "6cb86b6a2d88263e",
+            "signature_basis": "GET|/api/gfbqrerbut/:num|client,debug,y|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-2618334a4c11565f",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "2618334a4c11565f",
+            "signature_basis": "GET|/api/jwxeqgidab/:num|feature|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-3d1d90a8dd699c41",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "3d1d90a8dd699c41",
+            "signature_basis": "GET|/api/kmbtopomte/:num|view,y|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-511046361960c337",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "511046361960c337",
+            "signature_basis": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-cf400be34c8a1b7f",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "cf400be34c8a1b7f",
+            "signature_basis": "GET|/api/kcfmbbwrpb/:num|cache,region|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-fc5a955be60aecf8",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "fc5a955be60aecf8",
+            "signature_basis": "GET|/api/lruubufrnu/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-b28fabe2588322fb",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "b28fabe2588322fb",
+            "signature_basis": "GET|/api/hgunprrrdq/:num|page|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-206d6795e567e689",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "206d6795e567e689",
+            "signature_basis": "GET|/api/voasfzfmum/:num|debug,q,z|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-85bba5fdf45c6f35",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "85bba5fdf45c6f35",
+            "signature_basis": "GET|/api/yglbobvwjg/:num|debug|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-cee34740341be7fb",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "cee34740341be7fb",
+            "signature_basis": "GET|/api/wtjzucimbe/:num|x|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5e1b8d71790c0d58",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5e1b8d71790c0d58",
+            "signature_basis": "GET|/api/bkoqsztgzo/:num|b,cache,id|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-041042251aab5b9f",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "041042251aab5b9f",
+            "signature_basis": "GET|/api/znkpfcjjtk/:num|feature,id,q,ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-ef676fa1b281a85e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "ef676fa1b281a85e",
+            "signature_basis": "GET|/api/zfpvnaietn/:num|session,x,z|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-08385e1e8fce5ed2",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "08385e1e8fce5ed2",
+            "signature_basis": "GET|/api/jdydzelnci/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-7f810b04c654610b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "7f810b04c654610b",
+            "signature_basis": "GET|/api/yjhgsrskwa/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-56d4e7298f4a868a",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "56d4e7298f4a868a",
+            "signature_basis": "GET|/api/uaxepkghsw/:num|a,feature,ts|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-17bb7009542cadb7",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "17bb7009542cadb7",
+            "signature_basis": "GET|/api/wsejdcjbmi/:num|z|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-d1179eda7529f655",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "d1179eda7529f655",
+            "signature_basis": "GET|/api/ywwmximkku/:num|cursor,ref,region,session|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-7af33dc2436584a9",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "7af33dc2436584a9",
+            "signature_basis": "GET|/api/rpyqccygvs/:num|feature,id,region,session|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-b042b06c1a5b59be",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "b042b06c1a5b59be",
+            "signature_basis": "GET|/api/safrorofaz/:num|cursor,feature,sort|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-fc81e99a354191b7",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "fc81e99a354191b7",
+            "signature_basis": "GET|/api/kqarykbppk/:num|z|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-ecbacc74a9f12c5b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "ecbacc74a9f12c5b",
+            "signature_basis": "GET|/api/hxfkzvgcrb/:num|a,cache,client,page|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-560f7723adabc331",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "560f7723adabc331",
+            "signature_basis": "GET|/api/aptdiaqxcx/:num|feature,q|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-eff1146de3de0dc8",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "eff1146de3de0dc8",
+            "signature_basis": "GET|/api/pfpqhrpwei/:num|client,cursor,region|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-323955902b1fc0b8",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "323955902b1fc0b8",
+            "signature_basis": "GET|/api/dkugsnznah/:num|a,ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-e25705b1b92d1a8e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "e25705b1b92d1a8e",
+            "signature_basis": "GET|/api/qrubovjmwm/:num|a,view,x,y|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-93595116bf1289fa",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "93595116bf1289fa",
+            "signature_basis": "GET|/api/kojgqjhxtr/:num|a,cache,region,z|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-64a7e9e1417c9597",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "64a7e9e1417c9597",
+            "signature_basis": "GET|/api/muwgllpbjg/:num|session,ts,x|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-bb30799191671ba0",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "bb30799191671ba0",
+            "signature_basis": "GET|/api/egcizjfcso/:num|cursor,view,y|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-49fed3fc80637bf6",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "49fed3fc80637bf6",
+            "signature_basis": "GET|/api/swjepdvzsv/:num|cache,client,ref,ts|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-0223b16641a28341",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "0223b16641a28341",
+            "signature_basis": "GET|/api/wcvzptjced/:num|x|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-d97ef9c6b5f5ffa9",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "d97ef9c6b5f5ffa9",
+            "signature_basis": "GET|/api/fgzavyywqp/:num|z|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-c835ea840237f280",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "c835ea840237f280",
+            "signature_basis": "GET|/api/sjbettiauf/:num|a,debug,feature|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-aa2020cc2e05b101",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "aa2020cc2e05b101",
+            "signature_basis": "GET|/api/vechavhqth/:num|filter,id,y|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-15f193452b0a6852",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "15f193452b0a6852",
+            "signature_basis": "GET|/api/qogefseugw/:num|sort,x,z|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-eec812c5d9db54df",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "eec812c5d9db54df",
+            "signature_basis": "GET|/api/deqaptwzjn/:num|cache,client,page|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-16850c466a792147",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "16850c466a792147",
+            "signature_basis": "GET|/api/oneutaxwqq/:num|cache,view|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-bd51422a6a90b9a2",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "bd51422a6a90b9a2",
+            "signature_basis": "GET|/api/fkwpirfjml/:num|region,ts|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-bed745673ca62ab9",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "bed745673ca62ab9",
+            "signature_basis": "GET|/api/setmnmmmiv/:num|filter,y|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-f2341639af271920",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "f2341639af271920",
+            "signature_basis": "GET|/api/mozoouabvn/:num|a,b,cache|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-7573ff3807d9ecbf",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "7573ff3807d9ecbf",
+            "signature_basis": "GET|/api/nhrcatunbq/:num|page,ts|mozilla|*/*"
+          }
+        ],
+        "filter_write_seconds": 1.001,
+        "filters_learned": 44,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/:token/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-:token-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5df8735c90a1576e"
+            },
+            "enabled": true,
+            "id": "codex-learned-5df8735c90a1576e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f4132affe61b9cd3"
+            },
+            "enabled": true,
+            "id": "codex-learned-f4132affe61b9cd3",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "6cb86b6a2d88263e"
+            },
+            "enabled": true,
+            "id": "codex-learned-6cb86b6a2d88263e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "2618334a4c11565f"
+            },
+            "enabled": true,
+            "id": "codex-learned-2618334a4c11565f",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "3d1d90a8dd699c41"
+            },
+            "enabled": true,
+            "id": "codex-learned-3d1d90a8dd699c41",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "511046361960c337"
+            },
+            "enabled": true,
+            "id": "codex-learned-511046361960c337",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "cf400be34c8a1b7f"
+            },
+            "enabled": true,
+            "id": "codex-learned-cf400be34c8a1b7f",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "fc5a955be60aecf8"
+            },
+            "enabled": true,
+            "id": "codex-learned-fc5a955be60aecf8",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "b28fabe2588322fb"
+            },
+            "enabled": true,
+            "id": "codex-learned-b28fabe2588322fb",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "206d6795e567e689"
+            },
+            "enabled": true,
+            "id": "codex-learned-206d6795e567e689",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "85bba5fdf45c6f35"
+            },
+            "enabled": true,
+            "id": "codex-learned-85bba5fdf45c6f35",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "cee34740341be7fb"
+            },
+            "enabled": true,
+            "id": "codex-learned-cee34740341be7fb",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5e1b8d71790c0d58"
+            },
+            "enabled": true,
+            "id": "codex-learned-5e1b8d71790c0d58",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "041042251aab5b9f"
+            },
+            "enabled": true,
+            "id": "codex-learned-041042251aab5b9f",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "ef676fa1b281a85e"
+            },
+            "enabled": true,
+            "id": "codex-learned-ef676fa1b281a85e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "08385e1e8fce5ed2"
+            },
+            "enabled": true,
+            "id": "codex-learned-08385e1e8fce5ed2",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "7f810b04c654610b"
+            },
+            "enabled": true,
+            "id": "codex-learned-7f810b04c654610b",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "56d4e7298f4a868a"
+            },
+            "enabled": true,
+            "id": "codex-learned-56d4e7298f4a868a",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "17bb7009542cadb7"
+            },
+            "enabled": true,
+            "id": "codex-learned-17bb7009542cadb7",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "d1179eda7529f655"
+            },
+            "enabled": true,
+            "id": "codex-learned-d1179eda7529f655",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "7af33dc2436584a9"
+            },
+            "enabled": true,
+            "id": "codex-learned-7af33dc2436584a9",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "b042b06c1a5b59be"
+            },
+            "enabled": true,
+            "id": "codex-learned-b042b06c1a5b59be",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "fc81e99a354191b7"
+            },
+            "enabled": true,
+            "id": "codex-learned-fc81e99a354191b7",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "ecbacc74a9f12c5b"
+            },
+            "enabled": true,
+            "id": "codex-learned-ecbacc74a9f12c5b",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "560f7723adabc331"
+            },
+            "enabled": true,
+            "id": "codex-learned-560f7723adabc331",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "eff1146de3de0dc8"
+            },
+            "enabled": true,
+            "id": "codex-learned-eff1146de3de0dc8",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "323955902b1fc0b8"
+            },
+            "enabled": true,
+            "id": "codex-learned-323955902b1fc0b8",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "e25705b1b92d1a8e"
+            },
+            "enabled": true,
+            "id": "codex-learned-e25705b1b92d1a8e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "93595116bf1289fa"
+            },
+            "enabled": true,
+            "id": "codex-learned-93595116bf1289fa",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "64a7e9e1417c9597"
+            },
+            "enabled": true,
+            "id": "codex-learned-64a7e9e1417c9597",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "bb30799191671ba0"
+            },
+            "enabled": true,
+            "id": "codex-learned-bb30799191671ba0",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "49fed3fc80637bf6"
+            },
+            "enabled": true,
+            "id": "codex-learned-49fed3fc80637bf6",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "0223b16641a28341"
+            },
+            "enabled": true,
+            "id": "codex-learned-0223b16641a28341",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "d97ef9c6b5f5ffa9"
+            },
+            "enabled": true,
+            "id": "codex-learned-d97ef9c6b5f5ffa9",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "c835ea840237f280"
+            },
+            "enabled": true,
+            "id": "codex-learned-c835ea840237f280",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "aa2020cc2e05b101"
+            },
+            "enabled": true,
+            "id": "codex-learned-aa2020cc2e05b101",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "15f193452b0a6852"
+            },
+            "enabled": true,
+            "id": "codex-learned-15f193452b0a6852",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "eec812c5d9db54df"
+            },
+            "enabled": true,
+            "id": "codex-learned-eec812c5d9db54df",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "16850c466a792147"
+            },
+            "enabled": true,
+            "id": "codex-learned-16850c466a792147",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "bd51422a6a90b9a2"
+            },
+            "enabled": true,
+            "id": "codex-learned-bd51422a6a90b9a2",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "bed745673ca62ab9"
+            },
+            "enabled": true,
+            "id": "codex-learned-bed745673ca62ab9",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f2341639af271920"
+            },
+            "enabled": true,
+            "id": "codex-learned-f2341639af271920",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "7573ff3807d9ecbf"
+            },
+            "enabled": true,
+            "id": "codex-learned-7573ff3807d9ecbf",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "metrics_delta": {
+          "altura_http_blocked": 167,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 13872,
+          "altura_http_signature_rate_limited": 43,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 13829
+        },
+        "metrics_errors": [],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 2.22,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.002,
+          "first_limit_seconds": 0.015,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.061,
+            "p95": 1.805,
+            "p99": 2.225
+          },
+          "limited_percent": 97.78,
+          "requests": 7154,
+          "requests_per_second": 7147.17,
+          "statuses": {
+            "403": 159,
+            "429": 6995
+          },
+          "workers": 8
+        },
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.22,
+          "attacker_limited_percent": 97.78,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmpyvtzdnor/filters-54641.json via deterministic",
+          "wrote 1 filters to /tmp/tmpyvtzdnor/filters-54641.json via deterministic",
+          "wrote 2 filters to /tmp/tmpyvtzdnor/filters-54641.json via deterministic",
+          "wrote 4 filters to /tmp/tmpyvtzdnor/filters-54641.json via deterministic",
+          "wrote 4 filters to /tmp/tmpyvtzdnor/filters-54641.json via deterministic",
+          "wrote 4 filters to /tmp/tmpyvtzdnor/filters-54641.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.64,
+            "p95": 0.697,
+            "p99": 0.763
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.25,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.15,
+          "blocked_percent": 0.11,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.913,
+          "first_limit_seconds": 0.017,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.078,
+            "p95": 1.832,
+            "p99": 2.23
+          },
+          "limited_percent": 97.73,
+          "requests": 7063,
+          "requests_per_second": 7058.19,
+          "statuses": {
+            "204": 152,
+            "403": 8,
+            "429": 6903
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.26,
+          "attacker_limited_percent": 97.74,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 131,
+          "first_detection_seconds": 0.013,
+          "reasons": {
+            "filter_block": 2,
+            "global_observed": 128,
+            "trusted_proxy_rate_limited": 1
+          },
+          "signature_bases": {
+            "0214e1ae4e29ceb7": "GET|/api/aodvvbknve/:num|ref,ts|python|*/*",
+            "021f9d0eb9168d42": "GET|/api/mrtalmpmfh/:num|b,cache,page,sort|mozilla|*/*",
+            "0223b16641a28341": "GET|/api/wcvzptjced/:num|x|mozilla|*/*",
+            "06d3354237a281b2": "GET|/api/lcxsdzuxrb/:num|client,cursor,ref|python|*/*",
+            "08385e1e8fce5ed2": "GET|/api/jdydzelnci/:num|ref|node|*/*",
+            "08fb6e4432807ada": "GET|/api/obamlqdqqk/:num|b|curl|*/*",
+            "0dd0007210e4d673": "GET|/api/mplllzmaic/:num|ts|curl|*/*",
+            "0e304b49bb5359ec": "GET|/api/xosnrxufqm/:num|id,ref|node|*/*",
+            "0ff6c21c7a4f83ad": "GET|/api/sgwpgcfoqc/:num|debug,q|mozilla|*/*",
+            "1492a2126cab15af": "GET|/api/zjjywzvpgw/:num|x|curl|*/*",
+            "15a6d3b1cda90f31": "GET|/api/aronciqsfw/:num|client|curl|*/*",
+            "15f193452b0a6852": "GET|/api/qogefseugw/:num|sort,x,z|node|*/*",
+            "16850c466a792147": "GET|/api/oneutaxwqq/:num|cache,view|python|*/*",
+            "17bb7009542cadb7": "GET|/api/wsejdcjbmi/:num|z|curl|*/*",
+            "206d6795e567e689": "GET|/api/voasfzfmum/:num|debug,q,z|python|*/*",
+            "24b5636fcb339f25": "GET|/api/zhkcejwfzk/:num|q|node|*/*",
+            "2618334a4c11565f": "GET|/api/jwxeqgidab/:num|feature|curl|*/*",
+            "2b49a63ac3a1c36e": "GET|/api/sbsmxzgojd/:num|client,cursor,view|python|*/*",
+            "323955902b1fc0b8": "GET|/api/dkugsnznah/:num|a,ref|mozilla|*/*",
+            "39422b728ecf304a": "GET|/api/zewufxsqym/:num|client,ts|python|*/*",
+            "3c732ad498939bb1": "GET|/api/rcmvzgjrfc/:num|cursor,sort|curl|*/*",
+            "3d1d90a8dd699c41": "GET|/api/kmbtopomte/:num|view,y|node|*/*",
+            "3e0403e0d745cc56": "GET|/api/wnxlmxfjkd/:num|debug,feature,sort,y|curl|*/*",
+            "44dbb34c001d644f": "GET|/api/iopfehioic/:num|y|mozilla|*/*",
+            "49fed3fc80637bf6": "GET|/api/swjepdvzsv/:num|cache,client,ref,ts|curl|*/*",
+            "4de78a9d63bd53e7": "GET|/api/fsyotnjgmx/:num|b,client,sort|node|*/*",
+            "511046361960c337": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|*/*",
+            "5272ef9fcad914ba": "GET|/api/ultzeqirbk/:num|id,view,x,z|curl|*/*",
+            "59468be38f09ee70": "GET|/api/iorkaoyzwf/:num|debug,filter,sort,y|python|*/*",
+            "5df8735c90a1576e": "GET|/api/frdygyxumb/:num|a,cache,q|python|*/*",
+            "5e1b8d71790c0d58": "GET|/api/bkoqsztgzo/:num|b,cache,id|curl|*/*",
+            "6191f2462f9978e5": "GET|/api/wtobikueho/:num|b,view|python|*/*",
+            "64a7e9e1417c9597": "GET|/api/muwgllpbjg/:num|session,ts,x|python|*/*",
+            "6b07a07049649bad": "GET|/api/vcgwbfmruo/:num|feature,session,view,y|curl|*/*",
+            "6b774315452788df": "GET|/api/xcbwtelwuq/:num|cursor,page,q,sort|python|*/*",
+            "6cb86b6a2d88263e": "GET|/api/gfbqrerbut/:num|client,debug,y|curl|*/*",
+            "6e769aa2b3923ad6": "GET|/api/mlofvwhzrd/:num|z|mozilla|*/*",
+            "74c4a8802c72d171": "GET|/api/pbkliiohhs/:num|y|node|*/*",
+            "7573ff3807d9ecbf": "GET|/api/nhrcatunbq/:num|page,ts|mozilla|*/*",
+            "7af33dc2436584a9": "GET|/api/rpyqccygvs/:num|feature,id,region,session|python|*/*",
+            "7f810b04c654610b": "GET|/api/yjhgsrskwa/:num|ref|node|*/*",
+            "81342587af40d011": "GET|/api/gqwfwwtyta/:num|client|mozilla|*/*",
+            "8c3a4fe4eb0d6434": "GET|/api/vddzeudqwo/:num|sort,z|python|*/*",
+            "93595116bf1289fa": "GET|/api/kojgqjhxtr/:num|a,cache,region,z|node|*/*",
+            "991b6a658acb22b4": "GET|/api/bbcummdspn/:num|debug,region,view|curl|*/*",
+            "aa2020cc2e05b101": "GET|/api/vechavhqth/:num|filter,id,y|python|*/*",
+            "aaf60d75af7fa582": "GET|/api/aagzmyfhru/:num|a,cache|curl|*/*",
+            "ab813da755d33396": "GET|/api/tgmccusbzg/:num|cursor|node|*/*",
+            "abdbc41b776d581e": "GET|/api/ghbsgzoaor/:num|y|mozilla|*/*",
+            "b042b06c1a5b59be": "GET|/api/safrorofaz/:num|cursor,feature,sort|node|*/*",
+            "b28fabe2588322fb": "GET|/api/hgunprrrdq/:num|page|curl|*/*",
+            "bb30799191671ba0": "GET|/api/egcizjfcso/:num|cursor,view,y|node|*/*",
+            "bd51422a6a90b9a2": "GET|/api/fkwpirfjml/:num|region,ts|python|*/*",
+            "bed745673ca62ab9": "GET|/api/setmnmmmiv/:num|filter,y|curl|*/*",
+            "c770107581f0a46f": "GET|/api/ysqhhunxzz/:num|b|node|*/*",
+            "c835ea840237f280": "GET|/api/sjbettiauf/:num|a,debug,feature|mozilla|*/*",
+            "cee34740341be7fb": "GET|/api/wtjzucimbe/:num|x|curl|*/*",
+            "cf400be34c8a1b7f": "GET|/api/kcfmbbwrpb/:num|cache,region|node|*/*",
+            "d1179eda7529f655": "GET|/api/ywwmximkku/:num|cursor,ref,region,session|node|*/*",
+            "d3797ee8fb40d299": "GET|/api/ygehcoenxr/:num|feature,session|mozilla|*/*",
+            "d465e75ad3596b85": "GET|/api/bvlascikcx/:num|feature,filter|python|*/*",
+            "d97ef9c6b5f5ffa9": "GET|/api/fgzavyywqp/:num|z|mozilla|*/*",
+            "ddfd4540816cc817": "GET|/api/maoqdlbvga/:num|cursor,id,q,region|node|*/*",
+            "e0150ad0118bf3e6": "GET|/api/gxeblxsrhb/:num|ref,region,y|python|*/*",
+            "e25705b1b92d1a8e": "GET|/api/qrubovjmwm/:num|a,view,x,y|curl|*/*",
+            "e908e939e0098dfb": "GET|/api/qgvbretxqx/:num|cache,feature,ref,y|mozilla|*/*",
+            "ecbacc74a9f12c5b": "GET|/api/hxfkzvgcrb/:num|a,cache,client,page|python|*/*",
+            "eec812c5d9db54df": "GET|/api/deqaptwzjn/:num|cache,client,page|curl|*/*",
+            "eff1146de3de0dc8": "GET|/api/pfpqhrpwei/:num|client,cursor,region|curl|*/*",
+            "f2341639af271920": "GET|/api/mozoouabvn/:num|a,b,cache|node|*/*",
+            "f4132affe61b9cd3": "GET|/api/egppnmzzqs/:num|a,x|python|*/*",
+            "fc5a955be60aecf8": "GET|/api/lruubufrnu/:num|ref|curl|*/*",
+            "fc806ac18163c45d": "GET|/api/fhxtoafbsl/:num|filter,region,session,ts|python|*/*",
+            "fc81e99a354191b7": "GET|/api/kqarykbppk/:num|z|mozilla|*/*"
+          },
+          "unique_signatures": 74
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-:token-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          }
+        ],
+        "filter_write_seconds": 1.001,
+        "filters_learned": 1,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/:token/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-:token-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          }
+        ],
+        "metrics_delta": {
+          "altura_http_blocked": 167,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 13783,
+          "altura_http_signature_rate_limited": 35,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 13748
+        },
+        "metrics_errors": [],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 2.26,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": 0.016,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.073,
+            "p95": 1.869,
+            "p99": 2.289
+          },
+          "limited_percent": 97.74,
+          "requests": 7039,
+          "requests_per_second": 7032.24,
+          "statuses": {
+            "403": 159,
+            "429": 6880
+          },
+          "workers": 8
+        },
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.26,
+          "attacker_limited_percent": 97.74,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "path_shape_rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.64,
+            "p95": 0.649,
+            "p99": 0.717
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.25,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.21,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.017,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.061,
+            "p95": 1.809,
+            "p99": 2.256
+          },
+          "limited_percent": 97.79,
+          "requests": 7180,
+          "requests_per_second": 7173.05,
+          "statuses": {
+            "204": 159,
+            "429": 7021
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 97.79,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 97.79,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 64,
+          "first_detection_seconds": 0.012,
+          "reasons": {
+            "global_observed": 64
+          },
+          "signature_bases": {
+            "0214e1ae4e29ceb7": "GET|/api/aodvvbknve/:num|ref,ts|python|*/*",
+            "0223b16641a28341": "GET|/api/wcvzptjced/:num|x|mozilla|*/*",
+            "08385e1e8fce5ed2": "GET|/api/jdydzelnci/:num|ref|node|*/*",
+            "15f193452b0a6852": "GET|/api/qogefseugw/:num|sort,x,z|node|*/*",
+            "16850c466a792147": "GET|/api/oneutaxwqq/:num|cache,view|python|*/*",
+            "17bb7009542cadb7": "GET|/api/wsejdcjbmi/:num|z|curl|*/*",
+            "206d6795e567e689": "GET|/api/voasfzfmum/:num|debug,q,z|python|*/*",
+            "2618334a4c11565f": "GET|/api/jwxeqgidab/:num|feature|curl|*/*",
+            "323955902b1fc0b8": "GET|/api/dkugsnznah/:num|a,ref|mozilla|*/*",
+            "3d1d90a8dd699c41": "GET|/api/kmbtopomte/:num|view,y|node|*/*",
+            "49fed3fc80637bf6": "GET|/api/swjepdvzsv/:num|cache,client,ref,ts|curl|*/*",
+            "4de78a9d63bd53e7": "GET|/api/fsyotnjgmx/:num|b,client,sort|node|*/*",
+            "511046361960c337": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|*/*",
+            "560f7723adabc331": "GET|/api/aptdiaqxcx/:num|feature,q|curl|*/*",
+            "5cadfd8eefdd3cd9": "GET|/api/vgxbjavkff/:num|cache,view,z|python|*/*",
+            "5df8735c90a1576e": "GET|/api/frdygyxumb/:num|a,cache,q|python|*/*",
+            "5e1b8d71790c0d58": "GET|/api/bkoqsztgzo/:num|b,cache,id|curl|*/*",
+            "64a7e9e1417c9597": "GET|/api/muwgllpbjg/:num|session,ts,x|python|*/*",
+            "6cb86b6a2d88263e": "GET|/api/gfbqrerbut/:num|client,debug,y|curl|*/*",
+            "6e769aa2b3923ad6": "GET|/api/mlofvwhzrd/:num|z|mozilla|*/*",
+            "7573ff3807d9ecbf": "GET|/api/nhrcatunbq/:num|page,ts|mozilla|*/*",
+            "7f810b04c654610b": "GET|/api/yjhgsrskwa/:num|ref|node|*/*",
+            "85bba5fdf45c6f35": "GET|/api/yglbobvwjg/:num|debug|curl|*/*",
+            "93595116bf1289fa": "GET|/api/kojgqjhxtr/:num|a,cache,region,z|node|*/*",
+            "9e87d63c47bd6bad": "GET|/api/gytgwbbwsw/:num|cursor,session,ts|node|*/*",
+            "aa2020cc2e05b101": "GET|/api/vechavhqth/:num|filter,id,y|python|*/*",
+            "b042b06c1a5b59be": "GET|/api/safrorofaz/:num|cursor,feature,sort|node|*/*",
+            "b28fabe2588322fb": "GET|/api/hgunprrrdq/:num|page|curl|*/*",
+            "bd51422a6a90b9a2": "GET|/api/fkwpirfjml/:num|region,ts|python|*/*",
+            "bed745673ca62ab9": "GET|/api/setmnmmmiv/:num|filter,y|curl|*/*",
+            "c835ea840237f280": "GET|/api/sjbettiauf/:num|a,debug,feature|mozilla|*/*",
+            "cee34740341be7fb": "GET|/api/wtjzucimbe/:num|x|curl|*/*",
+            "cf400be34c8a1b7f": "GET|/api/kcfmbbwrpb/:num|cache,region|node|*/*",
+            "d1179eda7529f655": "GET|/api/ywwmximkku/:num|cursor,ref,region,session|node|*/*",
+            "d97ef9c6b5f5ffa9": "GET|/api/fgzavyywqp/:num|z|mozilla|*/*",
+            "e25705b1b92d1a8e": "GET|/api/qrubovjmwm/:num|a,view,x,y|curl|*/*",
+            "e908e939e0098dfb": "GET|/api/qgvbretxqx/:num|cache,feature,ref,y|mozilla|*/*",
+            "ecbacc74a9f12c5b": "GET|/api/hxfkzvgcrb/:num|a,cache,client,page|python|*/*",
+            "eec812c5d9db54df": "GET|/api/deqaptwzjn/:num|cache,client,page|curl|*/*",
+            "f2341639af271920": "GET|/api/mozoouabvn/:num|a,b,cache|node|*/*",
+            "f4132affe61b9cd3": "GET|/api/egppnmzzqs/:num|a,x|python|*/*",
+            "fc5a955be60aecf8": "GET|/api/lruubufrnu/:num|ref|curl|*/*",
+            "fc81e99a354191b7": "GET|/api/kqarykbppk/:num|z|mozilla|*/*",
+            "fc85239b5aaa7011": "GET|/api/hgkcwujarn/:num|a,b,cache,id|curl|*/*"
+          },
+          "unique_signatures": 44
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "path-shape-rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 7021,
+          "altura_http_rate_limited": 7021,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.651,
+            "p95": 0.667,
+            "p99": 0.697
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.19,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 99.91,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.967,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.165,
+            "p95": 1.894,
+            "p99": 2.261
+          },
+          "limited_percent": 0.09,
+          "requests": 6580,
+          "requests_per_second": 6573.74,
+          "statuses": {
+            "204": 6574,
+            "429": 6
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.09,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.09,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 6,
+          "altura_http_signature_rate_limited": 6,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.633,
+            "p95": 0.642,
+            "p99": 0.663
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.27,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.22,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.017,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.061,
+            "p95": 1.824,
+            "p99": 2.25
+          },
+          "limited_percent": 97.78,
+          "requests": 7152,
+          "requests_per_second": 7145.43,
+          "statuses": {
+            "204": 159,
+            "429": 6993
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 97.78,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 97.78,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 64,
+          "first_detection_seconds": 0.013,
+          "reasons": {
+            "global_observed": 64
+          },
+          "signature_bases": {
+            "0214e1ae4e29ceb7": "GET|/api/aodvvbknve/:num|ref,ts|python|*/*",
+            "0223b16641a28341": "GET|/api/wcvzptjced/:num|x|mozilla|*/*",
+            "041042251aab5b9f": "GET|/api/znkpfcjjtk/:num|feature,id,q,ref|curl|*/*",
+            "08385e1e8fce5ed2": "GET|/api/jdydzelnci/:num|ref|node|*/*",
+            "0b45f4ec4813e123": "GET|/api/ukvvoskfwc/:num|cache,cursor,debug|mozilla|*/*",
+            "15f193452b0a6852": "GET|/api/qogefseugw/:num|sort,x,z|node|*/*",
+            "16850c466a792147": "GET|/api/oneutaxwqq/:num|cache,view|python|*/*",
+            "17bb7009542cadb7": "GET|/api/wsejdcjbmi/:num|z|curl|*/*",
+            "2618334a4c11565f": "GET|/api/jwxeqgidab/:num|feature|curl|*/*",
+            "323955902b1fc0b8": "GET|/api/dkugsnznah/:num|a,ref|mozilla|*/*",
+            "3d1d90a8dd699c41": "GET|/api/kmbtopomte/:num|view,y|node|*/*",
+            "49fed3fc80637bf6": "GET|/api/swjepdvzsv/:num|cache,client,ref,ts|curl|*/*",
+            "4de78a9d63bd53e7": "GET|/api/fsyotnjgmx/:num|b,client,sort|node|*/*",
+            "511046361960c337": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|*/*",
+            "5df8735c90a1576e": "GET|/api/frdygyxumb/:num|a,cache,q|python|*/*",
+            "5e1b8d71790c0d58": "GET|/api/bkoqsztgzo/:num|b,cache,id|curl|*/*",
+            "64a7e9e1417c9597": "GET|/api/muwgllpbjg/:num|session,ts,x|python|*/*",
+            "6cb86b6a2d88263e": "GET|/api/gfbqrerbut/:num|client,debug,y|curl|*/*",
+            "6e769aa2b3923ad6": "GET|/api/mlofvwhzrd/:num|z|mozilla|*/*",
+            "7573ff3807d9ecbf": "GET|/api/nhrcatunbq/:num|page,ts|mozilla|*/*",
+            "85bba5fdf45c6f35": "GET|/api/yglbobvwjg/:num|debug|curl|*/*",
+            "93595116bf1289fa": "GET|/api/kojgqjhxtr/:num|a,cache,region,z|node|*/*",
+            "a3880dab08825e99": "GET|/api/isomynjfor/:num|cache,feature|python|*/*",
+            "aa2020cc2e05b101": "GET|/api/vechavhqth/:num|filter,id,y|python|*/*",
+            "b042b06c1a5b59be": "GET|/api/safrorofaz/:num|cursor,feature,sort|node|*/*",
+            "b28fabe2588322fb": "GET|/api/hgunprrrdq/:num|page|curl|*/*",
+            "bd51422a6a90b9a2": "GET|/api/fkwpirfjml/:num|region,ts|python|*/*",
+            "bed745673ca62ab9": "GET|/api/setmnmmmiv/:num|filter,y|curl|*/*",
+            "c835ea840237f280": "GET|/api/sjbettiauf/:num|a,debug,feature|mozilla|*/*",
+            "cee34740341be7fb": "GET|/api/wtjzucimbe/:num|x|curl|*/*",
+            "cf400be34c8a1b7f": "GET|/api/kcfmbbwrpb/:num|cache,region|node|*/*",
+            "d1179eda7529f655": "GET|/api/ywwmximkku/:num|cursor,ref,region,session|node|*/*",
+            "d3797ee8fb40d299": "GET|/api/ygehcoenxr/:num|feature,session|mozilla|*/*",
+            "d97ef9c6b5f5ffa9": "GET|/api/fgzavyywqp/:num|z|mozilla|*/*",
+            "ddfd4540816cc817": "GET|/api/maoqdlbvga/:num|cursor,id,q,region|node|*/*",
+            "e0150ad0118bf3e6": "GET|/api/gxeblxsrhb/:num|ref,region,y|python|*/*",
+            "e25705b1b92d1a8e": "GET|/api/qrubovjmwm/:num|a,view,x,y|curl|*/*",
+            "ecbacc74a9f12c5b": "GET|/api/hxfkzvgcrb/:num|a,cache,client,page|python|*/*",
+            "eec812c5d9db54df": "GET|/api/deqaptwzjn/:num|cache,client,page|curl|*/*",
+            "f2341639af271920": "GET|/api/mozoouabvn/:num|a,b,cache|node|*/*",
+            "f4132affe61b9cd3": "GET|/api/egppnmzzqs/:num|a,x|python|*/*",
+            "fc5a955be60aecf8": "GET|/api/lruubufrnu/:num|ref|curl|*/*",
+            "fc81e99a354191b7": "GET|/api/kqarykbppk/:num|z|mozilla|*/*",
+            "fc85239b5aaa7011": "GET|/api/hgkcwujarn/:num|a,b,cache,id|curl|*/*"
+          },
+          "unique_signatures": 44
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 6993,
+          "altura_http_signature_rate_limited": 23,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 6970
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.54,
+            "p95": 0.6,
+            "p99": 0.61
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.28,
+          "statuses": {
+            "403": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 99.64,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": 0.896,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.053,
+            "p95": 1.799,
+            "p99": 2.174
+          },
+          "limited_percent": 0.36,
+          "requests": 7247,
+          "requests_per_second": 7240.44,
+          "statuses": {
+            "403": 7221,
+            "429": 26
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 99.64,
+          "attacker_limited_percent": 0.36,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 64,
+          "first_detection_seconds": 0.007,
+          "reasons": {
+            "filter_block": 2,
+            "global_observed": 62
+          },
+          "signature_bases": {
+            "021f9d0eb9168d42": "GET|/api/mrtalmpmfh/:num|b,cache,page,sort|mozilla|*/*",
+            "0328b431cb15be18": "GET|/api/aqpuixjtvo/:num|a,cursor,feature,view|mozilla|*/*",
+            "08fb6e4432807ada": "GET|/api/obamlqdqqk/:num|b|curl|*/*",
+            "0ff6c21c7a4f83ad": "GET|/api/sgwpgcfoqc/:num|debug,q|mozilla|*/*",
+            "1492a2126cab15af": "GET|/api/zjjywzvpgw/:num|x|curl|*/*",
+            "18f29a9be53fcaa5": "GET|/api/qmqaexyvbh/:num|cache,client,q|python|*/*",
+            "2b49a63ac3a1c36e": "GET|/api/sbsmxzgojd/:num|client,cursor,view|python|*/*",
+            "39422b728ecf304a": "GET|/api/zewufxsqym/:num|client,ts|python|*/*",
+            "3c732ad498939bb1": "GET|/api/rcmvzgjrfc/:num|cursor,sort|curl|*/*",
+            "3e0403e0d745cc56": "GET|/api/wnxlmxfjkd/:num|debug,feature,sort,y|curl|*/*",
+            "3e77cb190e4fdff5": "GET|/api/cwzhtcrryc/:num|view,x|node|*/*",
+            "44dbb34c001d644f": "GET|/api/iopfehioic/:num|y|mozilla|*/*",
+            "4de78a9d63bd53e7": "GET|/api/fsyotnjgmx/:num|b,client,sort|node|*/*",
+            "5272ef9fcad914ba": "GET|/api/ultzeqirbk/:num|id,view,x,z|curl|*/*",
+            "560f7723adabc331": "GET|/api/aptdiaqxcx/:num|feature,q|curl|*/*",
+            "59468be38f09ee70": "GET|/api/iorkaoyzwf/:num|debug,filter,sort,y|python|*/*",
+            "6b07a07049649bad": "GET|/api/vcgwbfmruo/:num|feature,session,view,y|curl|*/*",
+            "6b774315452788df": "GET|/api/xcbwtelwuq/:num|cursor,page,q,sort|python|*/*",
+            "6e769aa2b3923ad6": "GET|/api/mlofvwhzrd/:num|z|mozilla|*/*",
+            "74c4a8802c72d171": "GET|/api/pbkliiohhs/:num|y|node|*/*",
+            "7af33dc2436584a9": "GET|/api/rpyqccygvs/:num|feature,id,region,session|python|*/*",
+            "81342587af40d011": "GET|/api/gqwfwwtyta/:num|client|mozilla|*/*",
+            "8c3a4fe4eb0d6434": "GET|/api/vddzeudqwo/:num|sort,z|python|*/*",
+            "93595116bf1289fa": "GET|/api/kojgqjhxtr/:num|a,cache,region,z|node|*/*",
+            "991b6a658acb22b4": "GET|/api/bbcummdspn/:num|debug,region,view|curl|*/*",
+            "ab813da755d33396": "GET|/api/tgmccusbzg/:num|cursor|node|*/*",
+            "c770107581f0a46f": "GET|/api/ysqhhunxzz/:num|b|node|*/*",
+            "d3797ee8fb40d299": "GET|/api/ygehcoenxr/:num|feature,session|mozilla|*/*",
+            "d465e75ad3596b85": "GET|/api/bvlascikcx/:num|feature,filter|python|*/*",
+            "ddfd4540816cc817": "GET|/api/maoqdlbvga/:num|cursor,id,q,region|node|*/*",
+            "e81ba37969a86537": "GET|/api/gspxcelczn/:num|cursor,ref|python|*/*",
+            "eff1146de3de0dc8": "GET|/api/pfpqhrpwei/:num|client,cursor,region|curl|*/*",
+            "fc81e99a354191b7": "GET|/api/kqarykbppk/:num|z|mozilla|*/*"
+          },
+          "unique_signatures": 33
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 7246,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 26,
+          "altura_http_signature_rate_limited": 26,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      }
+    }
+  },
+  "signature_threshold_per_second": 60,
+  "source_tree": {
+    "cwd": "/tmp/altura-prot-defense-debug-20260623",
+    "git_branch": "main",
+    "git_commit": "38213a0e4262d5879bd080885b67b8b9c03baa2d",
+    "git_commit_short": "38213a0e4262",
+    "git_dirty": true,
+    "git_root": "/tmp/altura-prot-defense-debug-20260623"
+  },
+  "workdir": "/tmp/tmpyvtzdnor",
+  "workers": 8
+}

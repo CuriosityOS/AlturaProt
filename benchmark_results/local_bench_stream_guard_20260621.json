@@ -1,0 +1,49 @@
+{
+  "guardrails": {
+    "metrics_delta": {
+      "altura_http_body_rejected": 1,
+      "altura_http_body_timeouts": 1,
+      "altura_http_upstream_errors": 0
+    },
+    "oversized_content_length_status": 413,
+    "slow_body": {
+      "elapsed_seconds": 0.21,
+      "error": null,
+      "status": 408
+    }
+  },
+  "health": {
+    "duration_seconds": 3.006,
+    "errors": 0,
+    "latency_ms": {
+      "avg": 6.903,
+      "p50": 5.638,
+      "p95": 15.77,
+      "p99": 21.54
+    },
+    "requests": 53099,
+    "requests_per_second": 17667.01,
+    "statuses": {
+      "200": 53099
+    },
+    "url": "http://127.0.0.1:58688/__altura/health",
+    "workers": 128
+  },
+  "proxy": {
+    "duration_seconds": 3.006,
+    "errors": 0,
+    "latency_ms": {
+      "avg": 7.22,
+      "p50": 5.771,
+      "p95": 17.323,
+      "p99": 24.479
+    },
+    "requests": 50675,
+    "requests_per_second": 16860.72,
+    "statuses": {
+      "204": 50675
+    },
+    "url": "http://127.0.0.1:58688/",
+    "workers": 128
+  }
+}

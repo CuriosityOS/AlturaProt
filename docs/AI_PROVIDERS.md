@@ -75,11 +75,11 @@ The proxy ignores unsupported behavior. Providers cannot execute commands, chang
 
 ## False Positive Controls
 
-CodexSDGate defaults to high-confidence learning. Deterministic fallback rules are created from strong evidence such as `per_ip_rate_limited`, `global_rate_limited`, `rate_limited`, or `filter_block` events. Observed-only high volume is treated as weak evidence because legitimate traffic can also be bursty.
+CodexSDGate defaults to high-confidence learning. Deterministic fallback rules are created from strong evidence such as `per_ip_rate_limited`, `global_rate_limited`, `signature_rate_limited`, `path_shape_rate_limited`, `trusted_proxy_rate_limited`, `rate_limited`, or `filter_block` events. Observed-only high volume is treated as weak evidence because legitimate traffic can also be bursty.
 
-Provider output is also merged with deterministic high-confidence signature coverage. This prevents a model from omitting a strong attack signature during a short real-time mitigation window. Use `--disable-strong-coverage` only when evaluating raw provider behavior.
+Provider output is also merged with deterministic coverage. In strict mode this adds high-confidence strong-signal signatures. When `--learn-observed` is explicitly enabled, it also adds deterministic observed-learning coverage so a model omission does not leave a known high-volume path shape unprotected. Use `--disable-strong-coverage` only when evaluating raw provider behavior.
 
-Learned adaptive filters are preserved in `runtime/filters.json` even when there are no new attack events. This lets the proxy keep a dormant library of previous attack signatures and reactivate the same filter quickly when the pattern returns. Use `--max-filters` to cap the retained filter library size.
+Learned adaptive filters are preserved in `runtime/filters.json` even when there are no new attack events. This lets the proxy keep a dormant library of previous attack signatures and reactivate the same filter quickly when the pattern returns. Use `--max-filters` to cap the retained filter library size; the proxy also enforces `filters.max_runtime_file_bytes` and `filters.max_runtime_filters` during reload.
 
 To intentionally learn from observed-only bursts during a controlled test, pass:
 

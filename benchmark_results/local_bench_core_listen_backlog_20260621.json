@@ -1,0 +1,149 @@
+{
+  "guardrails": {
+    "admin_rate_limit": {
+      "statuses": [
+        200,
+        429
+      ]
+    },
+    "header_count": {
+      "closed": true,
+      "elapsed_seconds": 0.0,
+      "error": null,
+      "sent_headers": 27,
+      "status": 431
+    },
+    "listen_backlog": {
+      "configured_backlog": 128,
+      "http_status": 204,
+      "tcp_echo_ok": true
+    },
+    "metrics_delta": {
+      "altura_http_body_rejected": 1,
+      "altura_http_body_timeouts": 1,
+      "altura_http_upstream_body_rejected": 0,
+      "altura_http_upstream_body_timeouts": 0,
+      "altura_http_upstream_errors": 0,
+      "altura_http_upstream_in_flight_rejected": 0,
+      "altura_tcp_idle_timeouts": 1,
+      "altura_tcp_rejected": 1
+    },
+    "metrics_without_token_status": 403,
+    "oversized_content_length_status": 413,
+    "rate_limiter_fairness": {
+      "statuses": [
+        204,
+        429,
+        204
+      ]
+    },
+    "slow_body": {
+      "elapsed_seconds": 0.2,
+      "error": null,
+      "status": 408
+    },
+    "tcp_global_connection_cap": {
+      "held_connections": 2,
+      "rejected_closed": true,
+      "rejected_error": "ConnectionResetError"
+    },
+    "tcp_idle_timeout": {
+      "closed": true,
+      "elapsed_seconds": 1.2,
+      "error": null
+    },
+    "tracked_ip_cap": {
+      "statuses": [
+        204,
+        429,
+        204,
+        204
+      ]
+    },
+    "upstream_in_flight": {
+      "first_status": 204,
+      "metrics_delta": {
+        "altura_http_upstream_in_flight_rejected": 1
+      },
+      "second_status": 503
+    },
+    "upstream_pool": {
+      "accepted_upstream_connections": 2,
+      "statuses": [
+        204,
+        204
+      ]
+    },
+    "upstream_response_guard": {
+      "metrics_delta": {
+        "altura_http_upstream_body_rejected": 1,
+        "altura_http_upstream_body_timeouts": 1
+      },
+      "oversized_response": {
+        "body_bytes": 0,
+        "closed": true,
+        "elapsed_seconds": 0.001,
+        "error": null,
+        "status": null
+      },
+      "stalled_response": {
+        "body_bytes": 0,
+        "closed": true,
+        "elapsed_seconds": 0.102,
+        "error": null,
+        "status": 200
+      }
+    }
+  },
+  "health": {
+    "duration_seconds": 3.011,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 9.317,
+      "p50": 5.529,
+      "p95": 29.207,
+      "p99": 47.846
+    },
+    "requests": 36328,
+    "requests_per_second": 12064.66,
+    "statuses": {
+      "200": 36328
+    },
+    "url": "http://127.0.0.1:42867/__altura/health",
+    "workers": 128
+  },
+  "proxy": {
+    "duration_seconds": 3.011,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 10.366,
+      "p50": 6.774,
+      "p95": 30.484,
+      "p99": 48.27
+    },
+    "requests": 34749,
+    "requests_per_second": 11539.95,
+    "statuses": {
+      "204": 34749
+    },
+    "url": "http://127.0.0.1:42867/",
+    "workers": 128
+  },
+  "tcp": {
+    "connections": 32,
+    "duration_seconds": 3.004,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 1.305,
+      "p50": 1.181,
+      "p95": 2.643,
+      "p99": 3.499
+    },
+    "messages": 73341,
+    "messages_per_second": 24411.05,
+    "workers": 32
+  }
+}

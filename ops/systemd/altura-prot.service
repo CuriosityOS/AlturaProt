@@ -1,0 +1,46 @@
+[Unit]
+Description=AlturaProt L7 DDoS protection proxy
+Documentation=https://github.com/altura/altura-prot
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=altura-prot
+Group=altura-prot
+WorkingDirectory=/var/lib/altura-prot
+ExecStart=/usr/local/bin/altura-prot --config /etc/altura-prot/config.json
+Restart=on-failure
+RestartSec=2s
+TimeoutStopSec=15s
+LimitNOFILE=1048576
+TasksMax=32768
+MemoryAccounting=true
+MemoryHigh=2G
+MemoryMax=3G
+ConfigurationDirectory=altura-prot
+StateDirectory=altura-prot
+LogsDirectory=altura-prot
+ReadWritePaths=/var/lib/altura-prot /var/log/altura-prot
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

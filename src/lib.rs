@@ -3,6 +3,9 @@ pub mod config;
 pub mod filter;
 pub mod http_proxy;
 pub mod limiter;
+pub mod listener;
+pub mod log_limiter;
+pub mod resource_limits;
 pub mod tcp_proxy;
 pub mod telemetry;
 

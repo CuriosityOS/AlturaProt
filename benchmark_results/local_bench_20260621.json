@@ -1,0 +1,36 @@
+{
+  "health": {
+    "duration_seconds": 8.011,
+    "errors": 0,
+    "latency_ms": {
+      "avg": 10.233,
+      "p50": 5.718,
+      "p95": 31.545,
+      "p99": 50.022
+    },
+    "requests": 94528,
+    "requests_per_second": 11799.31,
+    "statuses": {
+      "200": 94528
+    },
+    "url": "http://127.0.0.1:48539/__altura/health",
+    "workers": 128
+  },
+  "proxy": {
+    "duration_seconds": 8.011,
+    "errors": 0,
+    "latency_ms": {
+      "avg": 10.611,
+      "p50": 7.658,
+      "p95": 31.447,
+      "p99": 49.58
+    },
+    "requests": 94907,
+    "requests_per_second": 11847.55,
+    "statuses": {
+      "204": 94907
+    },
+    "url": "http://127.0.0.1:48539/",
+    "workers": 128
+  }
+}

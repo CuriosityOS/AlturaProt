@@ -1,0 +1,70 @@
+{
+  "guardrails": {
+    "metrics_delta": {
+      "altura_http_body_rejected": 1,
+      "altura_http_body_timeouts": 1,
+      "altura_http_upstream_errors": 0,
+      "altura_tcp_rejected": 1
+    },
+    "oversized_content_length_status": 413,
+    "slow_body": {
+      "elapsed_seconds": 0.206,
+      "error": null,
+      "status": 408
+    },
+    "tcp_global_connection_cap": {
+      "held_connections": 2,
+      "rejected_closed": true,
+      "rejected_error": "ConnectionResetError"
+    }
+  },
+  "health": {
+    "duration_seconds": 3.005,
+    "errors": 0,
+    "latency_ms": {
+      "avg": 7.103,
+      "p50": 5.753,
+      "p95": 16.303,
+      "p99": 23.065
+    },
+    "requests": 51693,
+    "requests_per_second": 17200.25,
+    "statuses": {
+      "200": 51693
+    },
+    "url": "http://127.0.0.1:64146/__altura/health",
+    "workers": 128
+  },
+  "proxy": {
+    "duration_seconds": 3.006,
+    "errors": 0,
+    "latency_ms": {
+      "avg": 7.169,
+      "p50": 5.737,
+      "p95": 17.029,
+      "p99": 24.353
+    },
+    "requests": 51148,
+    "requests_per_second": 17017.61,
+    "statuses": {
+      "204": 51148
+    },
+    "url": "http://127.0.0.1:64146/",
+    "workers": 128
+  },
+  "tcp": {
+    "connections": 32,
+    "duration_seconds": 3.002,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 1.678,
+      "p50": 1.562,
+      "p95": 3.094,
+      "p99": 3.931
+    },
+    "messages": 57161,
+    "messages_per_second": 19039.16,
+    "workers": 32
+  }
+}

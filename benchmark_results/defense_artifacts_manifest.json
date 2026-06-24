@@ -1,0 +1,8 @@
+{
+  "historical_artifacts": {
+    "defense_bench_codex_20260618_interpreted.json": "Historical Codex benchmark snapshot from before generated_at_utc/source_tree provenance and effective_target_score CI assertions.",
+    "defense_bench_codex_rerun_20260618.json": "Historical Codex benchmark snapshot from before generated_at_utc/source_tree provenance and effective_target_score CI assertions.",
+    "defense_bench_codex_smart_detailed_20260618.json": "Historical Codex benchmark snapshot from before generated_at_utc/source_tree provenance and effective_target_score CI assertions.",
+    "defense_bench_codex_xff_poly_pathshape_20260618.json": "Historical Codex benchmark snapshot from before generated_at_utc/source_tree provenance and effective_target_score CI assertions."
+  }
+}

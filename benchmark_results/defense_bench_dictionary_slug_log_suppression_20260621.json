@@ -1,0 +1,2646 @@
+{
+  "duration_seconds": 1.2,
+  "per_ip_rps": 80,
+  "preset": "custom",
+  "provider": "deterministic",
+  "safety": "loopback-only; spoof cases use X-Forwarded-For headers from trusted localhost, not packet spoofing",
+  "scenarios": {
+    "dictionary-slug-xff": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 0,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "hung_workers": 0,
+        "latency_ms": {
+          "p50": 2.009,
+          "p95": 5.428,
+          "p99": 7.491
+        },
+        "limited_percent": 0.0,
+        "requests": 15275,
+        "requests_per_second": 12704.62,
+        "statuses": {
+          "204": 15275
+        }
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "no attack events found; preserved 0 learned filters",
+          "wrote 64 filters to /var/folders/70/2q21vhyj4hs2x_v8r4l0mvp80000gn/T/tmpa76yyc8d/filters-53003.json via deterministic",
+          "wrote 64 filters to /var/folders/70/2q21vhyj4hs2x_v8r4l0mvp80000gn/T/tmpa76yyc8d/filters-53003.json via deterministic",
+          "wrote 64 filters to /var/folders/70/2q21vhyj4hs2x_v8r4l0mvp80000gn/T/tmpa76yyc8d/filters-53003.json via deterministic",
+          "wrote 64 filters to /var/folders/70/2q21vhyj4hs2x_v8r4l0mvp80000gn/T/tmpa76yyc8d/filters-53003.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.58,
+            "p95": 3.934,
+            "p99": 10.805
+          },
+          "limited_percent": 0.0,
+          "requests": 21,
+          "requests_per_second": 27.63,
+          "statuses": {
+            "204": 21
+          }
+        },
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 4.057,
+            "p95": 7.415,
+            "p99": 9.558
+          },
+          "limited_percent": 0.0,
+          "requests": 8831,
+          "requests_per_second": 7343.0,
+          "statuses": {
+            "204": 8831
+          }
+        },
+        "events": {
+          "count": 422,
+          "first_detection_seconds": 0.097,
+          "reasons": {
+            "filter_block": 81,
+            "global_observed": 259,
+            "observed": 82
+          },
+          "signature_bases": {
+            "05edcc0a8ba8fe5d": "GET|/api/onboarding/:num|ref|python|*/*",
+            "15d87e626a424589": "GET|/api/catalog/:num|ref|python|*/*",
+            "1956b97183df0312": "GET|/api/dashboard/:num|ref|python|*/*",
+            "26b5cfb8c813fdac": "GET|/api/fulfillment/:num|ref|python|*/*",
+            "26ffb02c81516713": "GET|/api/transactions/:num|ref|node|*/*",
+            "28483db475a31031": "GET|/api/catalog/:num|ref|curl|*/*",
+            "29b849684d1280de": "GET|/api/inventory/:num|ref|curl|*/*",
+            "2b1edcedaeaf49ef": "GET|/api/organization/:num|ref|python|*/*",
+            "2c818910d42b1541": "GET|/api/subscription/:num|ref|python|*/*",
+            "2cc0aaf7ccbafb74": "GET|/api/configuration/:num|ref|curl|*/*",
+            "348c26c553e62aac": "GET|/api/warehouses/:num|ref|mozilla|*/*",
+            "3b2fb828b26b0924": "GET|/api/warehouses/:num|ref|python|*/*",
+            "4080a53d09e00ff5": "GET|/api/organization/:num|ref|node|*/*",
+            "4291478901eed817": "GET|/api/marketplace/:num|ref|mozilla|*/*",
+            "42b8fddce033dca0": "GET|/api/authentication/:num|ref|curl|*/*",
+            "4798e5ec71bbda89": "GET|/api/marketplace/:num|ref|curl|*/*",
+            "4edc93e1d5d04a96": "GET|/api/fulfillment/:num|ref|node|*/*",
+            "50d96403e2540ed5": "GET|/api/transactions/:num|ref|curl|*/*",
+            "518e705ebf2834b2": "GET|/api/inventory/:num|ref|python|*/*",
+            "52a1cddb638012ce": "GET|/api/authentication/:num|ref|node|*/*",
+            "54bf36407ba10b2e": "GET|/api/warehouses/:num|ref|node|*/*",
+            "55ff88d92c952300": "GET|/api/warehouses/:num|ref|curl|*/*",
+            "5db0b2e84767678d": "GET|/api/onboarding/:num|ref|curl|*/*",
+            "5dfe13934125c9a4": "GET|/api/dashboard/:num|ref|node|*/*",
+            "674fcc227aaf6d36": "GET|/api/notifications/:num|ref|mozilla|*/*",
+            "6fa2916f36809b58": "GET|/api/configuration/:num|ref|mozilla|*/*",
+            "72d7dd2760f6a152": "GET|/api/configuration/:num|ref|node|*/*",
+            "7a539da85f28ac56": "GET|/api/dashboard/:num|ref|mozilla|*/*",
+            "7f1ea4c9bbb8ea0f": "GET|/api/catalog/:num|ref|node|*/*",
+            "8a65a4218631c5d5": "GET|/api/transactions/:num|ref|python|*/*",
+            "8bd9a47a04bd07f2": "GET|/api/notifications/:num|ref|python|*/*",
+            "8f1612775ff49173": "GET|/api/onboarding/:num|ref|mozilla|*/*",
+            "90e1d9017b3d6444": "GET|/api/inventory/:num|ref|node|*/*",
+            "91edb59b81de1dcc": "GET|/api/authentication/:num|ref|mozilla|*/*",
+            "9e61d97f39016d3e": "GET|/api/dashboard/:num|ref|curl|*/*",
+            "a01a11e6e64bdec4": "GET|/api/authentication/:num|ref|python|*/*",
+            "a107b6663fa72f1e": "GET|/api/notifications/:num|ref|curl|*/*",
+            "a4906ad825e18571": "GET|/api/marketplace/:num|ref|python|*/*",
+            "ad4148a2d1f7de3b": "GET|/api/transactions/:num|ref|mozilla|*/*",
+            "ad728561fcc53ea1": "GET|/api/organization/:num|ref|mozilla|*/*",
+            "af221f071b801bc7": "GET|/api/subscription/:num|ref|mozilla|*/*",
+            "b3dc9e495edb0af9": "GET|/api/subscription/:num|ref|curl|*/*",
+            "b714707cbd3c7584": "GET|/api/notifications/:num|ref|node|*/*",
+            "bb77c06570f22397": "GET|/api/organization/:num|ref|curl|*/*",
+            "c90d0849785eb9e0": "GET|/api/configuration/:num|ref|python|*/*",
+            "cd47f0f557ddbf18": "GET|/api/fulfillment/:num|ref|curl|*/*",
+            "d3b29427f1d83ae4": "GET|/api/fulfillment/:num|ref|mozilla|*/*",
+            "dbf1003a8e249aff": "GET|/api/catalog/:num|ref|mozilla|*/*",
+            "e2b13b867ba49f1b": "GET|/api/onboarding/:num|ref|node|*/*",
+            "ef5256476caab4f6": "GET|/api/inventory/:num|ref|mozilla|*/*",
+            "f935ce646d584337": "GET|/api/marketplace/:num|ref|node|*/*",
+            "fbfdbb9c2d071267": "GET|/api/subscription/:num|ref|node|*/*"
+          },
+          "unique_signatures": 52
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-inventory-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-notifications-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-subscription-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-transactions-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-onboarding-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-authentication-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-fulfillment-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-configuration-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-warehouses-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-dashboard-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-marketplace-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-organization-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-518e705ebf2834b2",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "518e705ebf2834b2",
+            "signature_basis": "GET|/api/inventory/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-50d96403e2540ed5",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "50d96403e2540ed5",
+            "signature_basis": "GET|/api/transactions/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-a107b6663fa72f1e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "a107b6663fa72f1e",
+            "signature_basis": "GET|/api/notifications/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-d3b29427f1d83ae4",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "d3b29427f1d83ae4",
+            "signature_basis": "GET|/api/fulfillment/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-7a539da85f28ac56",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "7a539da85f28ac56",
+            "signature_basis": "GET|/api/dashboard/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-54bf36407ba10b2e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "54bf36407ba10b2e",
+            "signature_basis": "GET|/api/warehouses/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-e2b13b867ba49f1b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "e2b13b867ba49f1b",
+            "signature_basis": "GET|/api/onboarding/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-348c26c553e62aac",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "348c26c553e62aac",
+            "signature_basis": "GET|/api/warehouses/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-52a1cddb638012ce",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "52a1cddb638012ce",
+            "signature_basis": "GET|/api/authentication/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-72d7dd2760f6a152",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "72d7dd2760f6a152",
+            "signature_basis": "GET|/api/configuration/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-1956b97183df0312",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "1956b97183df0312",
+            "signature_basis": "GET|/api/dashboard/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-42b8fddce033dca0",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "42b8fddce033dca0",
+            "signature_basis": "GET|/api/authentication/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-26b5cfb8c813fdac",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "26b5cfb8c813fdac",
+            "signature_basis": "GET|/api/fulfillment/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-a4906ad825e18571",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "a4906ad825e18571",
+            "signature_basis": "GET|/api/marketplace/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-2b1edcedaeaf49ef",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "2b1edcedaeaf49ef",
+            "signature_basis": "GET|/api/organization/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-8f1612775ff49173",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "8f1612775ff49173",
+            "signature_basis": "GET|/api/onboarding/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-af221f071b801bc7",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "af221f071b801bc7",
+            "signature_basis": "GET|/api/subscription/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-26ffb02c81516713",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "26ffb02c81516713",
+            "signature_basis": "GET|/api/transactions/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-b714707cbd3c7584",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "b714707cbd3c7584",
+            "signature_basis": "GET|/api/notifications/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-b3dc9e495edb0af9",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "b3dc9e495edb0af9",
+            "signature_basis": "GET|/api/subscription/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-cd47f0f557ddbf18",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "cd47f0f557ddbf18",
+            "signature_basis": "GET|/api/fulfillment/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-4291478901eed817",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4291478901eed817",
+            "signature_basis": "GET|/api/marketplace/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-4080a53d09e00ff5",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4080a53d09e00ff5",
+            "signature_basis": "GET|/api/organization/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-29b849684d1280de",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "29b849684d1280de",
+            "signature_basis": "GET|/api/inventory/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-fbfdbb9c2d071267",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "fbfdbb9c2d071267",
+            "signature_basis": "GET|/api/subscription/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-8bd9a47a04bd07f2",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "8bd9a47a04bd07f2",
+            "signature_basis": "GET|/api/notifications/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-2cc0aaf7ccbafb74",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "2cc0aaf7ccbafb74",
+            "signature_basis": "GET|/api/configuration/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-c90d0849785eb9e0",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "c90d0849785eb9e0",
+            "signature_basis": "GET|/api/configuration/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-2c818910d42b1541",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "2c818910d42b1541",
+            "signature_basis": "GET|/api/subscription/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-6fa2916f36809b58",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "6fa2916f36809b58",
+            "signature_basis": "GET|/api/configuration/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5db0b2e84767678d",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5db0b2e84767678d",
+            "signature_basis": "GET|/api/onboarding/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-90e1d9017b3d6444",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "90e1d9017b3d6444",
+            "signature_basis": "GET|/api/inventory/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-91edb59b81de1dcc",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "91edb59b81de1dcc",
+            "signature_basis": "GET|/api/authentication/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-ad728561fcc53ea1",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "ad728561fcc53ea1",
+            "signature_basis": "GET|/api/organization/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-4798e5ec71bbda89",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4798e5ec71bbda89",
+            "signature_basis": "GET|/api/marketplace/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-9e61d97f39016d3e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "9e61d97f39016d3e",
+            "signature_basis": "GET|/api/dashboard/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-ad4148a2d1f7de3b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "ad4148a2d1f7de3b",
+            "signature_basis": "GET|/api/transactions/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-05edcc0a8ba8fe5d",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "05edcc0a8ba8fe5d",
+            "signature_basis": "GET|/api/onboarding/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-a01a11e6e64bdec4",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "a01a11e6e64bdec4",
+            "signature_basis": "GET|/api/authentication/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-674fcc227aaf6d36",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "674fcc227aaf6d36",
+            "signature_basis": "GET|/api/notifications/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-8a65a4218631c5d5",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "8a65a4218631c5d5",
+            "signature_basis": "GET|/api/transactions/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-f935ce646d584337",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "f935ce646d584337",
+            "signature_basis": "GET|/api/marketplace/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-bb77c06570f22397",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "bb77c06570f22397",
+            "signature_basis": "GET|/api/organization/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-3b2fb828b26b0924",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "3b2fb828b26b0924",
+            "signature_basis": "GET|/api/warehouses/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-4edc93e1d5d04a96",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4edc93e1d5d04a96",
+            "signature_basis": "GET|/api/fulfillment/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-7f1ea4c9bbb8ea0f",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "7f1ea4c9bbb8ea0f",
+            "signature_basis": "GET|/api/catalog/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-28483db475a31031",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "28483db475a31031",
+            "signature_basis": "GET|/api/catalog/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-15d87e626a424589",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "15d87e626a424589",
+            "signature_basis": "GET|/api/catalog/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5dfe13934125c9a4",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5dfe13934125c9a4",
+            "signature_basis": "GET|/api/dashboard/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-dbf1003a8e249aff",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "dbf1003a8e249aff",
+            "signature_basis": "GET|/api/catalog/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-ef5256476caab4f6",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "ef5256476caab4f6",
+            "signature_basis": "GET|/api/inventory/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-55ff88d92c952300",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "55ff88d92c952300",
+            "signature_basis": "GET|/api/warehouses/:num|ref|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 1.203,
+        "filters_learned": 64,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/inventory/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-inventory-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/notifications/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-notifications-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/subscription/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-subscription-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/transactions/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-transactions-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/onboarding/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-onboarding-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/authentication/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-authentication-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/fulfillment/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-fulfillment-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/configuration/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-configuration-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/warehouses/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-warehouses-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/dashboard/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-dashboard-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/marketplace/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-marketplace-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/organization/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-organization-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "518e705ebf2834b2"
+            },
+            "enabled": true,
+            "id": "codex-learned-518e705ebf2834b2",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "50d96403e2540ed5"
+            },
+            "enabled": true,
+            "id": "codex-learned-50d96403e2540ed5",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "a107b6663fa72f1e"
+            },
+            "enabled": true,
+            "id": "codex-learned-a107b6663fa72f1e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "d3b29427f1d83ae4"
+            },
+            "enabled": true,
+            "id": "codex-learned-d3b29427f1d83ae4",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "7a539da85f28ac56"
+            },
+            "enabled": true,
+            "id": "codex-learned-7a539da85f28ac56",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "54bf36407ba10b2e"
+            },
+            "enabled": true,
+            "id": "codex-learned-54bf36407ba10b2e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "e2b13b867ba49f1b"
+            },
+            "enabled": true,
+            "id": "codex-learned-e2b13b867ba49f1b",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "348c26c553e62aac"
+            },
+            "enabled": true,
+            "id": "codex-learned-348c26c553e62aac",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "52a1cddb638012ce"
+            },
+            "enabled": true,
+            "id": "codex-learned-52a1cddb638012ce",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "72d7dd2760f6a152"
+            },
+            "enabled": true,
+            "id": "codex-learned-72d7dd2760f6a152",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "1956b97183df0312"
+            },
+            "enabled": true,
+            "id": "codex-learned-1956b97183df0312",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "42b8fddce033dca0"
+            },
+            "enabled": true,
+            "id": "codex-learned-42b8fddce033dca0",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "26b5cfb8c813fdac"
+            },
+            "enabled": true,
+            "id": "codex-learned-26b5cfb8c813fdac",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "a4906ad825e18571"
+            },
+            "enabled": true,
+            "id": "codex-learned-a4906ad825e18571",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "2b1edcedaeaf49ef"
+            },
+            "enabled": true,
+            "id": "codex-learned-2b1edcedaeaf49ef",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "8f1612775ff49173"
+            },
+            "enabled": true,
+            "id": "codex-learned-8f1612775ff49173",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "af221f071b801bc7"
+            },
+            "enabled": true,
+            "id": "codex-learned-af221f071b801bc7",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "26ffb02c81516713"
+            },
+            "enabled": true,
+            "id": "codex-learned-26ffb02c81516713",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "b714707cbd3c7584"
+            },
+            "enabled": true,
+            "id": "codex-learned-b714707cbd3c7584",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "b3dc9e495edb0af9"
+            },
+            "enabled": true,
+            "id": "codex-learned-b3dc9e495edb0af9",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "cd47f0f557ddbf18"
+            },
+            "enabled": true,
+            "id": "codex-learned-cd47f0f557ddbf18",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4291478901eed817"
+            },
+            "enabled": true,
+            "id": "codex-learned-4291478901eed817",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4080a53d09e00ff5"
+            },
+            "enabled": true,
+            "id": "codex-learned-4080a53d09e00ff5",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "29b849684d1280de"
+            },
+            "enabled": true,
+            "id": "codex-learned-29b849684d1280de",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "fbfdbb9c2d071267"
+            },
+            "enabled": true,
+            "id": "codex-learned-fbfdbb9c2d071267",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "8bd9a47a04bd07f2"
+            },
+            "enabled": true,
+            "id": "codex-learned-8bd9a47a04bd07f2",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "2cc0aaf7ccbafb74"
+            },
+            "enabled": true,
+            "id": "codex-learned-2cc0aaf7ccbafb74",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "c90d0849785eb9e0"
+            },
+            "enabled": true,
+            "id": "codex-learned-c90d0849785eb9e0",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "2c818910d42b1541"
+            },
+            "enabled": true,
+            "id": "codex-learned-2c818910d42b1541",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "6fa2916f36809b58"
+            },
+            "enabled": true,
+            "id": "codex-learned-6fa2916f36809b58",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5db0b2e84767678d"
+            },
+            "enabled": true,
+            "id": "codex-learned-5db0b2e84767678d",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "90e1d9017b3d6444"
+            },
+            "enabled": true,
+            "id": "codex-learned-90e1d9017b3d6444",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "91edb59b81de1dcc"
+            },
+            "enabled": true,
+            "id": "codex-learned-91edb59b81de1dcc",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "ad728561fcc53ea1"
+            },
+            "enabled": true,
+            "id": "codex-learned-ad728561fcc53ea1",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4798e5ec71bbda89"
+            },
+            "enabled": true,
+            "id": "codex-learned-4798e5ec71bbda89",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "9e61d97f39016d3e"
+            },
+            "enabled": true,
+            "id": "codex-learned-9e61d97f39016d3e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "ad4148a2d1f7de3b"
+            },
+            "enabled": true,
+            "id": "codex-learned-ad4148a2d1f7de3b",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "05edcc0a8ba8fe5d"
+            },
+            "enabled": true,
+            "id": "codex-learned-05edcc0a8ba8fe5d",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "a01a11e6e64bdec4"
+            },
+            "enabled": true,
+            "id": "codex-learned-a01a11e6e64bdec4",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "674fcc227aaf6d36"
+            },
+            "enabled": true,
+            "id": "codex-learned-674fcc227aaf6d36",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "8a65a4218631c5d5"
+            },
+            "enabled": true,
+            "id": "codex-learned-8a65a4218631c5d5",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f935ce646d584337"
+            },
+            "enabled": true,
+            "id": "codex-learned-f935ce646d584337",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "bb77c06570f22397"
+            },
+            "enabled": true,
+            "id": "codex-learned-bb77c06570f22397",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "3b2fb828b26b0924"
+            },
+            "enabled": true,
+            "id": "codex-learned-3b2fb828b26b0924",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4edc93e1d5d04a96"
+            },
+            "enabled": true,
+            "id": "codex-learned-4edc93e1d5d04a96",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "7f1ea4c9bbb8ea0f"
+            },
+            "enabled": true,
+            "id": "codex-learned-7f1ea4c9bbb8ea0f",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "28483db475a31031"
+            },
+            "enabled": true,
+            "id": "codex-learned-28483db475a31031",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "15d87e626a424589"
+            },
+            "enabled": true,
+            "id": "codex-learned-15d87e626a424589",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5dfe13934125c9a4"
+            },
+            "enabled": true,
+            "id": "codex-learned-5dfe13934125c9a4",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "dbf1003a8e249aff"
+            },
+            "enabled": true,
+            "id": "codex-learned-dbf1003a8e249aff",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "ef5256476caab4f6"
+            },
+            "enabled": true,
+            "id": "codex-learned-ef5256476caab4f6",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "55ff88d92c952300"
+            },
+            "enabled": true,
+            "id": "codex-learned-55ff88d92c952300",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 9.53,
+          "blocked_percent": 90.47,
+          "errors": 0,
+          "first_block_seconds": 0.1,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 3.613,
+            "p95": 6.798,
+            "p99": 8.771
+          },
+          "limited_percent": 0.0,
+          "requests": 9909,
+          "requests_per_second": 8240.79,
+          "statuses": {
+            "204": 944,
+            "403": 8965
+          }
+        },
+        "scenario_description": "Rotating XFF with dictionary API slugs that avoid :token normalization",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 90.47,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "no attack events found; preserved 0 learned filters",
+          "wrote 12 filters to /var/folders/70/2q21vhyj4hs2x_v8r4l0mvp80000gn/T/tmpa76yyc8d/filters-51713.json via deterministic",
+          "wrote 12 filters to /var/folders/70/2q21vhyj4hs2x_v8r4l0mvp80000gn/T/tmpa76yyc8d/filters-51713.json via deterministic",
+          "wrote 60 filters to /var/folders/70/2q21vhyj4hs2x_v8r4l0mvp80000gn/T/tmpa76yyc8d/filters-51713.json via deterministic",
+          "wrote 60 filters to /var/folders/70/2q21vhyj4hs2x_v8r4l0mvp80000gn/T/tmpa76yyc8d/filters-51713.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.912,
+            "p95": 4.138,
+            "p99": 24.404
+          },
+          "limited_percent": 0.0,
+          "requests": 21,
+          "requests_per_second": 27.26,
+          "statuses": {
+            "204": 21
+          }
+        },
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 4.513,
+            "p95": 8.916,
+            "p99": 14.528
+          },
+          "limited_percent": 0.0,
+          "requests": 7698,
+          "requests_per_second": 6402.42,
+          "statuses": {
+            "204": 7698
+          }
+        },
+        "events": {
+          "count": 394,
+          "first_detection_seconds": 0.107,
+          "reasons": {
+            "filter_block": 71,
+            "global_observed": 243,
+            "observed": 80
+          },
+          "signature_bases": {
+            "05edcc0a8ba8fe5d": "GET|/api/onboarding/:num|ref|python|*/*",
+            "15d87e626a424589": "GET|/api/catalog/:num|ref|python|*/*",
+            "1956b97183df0312": "GET|/api/dashboard/:num|ref|python|*/*",
+            "26b5cfb8c813fdac": "GET|/api/fulfillment/:num|ref|python|*/*",
+            "26ffb02c81516713": "GET|/api/transactions/:num|ref|node|*/*",
+            "28483db475a31031": "GET|/api/catalog/:num|ref|curl|*/*",
+            "29b849684d1280de": "GET|/api/inventory/:num|ref|curl|*/*",
+            "2b1edcedaeaf49ef": "GET|/api/organization/:num|ref|python|*/*",
+            "2c818910d42b1541": "GET|/api/subscription/:num|ref|python|*/*",
+            "2cc0aaf7ccbafb74": "GET|/api/configuration/:num|ref|curl|*/*",
+            "348c26c553e62aac": "GET|/api/warehouses/:num|ref|mozilla|*/*",
+            "3b2fb828b26b0924": "GET|/api/warehouses/:num|ref|python|*/*",
+            "4080a53d09e00ff5": "GET|/api/organization/:num|ref|node|*/*",
+            "4291478901eed817": "GET|/api/marketplace/:num|ref|mozilla|*/*",
+            "42b8fddce033dca0": "GET|/api/authentication/:num|ref|curl|*/*",
+            "4798e5ec71bbda89": "GET|/api/marketplace/:num|ref|curl|*/*",
+            "4edc93e1d5d04a96": "GET|/api/fulfillment/:num|ref|node|*/*",
+            "50d96403e2540ed5": "GET|/api/transactions/:num|ref|curl|*/*",
+            "518e705ebf2834b2": "GET|/api/inventory/:num|ref|python|*/*",
+            "52a1cddb638012ce": "GET|/api/authentication/:num|ref|node|*/*",
+            "54bf36407ba10b2e": "GET|/api/warehouses/:num|ref|node|*/*",
+            "55ff88d92c952300": "GET|/api/warehouses/:num|ref|curl|*/*",
+            "5db0b2e84767678d": "GET|/api/onboarding/:num|ref|curl|*/*",
+            "5dfe13934125c9a4": "GET|/api/dashboard/:num|ref|node|*/*",
+            "674fcc227aaf6d36": "GET|/api/notifications/:num|ref|mozilla|*/*",
+            "6fa2916f36809b58": "GET|/api/configuration/:num|ref|mozilla|*/*",
+            "72d7dd2760f6a152": "GET|/api/configuration/:num|ref|node|*/*",
+            "7a539da85f28ac56": "GET|/api/dashboard/:num|ref|mozilla|*/*",
+            "7f1ea4c9bbb8ea0f": "GET|/api/catalog/:num|ref|node|*/*",
+            "8a65a4218631c5d5": "GET|/api/transactions/:num|ref|python|*/*",
+            "8bd9a47a04bd07f2": "GET|/api/notifications/:num|ref|python|*/*",
+            "8f1612775ff49173": "GET|/api/onboarding/:num|ref|mozilla|*/*",
+            "90e1d9017b3d6444": "GET|/api/inventory/:num|ref|node|*/*",
+            "91edb59b81de1dcc": "GET|/api/authentication/:num|ref|mozilla|*/*",
+            "9e61d97f39016d3e": "GET|/api/dashboard/:num|ref|curl|*/*",
+            "a01a11e6e64bdec4": "GET|/api/authentication/:num|ref|python|*/*",
+            "a107b6663fa72f1e": "GET|/api/notifications/:num|ref|curl|*/*",
+            "a4906ad825e18571": "GET|/api/marketplace/:num|ref|python|*/*",
+            "ad4148a2d1f7de3b": "GET|/api/transactions/:num|ref|mozilla|*/*",
+            "ad728561fcc53ea1": "GET|/api/organization/:num|ref|mozilla|*/*",
+            "af221f071b801bc7": "GET|/api/subscription/:num|ref|mozilla|*/*",
+            "b3dc9e495edb0af9": "GET|/api/subscription/:num|ref|curl|*/*",
+            "b714707cbd3c7584": "GET|/api/notifications/:num|ref|node|*/*",
+            "bb77c06570f22397": "GET|/api/organization/:num|ref|curl|*/*",
+            "c90d0849785eb9e0": "GET|/api/configuration/:num|ref|python|*/*",
+            "cd47f0f557ddbf18": "GET|/api/fulfillment/:num|ref|curl|*/*",
+            "d3b29427f1d83ae4": "GET|/api/fulfillment/:num|ref|mozilla|*/*",
+            "dbf1003a8e249aff": "GET|/api/catalog/:num|ref|mozilla|*/*",
+            "e2b13b867ba49f1b": "GET|/api/onboarding/:num|ref|node|*/*",
+            "ef5256476caab4f6": "GET|/api/inventory/:num|ref|mozilla|*/*",
+            "f935ce646d584337": "GET|/api/marketplace/:num|ref|node|*/*",
+            "fbfdbb9c2d071267": "GET|/api/subscription/:num|ref|node|*/*"
+          },
+          "unique_signatures": 52
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-notifications-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-inventory-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-subscription-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-onboarding-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-transactions-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-authentication-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-warehouses-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-marketplace-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-configuration-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-fulfillment-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-dashboard-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-organization-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          }
+        ],
+        "filter_write_seconds": 1.203,
+        "filters_learned": 12,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/notifications/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-notifications-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/inventory/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-inventory-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/subscription/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-subscription-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/onboarding/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-onboarding-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/transactions/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-transactions-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/authentication/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-authentication-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/warehouses/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-warehouses-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/marketplace/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-marketplace-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/configuration/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-configuration-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/fulfillment/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-fulfillment-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/dashboard/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-dashboard-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/organization/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-organization-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 15.32,
+          "blocked_percent": 84.68,
+          "errors": 0,
+          "first_block_seconds": 0.109,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 3.688,
+            "p95": 7.052,
+            "p99": 9.288
+          },
+          "limited_percent": 0.0,
+          "requests": 9688,
+          "requests_per_second": 8055.19,
+          "statuses": {
+            "204": 1484,
+            "403": 8204
+          }
+        },
+        "scenario_description": "Rotating XFF with dictionary API slugs that avoid :token normalization",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 84.68,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 3.996,
+            "p95": 7.132,
+            "p99": 9.077
+          },
+          "limited_percent": 0.0,
+          "requests": 9062,
+          "requests_per_second": 7534.68,
+          "statuses": {
+            "204": 9062
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with dictionary API slugs that avoid :token normalization",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 3.994,
+            "p95": 6.971,
+            "p99": 8.847
+          },
+          "limited_percent": 0.0,
+          "requests": 9073,
+          "requests_per_second": 7543.93,
+          "statuses": {
+            "204": 9073
+          }
+        },
+        "events": {
+          "count": 181,
+          "first_detection_seconds": 0.091,
+          "reasons": {
+            "global_observed": 129,
+            "observed": 52
+          },
+          "signature_bases": {
+            "05edcc0a8ba8fe5d": "GET|/api/onboarding/:num|ref|python|*/*",
+            "15d87e626a424589": "GET|/api/catalog/:num|ref|python|*/*",
+            "1956b97183df0312": "GET|/api/dashboard/:num|ref|python|*/*",
+            "26b5cfb8c813fdac": "GET|/api/fulfillment/:num|ref|python|*/*",
+            "26ffb02c81516713": "GET|/api/transactions/:num|ref|node|*/*",
+            "28483db475a31031": "GET|/api/catalog/:num|ref|curl|*/*",
+            "29b849684d1280de": "GET|/api/inventory/:num|ref|curl|*/*",
+            "2b1edcedaeaf49ef": "GET|/api/organization/:num|ref|python|*/*",
+            "2c818910d42b1541": "GET|/api/subscription/:num|ref|python|*/*",
+            "2cc0aaf7ccbafb74": "GET|/api/configuration/:num|ref|curl|*/*",
+            "348c26c553e62aac": "GET|/api/warehouses/:num|ref|mozilla|*/*",
+            "3b2fb828b26b0924": "GET|/api/warehouses/:num|ref|python|*/*",
+            "4080a53d09e00ff5": "GET|/api/organization/:num|ref|node|*/*",
+            "4291478901eed817": "GET|/api/marketplace/:num|ref|mozilla|*/*",
+            "42b8fddce033dca0": "GET|/api/authentication/:num|ref|curl|*/*",
+            "4798e5ec71bbda89": "GET|/api/marketplace/:num|ref|curl|*/*",
+            "4edc93e1d5d04a96": "GET|/api/fulfillment/:num|ref|node|*/*",
+            "50d96403e2540ed5": "GET|/api/transactions/:num|ref|curl|*/*",
+            "518e705ebf2834b2": "GET|/api/inventory/:num|ref|python|*/*",
+            "52a1cddb638012ce": "GET|/api/authentication/:num|ref|node|*/*",
+            "54bf36407ba10b2e": "GET|/api/warehouses/:num|ref|node|*/*",
+            "55ff88d92c952300": "GET|/api/warehouses/:num|ref|curl|*/*",
+            "5db0b2e84767678d": "GET|/api/onboarding/:num|ref|curl|*/*",
+            "5dfe13934125c9a4": "GET|/api/dashboard/:num|ref|node|*/*",
+            "674fcc227aaf6d36": "GET|/api/notifications/:num|ref|mozilla|*/*",
+            "6fa2916f36809b58": "GET|/api/configuration/:num|ref|mozilla|*/*",
+            "72d7dd2760f6a152": "GET|/api/configuration/:num|ref|node|*/*",
+            "7a539da85f28ac56": "GET|/api/dashboard/:num|ref|mozilla|*/*",
+            "7f1ea4c9bbb8ea0f": "GET|/api/catalog/:num|ref|node|*/*",
+            "8a65a4218631c5d5": "GET|/api/transactions/:num|ref|python|*/*",
+            "8bd9a47a04bd07f2": "GET|/api/notifications/:num|ref|python|*/*",
+            "8f1612775ff49173": "GET|/api/onboarding/:num|ref|mozilla|*/*",
+            "90e1d9017b3d6444": "GET|/api/inventory/:num|ref|node|*/*",
+            "91edb59b81de1dcc": "GET|/api/authentication/:num|ref|mozilla|*/*",
+            "9e61d97f39016d3e": "GET|/api/dashboard/:num|ref|curl|*/*",
+            "a01a11e6e64bdec4": "GET|/api/authentication/:num|ref|python|*/*",
+            "a107b6663fa72f1e": "GET|/api/notifications/:num|ref|curl|*/*",
+            "a4906ad825e18571": "GET|/api/marketplace/:num|ref|python|*/*",
+            "ad4148a2d1f7de3b": "GET|/api/transactions/:num|ref|mozilla|*/*",
+            "ad728561fcc53ea1": "GET|/api/organization/:num|ref|mozilla|*/*",
+            "af221f071b801bc7": "GET|/api/subscription/:num|ref|mozilla|*/*",
+            "b3dc9e495edb0af9": "GET|/api/subscription/:num|ref|curl|*/*",
+            "b714707cbd3c7584": "GET|/api/notifications/:num|ref|node|*/*",
+            "bb77c06570f22397": "GET|/api/organization/:num|ref|curl|*/*",
+            "c90d0849785eb9e0": "GET|/api/configuration/:num|ref|python|*/*",
+            "cd47f0f557ddbf18": "GET|/api/fulfillment/:num|ref|curl|*/*",
+            "d3b29427f1d83ae4": "GET|/api/fulfillment/:num|ref|mozilla|*/*",
+            "dbf1003a8e249aff": "GET|/api/catalog/:num|ref|mozilla|*/*",
+            "e2b13b867ba49f1b": "GET|/api/onboarding/:num|ref|node|*/*",
+            "ef5256476caab4f6": "GET|/api/inventory/:num|ref|mozilla|*/*",
+            "f935ce646d584337": "GET|/api/marketplace/:num|ref|node|*/*",
+            "fbfdbb9c2d071267": "GET|/api/subscription/:num|ref|node|*/*"
+          },
+          "unique_signatures": 52
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with dictionary API slugs that avoid :token normalization",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 3.642,
+            "p95": 6.799,
+            "p99": 8.971
+          },
+          "limited_percent": 0.0,
+          "requests": 9811,
+          "requests_per_second": 8157.97,
+          "statuses": {
+            "403": 9811
+          }
+        },
+        "events": {
+          "count": 234,
+          "first_detection_seconds": 0.082,
+          "reasons": {
+            "filter_block": 96,
+            "global_observed": 138
+          },
+          "signature_bases": {
+            "05edcc0a8ba8fe5d": "GET|/api/onboarding/:num|ref|python|*/*",
+            "15d87e626a424589": "GET|/api/catalog/:num|ref|python|*/*",
+            "1956b97183df0312": "GET|/api/dashboard/:num|ref|python|*/*",
+            "26b5cfb8c813fdac": "GET|/api/fulfillment/:num|ref|python|*/*",
+            "26ffb02c81516713": "GET|/api/transactions/:num|ref|node|*/*",
+            "28483db475a31031": "GET|/api/catalog/:num|ref|curl|*/*",
+            "29b849684d1280de": "GET|/api/inventory/:num|ref|curl|*/*",
+            "2b1edcedaeaf49ef": "GET|/api/organization/:num|ref|python|*/*",
+            "2c818910d42b1541": "GET|/api/subscription/:num|ref|python|*/*",
+            "2cc0aaf7ccbafb74": "GET|/api/configuration/:num|ref|curl|*/*",
+            "348c26c553e62aac": "GET|/api/warehouses/:num|ref|mozilla|*/*",
+            "3b2fb828b26b0924": "GET|/api/warehouses/:num|ref|python|*/*",
+            "4080a53d09e00ff5": "GET|/api/organization/:num|ref|node|*/*",
+            "4291478901eed817": "GET|/api/marketplace/:num|ref|mozilla|*/*",
+            "42b8fddce033dca0": "GET|/api/authentication/:num|ref|curl|*/*",
+            "4798e5ec71bbda89": "GET|/api/marketplace/:num|ref|curl|*/*",
+            "4edc93e1d5d04a96": "GET|/api/fulfillment/:num|ref|node|*/*",
+            "50d96403e2540ed5": "GET|/api/transactions/:num|ref|curl|*/*",
+            "518e705ebf2834b2": "GET|/api/inventory/:num|ref|python|*/*",
+            "52a1cddb638012ce": "GET|/api/authentication/:num|ref|node|*/*",
+            "54bf36407ba10b2e": "GET|/api/warehouses/:num|ref|node|*/*",
+            "55ff88d92c952300": "GET|/api/warehouses/:num|ref|curl|*/*",
+            "5db0b2e84767678d": "GET|/api/onboarding/:num|ref|curl|*/*",
+            "5dfe13934125c9a4": "GET|/api/dashboard/:num|ref|node|*/*",
+            "674fcc227aaf6d36": "GET|/api/notifications/:num|ref|mozilla|*/*",
+            "6fa2916f36809b58": "GET|/api/configuration/:num|ref|mozilla|*/*",
+            "72d7dd2760f6a152": "GET|/api/configuration/:num|ref|node|*/*",
+            "7a539da85f28ac56": "GET|/api/dashboard/:num|ref|mozilla|*/*",
+            "7f1ea4c9bbb8ea0f": "GET|/api/catalog/:num|ref|node|*/*",
+            "8a65a4218631c5d5": "GET|/api/transactions/:num|ref|python|*/*",
+            "8bd9a47a04bd07f2": "GET|/api/notifications/:num|ref|python|*/*",
+            "8f1612775ff49173": "GET|/api/onboarding/:num|ref|mozilla|*/*",
+            "90e1d9017b3d6444": "GET|/api/inventory/:num|ref|node|*/*",
+            "91edb59b81de1dcc": "GET|/api/authentication/:num|ref|mozilla|*/*",
+            "9e61d97f39016d3e": "GET|/api/dashboard/:num|ref|curl|*/*",
+            "a01a11e6e64bdec4": "GET|/api/authentication/:num|ref|python|*/*",
+            "a107b6663fa72f1e": "GET|/api/notifications/:num|ref|curl|*/*",
+            "a4906ad825e18571": "GET|/api/marketplace/:num|ref|python|*/*",
+            "ad4148a2d1f7de3b": "GET|/api/transactions/:num|ref|mozilla|*/*",
+            "ad728561fcc53ea1": "GET|/api/organization/:num|ref|mozilla|*/*",
+            "af221f071b801bc7": "GET|/api/subscription/:num|ref|mozilla|*/*",
+            "b3dc9e495edb0af9": "GET|/api/subscription/:num|ref|curl|*/*",
+            "b714707cbd3c7584": "GET|/api/notifications/:num|ref|node|*/*",
+            "bb77c06570f22397": "GET|/api/organization/:num|ref|curl|*/*",
+            "c90d0849785eb9e0": "GET|/api/configuration/:num|ref|python|*/*",
+            "cd47f0f557ddbf18": "GET|/api/fulfillment/:num|ref|curl|*/*",
+            "d3b29427f1d83ae4": "GET|/api/fulfillment/:num|ref|mozilla|*/*",
+            "dbf1003a8e249aff": "GET|/api/catalog/:num|ref|mozilla|*/*",
+            "e2b13b867ba49f1b": "GET|/api/onboarding/:num|ref|node|*/*",
+            "ef5256476caab4f6": "GET|/api/inventory/:num|ref|mozilla|*/*",
+            "f935ce646d584337": "GET|/api/marketplace/:num|ref|node|*/*",
+            "fbfdbb9c2d071267": "GET|/api/subscription/:num|ref|node|*/*"
+          },
+          "unique_signatures": 52
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with dictionary API slugs that avoid :token normalization",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      }
+    }
+  },
+  "signature_threshold_per_second": 60,
+  "workdir": "/var/folders/70/2q21vhyj4hs2x_v8r4l0mvp80000gn/T/tmpa76yyc8d",
+  "workers": 32
+}

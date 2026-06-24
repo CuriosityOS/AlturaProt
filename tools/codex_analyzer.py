@@ -21,6 +21,7 @@ from typing import Any
 
 
 SAFE_ID = re.compile(r"[^a-zA-Z0-9_.:-]+")
+FILTER_TTL_MAX_SECONDS = 24 * 60 * 60
 
 DEFAULT_PROVIDER_CONFIG = {
     "selected_provider": "codex",
@@ -52,18 +53,53 @@ DEFAULT_PROVIDER_CONFIG = {
 
 SYSTEM_PROMPT = """You convert defensive HTTP flood telemetry into safe AlturaProt filter rules.
 Return JSON only. Prefer narrow signature-based adaptive filters. Treat rate_limited,
-global_rate_limited, per_ip_rate_limited, and filter_block events as strong evidence.
+global_rate_limited, per_ip_rate_limited, signature_rate_limited,
+path_shape_rate_limited, trusted_proxy_rate_limited, filter_block, and body_too_large
+events as strong evidence.
 Treat observed-only volume as weak evidence unless the prompt explicitly allows it.
 Do not generate commands, code execution, network instructions, broad IP blocks, or
 always-on catch-all filters. Prefer path_shape over broad path_prefix filters when
-many unique signatures share the same high-entropy path shape."""
+many unique signatures share the same high-entropy or route-family path shape.
+Do not hardcode benign route-family exemptions; use the observed event reasons,
+signature cardinality, and configured min_count to decide whether a shape is
+attack evidence. Dictionary slug and :hex path shapes are valid adaptive targets."""
 
 STRONG_ATTACK_REASONS = {
     "rate_limited",
     "global_rate_limited",
     "per_ip_rate_limited",
+    "signature_rate_limited",
+    "path_shape_rate_limited",
+    "trusted_proxy_rate_limited",
     "filter_block",
+    "body_too_large",
 }
+
+def is_learnable_attack_shape(shape: str) -> bool:
+    if ":token" in shape or ":short-token" in shape or ":hex" in shape:
+        return True
+    parts = [part for part in shape.split("/") if part]
+    if len(parts) >= 3 and parts[0] == "api" and parts[-1] == ":num":
+        segment = parts[1]
+        if segment not in {":num", ":token", ":hex", ":uuid"}:
+            return True
+    return False
+
+def event_has_runtime_signature_basis(event: dict[str, Any]) -> bool:
+    basis = event.get("signature_basis")
+    return isinstance(basis, str) and basis.count("|") >= 4
+
+
+def bounded_ttl_seconds(value: Any, fallback: int = 60) -> int:
+    try:
+        ttl = int(value)
+    except (TypeError, ValueError):
+        ttl = int(fallback)
+    if ttl <= 0:
+        ttl = int(fallback)
+    if ttl <= 0:
+        ttl = 60
+    return max(1, min(ttl, FILTER_TTL_MAX_SECONDS))
 
 
 def parse_args() -> argparse.Namespace:
@@ -93,12 +129,31 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def event_log_paths(path: Path) -> list[Path]:
+    backups: list[tuple[int, Path]] = []
+    if path.parent.exists():
+        prefix = f"{path.name}."
+        for candidate in path.parent.glob(f"{path.name}.*"):
+            if not candidate.name.startswith(prefix):
+                continue
+            suffix = candidate.name[len(prefix) :]
+            if suffix.isdigit():
+                backups.append((int(suffix), candidate))
+    return [candidate for _, candidate in sorted(backups, reverse=True)] + [path]
+
+
 def read_events(path: Path, max_events: int) -> list[dict[str, Any]]:
-    if not path.exists():
+    if max_events <= 0:
         return []
-    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    lines: collections.deque[str] = collections.deque(maxlen=max_events)
+    for event_path in event_log_paths(path):
+        if not event_path.exists():
+            continue
+        with event_path.open("r", encoding="utf-8", errors="replace") as handle:
+            for line in handle:
+                lines.append(line)
     events: list[dict[str, Any]] = []
-    for line in lines[-max_events:]:
+    for line in lines:
         try:
             event = json.loads(line)
         except json.JSONDecodeError:
@@ -114,6 +169,7 @@ def deterministic_signature_filters(
     ttl_seconds: int,
     learn_observed: bool = False,
 ) -> list[dict[str, Any]]:
+    ttl_seconds = bounded_ttl_seconds(ttl_seconds)
     grouped: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
     for event in events:
         grouped[event["signature"]].append(event)
@@ -157,10 +213,11 @@ def deterministic_path_shape_filters(
     ttl_seconds: int,
     learn_observed: bool = False,
 ) -> list[dict[str, Any]]:
+    ttl_seconds = bounded_ttl_seconds(ttl_seconds)
     grouped: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
     for event in events:
         shape = event.get("path_shape")
-        if isinstance(shape, str) and shape and ":token" in shape:
+        if isinstance(shape, str) and shape and is_learnable_attack_shape(shape):
             grouped[shape].append(event)
 
     filters = []
@@ -212,6 +269,7 @@ def deterministic_filters(
     ttl_seconds: int,
     learn_observed: bool = False,
 ) -> list[dict[str, Any]]:
+    ttl_seconds = bounded_ttl_seconds(ttl_seconds)
     shape_filters = deterministic_path_shape_filters(events, min_count, ttl_seconds, learn_observed)
     signature_filters = deterministic_signature_filters(events, min_count, ttl_seconds, learn_observed)
     merged: dict[str, dict[str, Any]] = {}
@@ -223,6 +281,7 @@ def deterministic_filters(
 
 
 def build_prompt(events: list[dict[str, Any]], min_count: int, ttl_seconds: int) -> dict[str, Any]:
+    ttl_seconds = bounded_ttl_seconds(ttl_seconds)
     return {
         "task": "Analyze these AlturaProt HTTP attack events and propose defensive adaptive filters.",
         "rules": [
@@ -231,11 +290,13 @@ def build_prompt(events: list[dict[str, Any]], min_count: int, ttl_seconds: int)
             "FilterRule fields: id, enabled, adaptive, priority, ttl_seconds, condition, action.",
             "condition may only contain signature, methods, path_exact, path_prefix, path_contains, path_shape, query_contains, user_agent_contains, headers.",
             "action must be {\"kind\":\"block\",\"status\":403,\"body\":\"blocked by adaptive filter\\n\"}.",
-            "Prefer events whose reason is rate_limited, global_rate_limited, per_ip_rate_limited, or filter_block.",
+            "Prefer events whose reason is rate_limited, global_rate_limited, per_ip_rate_limited, signature_rate_limited, path_shape_rate_limited, trusted_proxy_rate_limited, filter_block, or body_too_large.",
             "Observed-only volume is weak evidence; use it only when allow_observed_learning is true.",
             "For every strong signature group at or above min_count, include at least one adaptive signature filter unless a narrower condition is clearly safer.",
             "Prefer signature conditions. Add path/user-agent conditions only when they are obvious and reduce false positives.",
             "If many observed events have unique signatures but the same path_shape, prefer a path_shape filter over a broad /api path_prefix filter.",
+            "Do not treat source-known benign-looking route families as automatic exemptions; require the same evidence threshold for every shape.",
+            "Dictionary slug shapes like /api/subscription/:num and hex shapes like /api/:hex/:num are valid adaptive path_shape targets during floods.",
             "Do not suggest shell commands, code execution, network calls, broad always-on blocks, or always-active rules.",
         ],
         "min_count": min_count,
@@ -496,6 +557,7 @@ def extract_json(text: str) -> Any:
 
 
 def sanitize_filter(item: dict[str, Any], ttl_seconds: int) -> dict[str, Any]:
+    ttl_seconds = bounded_ttl_seconds(item.get("ttl_seconds"), ttl_seconds)
     condition = item.get("condition") if isinstance(item.get("condition"), dict) else {}
     clean_condition: dict[str, Any] = {}
     for key in [
@@ -509,6 +571,8 @@ def sanitize_filter(item: dict[str, Any], ttl_seconds: int) -> dict[str, Any]:
     ]:
         value = condition.get(key)
         if isinstance(value, str) and len(value) <= 512:
+            if key == "path_prefix" and value in {"", "/"}:
+                continue
             clean_condition[key] = value
     methods = condition.get("methods")
     if isinstance(methods, list):
@@ -534,7 +598,7 @@ def sanitize_filter(item: dict[str, Any], ttl_seconds: int) -> dict[str, Any]:
         "enabled": bool(item.get("enabled", True)),
         "adaptive": True,
         "priority": int(item.get("priority", 100)),
-        "ttl_seconds": int(item.get("ttl_seconds", ttl_seconds)) or ttl_seconds,
+        "ttl_seconds": ttl_seconds,
         "condition": clean_condition,
         "action": {
             "kind": "block",
@@ -549,10 +613,11 @@ def merge_strong_coverage(
     events: list[dict[str, Any]],
     min_count: int,
     ttl_seconds: int,
+    learn_observed: bool = False,
 ) -> list[dict[str, Any]]:
     merged = [sanitize_filter(item, ttl_seconds) for item in provider_filters]
     covered_keys = {filter_key(sanitize_filter(item, ttl_seconds)) for item in merged}
-    for fallback in deterministic_filters(events, min_count, ttl_seconds, learn_observed=False):
+    for fallback in deterministic_filters(events, min_count, ttl_seconds, learn_observed=learn_observed):
         clean = sanitize_filter(fallback, ttl_seconds)
         key = filter_key(clean)
         if key != "id:" and key not in covered_keys:
@@ -621,35 +686,42 @@ def merge_existing_filters(
 
 
 def analyze_once(args: argparse.Namespace) -> None:
+    ttl_seconds = bounded_ttl_seconds(args.ttl_seconds)
     events = read_events(Path(args.events), args.max_events)
     existing_filters = read_filter_file(Path(args.filters))
     if not events:
-        preserved = merge_existing_filters(existing_filters, [], args.ttl_seconds, args.max_filters)
+        preserved = merge_existing_filters(existing_filters, [], ttl_seconds, args.max_filters)
         write_filters(Path(args.filters), preserved)
         print(f"no attack events found; preserved {len(preserved)} learned filters", flush=True)
         return
     filters: list[dict[str, Any]]
-    prompt = build_prompt(events, args.min_count, args.ttl_seconds)
+    prompt = build_prompt(events, args.min_count, ttl_seconds)
     prompt["allow_observed_learning"] = bool(args.learn_observed)
     config = load_provider_config(args.provider_config)
     provider = resolve_provider(args, config)
     cfg = provider_config(config, provider, args.model)
     used_provider = provider
     if args.no_codex:
-        filters = deterministic_filters(events, args.min_count, args.ttl_seconds, args.learn_observed)
+        filters = deterministic_filters(events, args.min_count, ttl_seconds, args.learn_observed)
         used_provider = "deterministic"
     else:
         try:
-            filters = run_provider(provider, prompt, cfg, args.ttl_seconds)
+            filters = run_provider(provider, prompt, cfg, ttl_seconds)
         except Exception as exc:
             print(f"{provider} analyzer unavailable, using deterministic fallback: {exc}", flush=True)
-            filters = deterministic_filters(events, args.min_count, args.ttl_seconds, args.learn_observed)
+            filters = deterministic_filters(events, args.min_count, ttl_seconds, args.learn_observed)
             used_provider = "deterministic-fallback"
     if not args.no_codex and not args.disable_strong_coverage:
-        filters = merge_strong_coverage(filters, events, args.min_count, args.ttl_seconds)
+        filters = merge_strong_coverage(
+            filters,
+            events,
+            args.min_count,
+            ttl_seconds,
+            learn_observed=args.learn_observed,
+        )
     else:
-        filters = [sanitize_filter(item, args.ttl_seconds) for item in filters]
-    filters = merge_existing_filters(existing_filters, filters, args.ttl_seconds, args.max_filters)
+        filters = [sanitize_filter(item, ttl_seconds) for item in filters]
+    filters = merge_existing_filters(existing_filters, filters, ttl_seconds, args.max_filters)
     write_filters(Path(args.filters), filters)
     print(f"wrote {len(filters)} filters to {args.filters} via {used_provider}", flush=True)
 

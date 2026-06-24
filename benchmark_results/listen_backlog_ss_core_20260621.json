@@ -1,0 +1,10 @@
+{
+  "configured_http_backlog": 333,
+  "configured_tcp_backlog": 777,
+  "http_port": 34293,
+  "ss_rows": [
+    "LISTEN 0      333        127.0.0.1:34293      0.0.0.0:*   ",
+    "LISTEN 0      777        127.0.0.1:58775      0.0.0.0:*   "
+  ],
+  "tcp_port": 58775
+}

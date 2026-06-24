@@ -1,0 +1,111 @@
+# Edge Protection
+
+AlturaProt now has three defensive layers:
+
+1. Provider or network edge controls for volumetric floods before traffic reaches the host.
+2. Host kernel/firewall controls for low-level TCP and packet pressure.
+3. AlturaProt's L7 proxy controls for request semantics, adaptive filters, and origin shielding.
+
+No userspace reverse proxy can preserve availability if the inbound link is saturated before packets reach it. For public production use, put AlturaProt behind at least one provider-level control: CDN or anycast DDoS protection, scrubbing center, upstream router ACLs, or BGP blackhole/flowspec support from the host provider.
+
+## Provider Controls
+
+Use provider/CDN controls for:
+
+- Link saturation, UDP floods, SYN floods larger than the host can absorb, reflection/amplification traffic, and attacks that saturate the router before Linux receives packets.
+- Emergency blackhole or flowspec actions when the protected origin is no longer reachable.
+- Managed L3/L4 and L7 DDoS signatures that can be updated outside your deployment cycle.
+
+Blackholing is a last-resort availability control for the rest of the infrastructure. It drops the matched destination or prefix, so it protects the network but not the blackholed service.
+
+## Host Kernel Controls
+
+The example files under `ops/` are templates, not automatically applied policy. Validate them on the target Linux host before installing:
+
+```bash
+python3 tools/validate_edge_templates.py --config configs/example.json
+sudo nft -c -f ops/nftables/altura-prot-edge.nft
+sudo sysctl --system
+systemd-analyze verify ops/systemd/altura-prot.service
+```
+
+The validator also compares non-loopback `http.listen` and `tcp[].listen` ports from the AlturaProt config with the nftables `protected_tcp_ports` set. Loopback-only listeners are ignored, but a public listener must be covered by the host-edge protected-port set before the preflight passes. The protected-port `ct count over` threshold must also be no looser than the tightest public `max_connections_per_ip` userspace cap, so lowering a public HTTP/TCP connection cap cannot silently leave a weaker host-edge backstop behind. The validator also requires the raw UDP drop for protected TCP service ports so dead UDP to AlturaProt ports is not accidentally left to conntrack or kernel port-unreachable handling; that rule must use `meta l4proto udp` so IPv6 extension headers cannot skip the protected-port UDP drop. Generic dual-stack protected-port TCP gates and IPv6 TCP/ICMPv6 protocol gates must use `meta l4proto`, not bare transport matches or `ip6 nexthdr`, so IPv6 extension headers cannot skip invalid-flag, SYN flood, connection-storm, or ICMPv6 flood backstops. Dynamic nftables SYN-rate sets and connection-limit sets must declare explicit positive `size` bounds so high-cardinality packet or connection pressure cannot leave set capacity implicit; SYN-rate sets must also keep finite timeouts. Essential ICMPv4 and ICMPv6 control types must be accepted before the generic ICMP flood backstops so Path MTU Discovery and Neighbor Discovery stay functional under ICMP noise. The same preflight checks the shipped sysctl values for active SYN-cookie, SYN-backlog, accept-backlog, ingress backlog, conntrack capacity, and bounded TCP/fragment retention settings, then checks the shipped systemd unit for non-root execution, a `LimitNOFILE` hard limit large enough for the configured socket budget, finite task/memory limits, graceful stop timing, narrow network address families, and a minimal capability set.
+
+Use host controls for:
+
+- Dropping impossible TCP flag combinations before conntrack on protected ports with `meta l4proto tcp` so dual-stack rules match the real transport protocol.
+- Dropping UDP packets directed at protected TCP listener ports before conntrack. Remove or narrow this if the same host intentionally serves UDP/QUIC on one of those ports.
+- Rate-limiting protected-port SYN bursts before conntrack with per-source dynamic sets plus a global backstop. The per-source SYN-rate sets have explicit finite `size` and `timeout` bounds. IPv6 host-edge SYN keys aggregate by `/64` to match AlturaProt's default IPv6 client-prefix buckets instead of exact interface identifiers, and match the real TCP transport protocol with `meta l4proto` so IPv6 extension headers do not bypass the meter.
+- Dropping invalid conntrack states before userspace.
+- Enabling SYN cookies and increasing SYN backlog.
+- Bounding IPv4/IPv6 fragment reassembly memory and retention time so fragment floods cannot pin kernel queues for long periods before AlturaProt can classify traffic.
+- Capping obvious packet floods and per-source protected-port connection counts that are small enough for the host to inspect and no looser than the tightest public userspace per-IP connection cap. Generic protected-port SYN and new-connection flood drops use `meta l4proto tcp` before transport-header matches. Essential ICMPv4 and ICMPv6 control messages are exempted before the generic ICMP flood drops, while non-essential ICMP remains covered by the rate backstop. The dynamic nftables connection-limit sets use explicit finite `size` bounds. IPv6 protected-port connection-count caps also aggregate by `/64` and use `meta l4proto tcp` for extension-header-safe matching.
+- Keeping `net.core.somaxconn` above configured `http.listen_backlog` and `tcp[].listen_backlog` values so short connection bursts do not overflow the accept queue before userspace limits run.
+- Using bounded `http.accept_shards` and `tcp[].accept_shards` on Linux hosts that need multi-socket accept distribution during connection churn. Shards use `SO_REUSEPORT`, share the same userspace limiter state, and are counted in the `runtime.min_nofile` socket-budget check.
+- Keeping the nftables protected-port set aligned with public AlturaProt HTTP/TCP listeners so host-edge SYN and connection-count backstops apply to every exposed service port.
+- Setting the service `RLIMIT_NOFILE` hard limit high enough for AlturaProt's configured connection caps and `runtime.min_nofile` preflight. The edge validator estimates the same socket budget as startup and rejects a systemd `LimitNOFILE` below that budget; AlturaProt still fails startup if the final soft limit cannot cover it.
+- Running AlturaProt under a bounded service manager unit with a non-root user,
+  restart-storm limits, finite `LimitNOFILE`, task and memory ceilings, write
+  access limited to state/log directories, and a narrow capability set for
+  privileged port binding.
+
+Do not use host firewall rules as the only volumetric mitigation for public services. If traffic is large enough to saturate the NIC, router, or residential/provider link, the host firewall will be reached too late.
+
+## AlturaProt L7 Controls
+
+AlturaProt handles request-aware controls:
+
+- Global, per-client, normalized request-signature, normalized path-shape route-family, short-token sibling-churn, and trusted-proxy aggregate request token buckets. Path-shape keys collapse long dynamic tokens and high-confidence short tokens while preserving common static and version segments; short lowercase token rotation under one parent route is handled by a bounded sibling-churn bucket using the same path-shape budget. Sibling-churn denials feed adaptive/event evidence under the shared parent descriptor such as `/api/:short-token`, and explicit filters using that `path_shape` match the same lowercase short-sibling family.
+- Bounded HTTP rate-bucket state evicts stale buckets but denies new active keys when a shard is full, so IP/signature/path-shape rotation cannot force fresh bursts by evicting active hot buckets.
+- Startup validation for the config file itself, DDoS-critical HTTP/TCP rate knobs, positive resource-capacity ceilings, Hyper HTTP/1 header-buffer floors and startup ceilings, header field-line ceilings, body-size ceilings, the HTTP method and Host allowlists, filter/adaptive control caps, and admin control-plane settings, so oversized/non-regular config inputs, negative/non-finite rates, zero socket/metadata/concurrency/filter/adaptive caps, below-floor or excessive header byte caps, excessive header field-line caps, excessive header-count caps, excessive request/upstream body byte caps, excessive header-read, HTTP stream/body, upstream-connect, upstream idle-pool, TCP-connect, or upstream response timeouts, excessive connection lifetimes, excessive per-connection request counts, empty or malformed method allowlists, malformed Host allowlist entries, malformed static filter rules, excessive event-log queue sizes, unbounded event-log rotation or excessive event-log backup counts, malformed control-plane prefixes, or blank or oversized metrics tokens fail config load instead of consuming unbounded startup memory, silently disabling a token bucket, removing a finite resource ceiling, silently raising a configured header cap, allowing excessive parser buffers, accidentally stretching body guards, slowloris protection, slow upload/download protections, origin connect attempts, origin response waits, origin idle keep-alive retention, TCP upstream connect attempts, connection permit lifetimes, or persistent-connection request budgets into minutes, hours, days, or effectively unlimited work, turning event-log buffering or rotation into excessive memory/filesystem work, generating empty or oversized `405 Allow` responses, doing excessive Host allowlist scans, moving health/metrics endpoints, or weakening metrics auth. Use `0` only when intentionally disabling a specific rate bucket or `http.upstream_pool_max_idle_per_host`, not for connection, parser, body, trailer, forwarded-header, tracked-state, static/runtime-filter, adaptive-window, event-log queue, or event-log rotation capacity.
+- Request metadata, trailer, and trusted-forwarded-header startup ceilings reject `http.max_host_bytes` above `1024`, `http.max_uri_bytes` or `http.max_query_bytes` above `65536`, `http.max_query_pairs` above `8192`, `http.max_path_segments` above `4096`, request/upstream trailer byte caps above `262144`, request/upstream trailer counts above `1024`, trusted forwarded header bytes above `16384`, and trusted forwarded hops above `256`, so a bad config cannot turn request-target parsing, trailer processing, Host validation, or trusted proxy identity parsing into excessive request-path work.
+- Minimum data-rate byte floors are startup-capped at `1048576` B/s for HTTP request bodies, HTTP upstream response bodies, and raw TCP downstream/upstream directions. HTTP and raw TCP default to positive floors; `0` remains the explicit disable value for measured quiet protocols, and oversized floors fail startup so a typo cannot turn slow-drip protection into valid-client shedding under congestion. Enabled guards measure recent post-grace byte windows rather than lifetime connection averages.
+- Dynamic-state startup ceilings reject `filters.max_runtime_file_bytes` above `16777216`, `filters.max_runtime_filters` and `filters.max_static_filters` above `8192`, `adaptive.activation_ttl_seconds` and per-rule `ttl_seconds` above `86400`, `adaptive.event_log_max_bytes` above `1073741824`, `adaptive.max_signature_windows` and `adaptive.max_path_shape_windows` above `262144`, `http.limits.max_tracked_ips` and `tcp[].limits.max_tracked_ips` above `1048576`, and `http.limits.max_tracked_signatures` plus `http.limits.max_tracked_path_shapes` above `262144`, so a bad config cannot turn learned filters, adaptive detector maps, event-log rotation, or limiter state into excessive memory, filesystem, or hot-path scanning work.
+- Bounded adaptive detector state preserves recent signature and path-shape windows under high-cardinality churn; full shards reclaim idle windows and otherwise stop admitting new detector keys instead of resetting hot evidence.
+- Adaptive attack-event logging bounds user-controlled fields before enqueueing and sends owned events through a capped nonblocking queue. The dedicated writer thread handles JSON serialization, file writes, flushes, and rotation; saturated queues drop events and increment `altura_event_log_dropped` instead of making HTTP workers format JSON or wait behind a slow event-log sink.
+- Passive upstream failure circuit startup ceilings reject `http.upstream_failure_threshold` above `1024` and `http.upstream_failure_open_ms` above `300000`, so a bad deploy cannot make the circuit effectively unreachable or shed valid origin-bound traffic for hours after transient failures.
+- Runtime `RLIMIT_NOFILE` preflight and socket-budget validation before listeners start.
+- SIGINT/SIGTERM listener-drain handling so service-manager stops do not bypass the proxy shutdown path.
+- Configurable HTTP method allowlist before signature, filter, or upstream work.
+- Host header validation and optional Host allowlist before signature, filter, or upstream work, with generated close/no-store rejections.
+- Absolute-form request-target authority validation so proxy-form requests cannot bypass the Host allowlist with a different URI authority.
+- Forwarded-header and client-IP identity sanitization so direct clients cannot spoof `X-Forwarded-For`, `X-Forwarded-Host`, `X-Forwarded-Proto`, `X-Real-IP`, standard `Forwarded`, common CDN/proxy client-IP metadata, or hop-by-hop request metadata into the origin. Invalid trusted-proxy CIDRs fail config load, and non-loopback HTTP listeners refuse global trusted-proxy ranges such as `0.0.0.0/0` or `::/0`. Trusted forwarded client-IP chains are bounded by byte length and hop count before rate-limit identity is derived. Duplicate trusted `X-Forwarded-For` field lines are canonicalized into the same ordered chain sent upstream when XFF is the configured identity header; when a different trusted identity header is configured, duplicate or comma-list identity values fail closed and accepted identities replace inbound XFF with a clean `resolved-client, peer` chain. Trusted proxy peers have their own aggregate request-rate and upstream in-flight caps so rotating forwarded identities cannot fully bypass per-client buckets or monopolize origin concurrency from one edge hop.
+- Upstream response hop-by-hop sanitization so origin `Connection` control fields and connection-listed extension headers are consumed by AlturaProt instead of being forwarded to downstream clients.
+- Downstream HTTP/1 keep-alive disabled by default, so every accepted client request takes the connection-opening raw framing precheck path unless an operator explicitly opts back into persistent downstream connections.
+- Initial raw HTTP/1 framing precheck before Hyper parsing, so connection-opening CL/TE ambiguity and obsolete folded header lines are rejected before parser normalization. The precheck scans only newly appended header bytes plus a three-byte overlap for `\r\n\r\n`, and still rejects with `431` when the terminator arrives after `http.max_header_bytes`, keeping initial-header floods linear and byte-capped.
+- Initial raw HTTP/1 header byte cap before Hyper parsing, so oversized connection-opening header sections return generated close/no-store `431` responses and increment `altura_http_initial_header_too_large`.
+- Initial raw HTTP/1 header field-line cap before Hyper parsing, plus parsed request header field-line validation for opt-in keep-alive follow-up requests, so one oversized request field cannot consume the whole header buffer before client-IP, Host, signature, filter, rate-limit, or upstream work.
+- Initial raw HTTP/1 header-count cap before Hyper parsing, so too-many-header connection-opening requests return generated close/no-store `431` responses and increment `altura_http_initial_headers_too_many`.
+- Initial raw HTTP/1 header read timeout before Hyper parsing, so slow connection-opening header drips return generated close/no-store `408` responses and increment `altura_http_initial_header_timeouts`.
+- Initial raw HTTP/1 request-target pressure guard before Hyper parsing, so URI, query-byte, query-pair, and path-segment floods return generated close/no-store `414` responses and increment `altura_http_initial_request_target_rejected`.
+- Request framing validation for exposed `Content-Length`/`Transfer-Encoding` ambiguity before signature, filter, or upstream work, with generated close/no-store `400` responses for both raw pre-parser and service-level framing rejects.
+- Generated early-deny responses emitted before request content is consumed explicitly close the downstream connection, including method, filter, request-target, range, overload, rate-limit, and framing rejections on opt-in keep-alive connections.
+- Default rejection of chunked request bodies before upstream work, with explicit opt-in only for origins that need unknown-length HTTP/1.1 uploads and can tolerate relying on streaming body guards after admission.
+- Default rejection of compressed request `Content-Encoding` before origin work, with generated close/no-store `415` responses and explicit opt-in only for origins that enforce decoded-size and decompression-ratio limits.
+- Default rejection of `Expect` request headers before origin work with generated close/no-store `417` responses, with explicit opt-in only for origins that need `100-continue` upload negotiation.
+- Bounded HTTP `Range` request policy before origin work, allowing common single byte ranges by default while rejecting malformed, unsupported, or excessive multipart range requests with generated close/no-store `416` responses.
+- Default stripping of client `Accept-Encoding` before origin work, with explicit opt-in only for origins that can absorb response-compression CPU or serve precompressed assets.
+- Explicit HTTP and TCP listener backlogs plus optional bounded `SO_REUSEPORT` accept shards.
+- Global and per-peer HTTP connection caps.
+- Global, per-client, and trusted-proxy-peer in-flight upstream request caps.
+- Per-connection request caps capped at `10000` and max connection duration capped at `3600` seconds, with generated close/no-store `429` responses when a persistent client exceeds its request budget.
+- Header read timeout and upstream response timeout, with generated close/no-store `504` responses for upstream response timeouts.
+- Request and upstream response header byte/field-line/count caps.
+- Generated close/no-store `502` responses for proxy-owned upstream connect failures and oversized upstream response headers.
+- Path-shape-scoped passive upstream failure circuit breaker with generated close/no-store `503 Retry-After` responses while a shape circuit is open, so repeated origin connect/header failures or timeouts in one route family are shed locally for a short configured window capped at `300000` ms after at most `1024` consecutive failures without fail-fast shedding unrelated route families. Bounded circuit state preserves open entries under high-cardinality churn and reclaims closed or expired entries first.
+- Upstream idle origin connection pool caps, with `upstream_pool_idle_timeout_ms` capped at `60000` and `upstream_pool_max_idle_per_host` capped at `4096`; set `upstream_pool_max_idle_per_host` to `0` only to disable idle pooling.
+- Downstream write timeout for slow-reading clients.
+- Request and upstream response body size, idle, and recent-window minimum data-rate guards, with body-size startup values capped at `1073741824` bytes, minimum data-rate floors capped at `1048576` B/s, and generated close/no-store `408` and `413` responses for request-body timeouts and oversized uploads.
+- Generated `431` close/no-store responses for oversized forwarded request trailers when request trailer forwarding is explicitly enabled.
+- Admin health checks and token-protected metrics behind the same HTTP request token buckets, including normalized request-signature and path-shape limits; health, authorized metrics, and forbidden metrics responses are generated with `Cache-Control: no-store` and `Connection: close`.
+- Static filters plus dormant adaptive signature/path-shape filters with bounded and validated static/runtime rule sets, root-wide `path_prefix: "/"` rejection, no hardcoded benign route-family exemptions, bounded runtime filter reloads, rolling adaptive counters, and bounded detector-state windows.
+- Raw TCP per-client-prefix and global connection-rate limits plus global and per-client-prefix concurrent-connection caps.
+- JSONL telemetry for CodexSDGate and deterministic analyzer coverage, with user-controlled event fields truncated before the bounded queue and writer.
+
+The safe production shape is:
+
+```text
+Internet -> provider/CDN/scrubbing -> host firewall/sysctl -> AlturaProt -> origin
+```
+
+For trusted proxy deployments, configure `http.client_ip.header` and `http.client_ip.trusted_proxies` so AlturaProt rates client IPs from forwarded headers only when the peer is actually trusted. Startup validates the configured header name and requires a bounded, duplicate-free trusted-proxy list of valid IP/CIDR entries; non-loopback listeners must not trust all peers. Per-client HTTP request, connection-open, and upstream in-flight limiters normalize resolved client IPs by `http.limits.ipv4_prefix_len` and `http.limits.ipv6_prefix_len`; defaults keep IPv4 exact at `/32` and aggregate IPv6 by `/64` so same-prefix IPv6 rotation cannot split across unlimited buckets. Tune `http.limits.trusted_proxy_rps`, `http.limits.trusted_proxy_burst`, and `http.limits.trusted_proxy_max_in_flight_requests` to the legitimate aggregate traffic and origin concurrency expected from each trusted edge hop; those trusted-proxy aggregate caps stay keyed by the exact immediate peer IP. Tune `http.limits.signature_rps`, `http.limits.signature_burst`, `http.limits.max_tracked_signatures`, `http.limits.path_shape_rps`, `http.limits.path_shape_burst`, and `http.limits.max_tracked_path_shapes` so one hot normalized request shape or polymorphic route family cannot consume the whole global request budget during a distributed L7 flood, including traffic that rotates many distinct short lowercase path segments under one API parent. Raw TCP peer limiters use `tcp[].limits.ipv4_prefix_len` and `tcp[].limits.ipv6_prefix_len` with the same `/32` and `/64` defaults.

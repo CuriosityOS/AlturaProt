@@ -1,0 +1,2889 @@
+{
+  "analyzer_wait_seconds": 30.0,
+  "duration_seconds": 1.0,
+  "generated_at_utc": "2026-06-23T06:29:26Z",
+  "path_shape_rps": 80,
+  "per_ip_rps": 80,
+  "preset": "custom",
+  "provider": "deterministic",
+  "safety": "loopback-only; spoof cases use X-Forwarded-For headers from trusted localhost, not packet spoofing",
+  "scenarios": {
+    "accept-spray-xff": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "error_samples": [],
+        "errors": 0,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "hung_workers": 0,
+        "latency_ms": {
+          "p50": 0.8,
+          "p95": 1.913,
+          "p99": 2.672
+        },
+        "limited_percent": 0.0,
+        "requests": 8810,
+        "requests_per_second": 8797.09,
+        "statuses": {
+          "204": 8810
+        },
+        "workers": 8
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "wrote 43 filters to /tmp/tmpesimcott/filters-51631.json via deterministic",
+          "wrote 46 filters to /tmp/tmpesimcott/filters-51631.json via deterministic",
+          "wrote 47 filters to /tmp/tmpesimcott/filters-51631.json via deterministic",
+          "wrote 75 filters to /tmp/tmpesimcott/filters-51631.json via deterministic",
+          "wrote 75 filters to /tmp/tmpesimcott/filters-51631.json via deterministic",
+          "wrote 75 filters to /tmp/tmpesimcott/filters-51631.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.649,
+            "p95": 0.701,
+            "p99": 0.816
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.24,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.16,
+          "blocked_percent": 0.11,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.913,
+          "first_limit_seconds": 0.017,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.083,
+            "p95": 1.844,
+            "p99": 2.206
+          },
+          "limited_percent": 97.73,
+          "requests": 7041,
+          "requests_per_second": 7033.79,
+          "statuses": {
+            "204": 152,
+            "403": 8,
+            "429": 6881
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.22,
+          "attacker_limited_percent": 97.78,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 131,
+          "first_detection_seconds": 0.013,
+          "reasons": {
+            "filter_block": 3,
+            "global_observed": 127,
+            "trusted_proxy_rate_limited": 1
+          },
+          "signature_bases": {
+            "00a2f39f181fede4": "GET|/api/hotueanazb/:num|a|mozilla|application/vnd.api+json",
+            "0191a1a11db9de40": "GET|/api/frbyclgzfp/:num|a,cursor,id,session|mozilla|text/html",
+            "051024f7cd1f8c61": "GET|/api/eyhzewufxs/:num|client,filter,sort,ts|curl|application/json",
+            "06b3619b568a7e2b": "GET|/api/wbdnzjjywz/:num|a,b,feature,x|curl|text/html",
+            "0f88d2bd2aff1409": "GET|/api/znkpfcjjtk/:num|feature,id,q,ref|mozilla|*/*",
+            "0f9be20bdabe2aed": "GET|/api/smtapbotkm/:num|q,y|curl|*/*",
+            "0f9d12083c5d2a3b": "GET|/api/psvrsvzqcb/:num|client|node|application/vnd.api+json",
+            "15e0afcf5bf05e32": "GET|/api/eeayrkvcgw/:num|debug|curl|text/html",
+            "16f736453ebd8def": "GET|/api/zwchplruub/:num|session,x|python|application/json",
+            "1a13f605a0e15ea6": "GET|/api/hzrdtdztkn/:num|b,debug,id,sort|node|text/html",
+            "1c4113d7eb3abad2": "GET|/api/vbknvezxrf/:num|a,feature,filter,ref|curl|text/plain;q=0.9",
+            "1cccebedc3601726": "GET|/api/dqwohxtogk/:num|feature,filter,ts|curl|*/*",
+            "23377796dce59741": "GET|/api/ntgrommjpm/:num|sort|node|text/plain;q=0.9",
+            "2421085fc7116816": "GET|/api/csokqtsvet/:num|client,debug,feature|curl|application/json",
+            "2b0a26cfe43ac785": "GET|/api/pfehioiczq/:num|y|mozilla|text/plain;q=0.9",
+            "2b0e7f8ad61e5df7": "GET|/api/aziwxeogmi/:num|client|node|application/vnd.api+json",
+            "2de39cf0e1eeafed": "GET|/api/fkzvgcrbod/:num|page|node|application/vnd.api+json",
+            "2f98393275b4aba2": "GET|/api/dgaultzeqi/:num|q|curl|*/*",
+            "3624aa53799f6a12": "GET|/api/veccbzlagy/:num|debug,q|mozilla|text/plain;q=0.9",
+            "3cc095a4b3755719": "GET|/api/cpxoawhwtj/:num|id|node|*/*",
+            "4aab8d217a313dcf": "GET|/api/ewsqnwbvsb/:num|feature,sort,view|node|text/plain;q=0.9",
+            "4dc751e45ba8d318": "GET|/api/pqhrpweiid/:num|cursor,debug,filter,region|curl|text/plain;q=0.9",
+            "503aae2a3576d21e": "GET|/api/zggheegxeb/:num|filter,x,y|mozilla|*/*",
+            "52d1352cdf0b8cbb": "GET|/api/ildjuwsejd/:num|page|python|application/json",
+            "5903e48806c69a51": "GET|/api/jhgsrskwaa/:num|debug,feature,z|node|text/html",
+            "5bf48a93ee3f51f8": "GET|/api/oyfednbxkm/:num|z|python|application/json",
+            "5c3726dd8adf737d": "GET|/api/unprrrdqvc/:num|b,filter,region|curl|application/vnd.api+json",
+            "5d528d8c667d9f0f": "GET|/api/mlgpmrigub/:num|debug,feature,region|mozilla|application/vnd.api+json",
+            "5dbf77649bc8d55c": "GET|/api/dabtqagngb/:num|feature,ref|python|application/vnd.api+json",
+            "5efff1b0d5319878": "GET|/api/qvfyxgxnei/:num|cursor,ref|python|text/plain;q=0.9",
+            "717a88b2be045d20": "GET|/api/tiaufjgtas/:num|feature,id|mozilla|*/*",
+            "7752d545a92e388b": "GET|/api/btfavdzetq/:num|sort|curl|text/plain;q=0.9",
+            "8043c05d03d30807": "GET|/api/htcrrychqr/:num|debug,page|node|*/*",
+            "8816ccbad5349b21": "GET|/api/ygvssypmiu/:num|feature,page,sort,x|node|application/vnd.api+json",
+            "88f0972fd9d8fa59": "GET|/api/jkdtqyngoo/:num|sort,view|mozilla|text/plain;q=0.9",
+            "894d827ebe0687c5": "GET|/api/nciqdlfnbk/:num|feature,z|curl|*/*",
+            "8a5ba8dbc12c4d72": "GET|/api/vsqqpycyjo/:num|cursor,feature,sort,view|node|text/plain;q=0.9",
+            "8a5e3395ecfdb17f": "GET|/api/qecwzkdghr/:num|region|node|text/html",
+            "8f3ff21407ea0998": "GET|/api/vydsaobaml/:num|view|curl|*/*",
+            "90e9df2e330c70e3": "GET|/api/zjnkvjcdyn/:num|filter,q,ref,session|curl|text/plain;q=0.9",
+            "92634c3b6bc7089f": "GET|/api/dmwswjepdv/:num|cache,client,ref,ts|python|*/*",
+            "92aaee45b798acc7": "GET|/api/cxxwhwkugn/:num|ref,region,ts|mozilla|*/*",
+            "937928606ca6124d": "GET|/api/vfmzfrdygy/:num|b,cache,page,q|node|*/*",
+            "94101bfddec96860": "GET|/api/megppnmzzq/:num|a,x|node|application/vnd.api+json",
+            "95506f83e138454a": "GET|/api/wwmximkkup/:num|cursor,ref,session,sort|node|text/html",
+            "9ae20a505e512ad4": "GET|/api/xtrmmamscd/:num|debug,region,view,x|python|application/vnd.api+json",
+            "a2a521c8b408217a": "GET|/api/axrvrxteed/:num|a,cursor,session,view|mozilla|*/*",
+            "a39b08480f46dac9": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|text/html",
+            "a8164c361d2d77fa": "GET|/api/qprdthbkkr/:num|a,id,ts,view|python|*/*",
+            "acf0d6400b9a9d6f": "GET|/api/garvnkwmei/:num|cache,id,sort|curl|application/json",
+            "af706afbb47096ef": "GET|/api/eceigxmlho/:num|client,debug,y|python|text/html",
+            "b05445b92a5c6d3e": "GET|/api/fjmmlnqukv/:num|cache,debug,q,y|mozilla|text/plain;q=0.9",
+            "b08254f0d7d39566": "GET|/api/fzdbvzdith/:num|a,cache,filter,x|curl|application/vnd.api+json",
+            "b217eebf86df3f06": "GET|/api/zoouabvnix/:num|b|node|*/*",
+            "b2829ac83809fff6": "GET|/api/yrcrkhmbby/:num|session,y|node|application/vnd.api+json",
+            "b2f0fe43e51eed34": "GET|/api/wuqpzeyjzk/:num|a,q,sort,z|curl|application/vnd.api+json",
+            "b51d83274557e13d": "GET|/api/uafnhgkcwu/:num|a,session,x|mozilla|*/*",
+            "ba128cfcc41483a4": "GET|/api/fbicfsjdum/:num|ref|mozilla|application/vnd.api+json",
+            "c1d082a017f109e6": "GET|/api/spxcelczne/:num|cursor,feature,ts|python|application/vnd.api+json",
+            "c2949f81f3af180b": "GET|/api/bsfdlyyuwr/:num|x,y,z|python|application/json",
+            "c5b5ba9b7c1a83a8": "GET|/api/bsgzoaorcs/:num|cursor,debug,sort|mozilla|application/vnd.api+json",
+            "c5d997f9ad8dc3ca": "GET|/api/wsfbgsbsmx/:num|page,sort|curl|*/*",
+            "ca1acb83e40a536a": "GET|/api/kplemwmtgm/:num|cache|curl|text/html",
+            "cbdf47d3bb60444a": "GET|/api/ldyeuqxxpv/:num|filter,session|curl|application/vnd.api+json",
+            "d23c0504764d430c": "GET|/api/miveswhzax/:num|sort|node|text/plain;q=0.9",
+            "d4acffde6da411f7": "GET|/api/giiskytcrp/:num|ts|python|application/json",
+            "d6c55e11c3dbb423": "GET|/api/oasfzfmumz/:num|debug,q,z|python|application/json",
+            "dd766eccef4bb3e5": "GET|/api/rueackgkmw/:num|debug,session,x,y|python|text/plain;q=0.9",
+            "e80f327e606ca693": "GET|/api/nahzgaxllo/:num|debug,ref,view|python|application/vnd.api+json",
+            "eb8bf40df5374a2e": "GET|/api/qthlhiilxo/:num|cache,client|python|*/*",
+            "ec9f477384e0ef2d": "GET|/api/liiohhsasq/:num|cursor|python|text/plain;q=0.9",
+            "ed971c58674144fd": "GET|/api/ovdwyzwgen/:num|feature,ref,ts,y|node|application/vnd.api+json",
+            "f15e920a234b4537": "GET|/api/bcwjozqovc/:num|a,ts|node|text/html",
+            "f16f6e5e1bf68038": "GET|/api/isidsbhrhn/:num|cursor,feature,filter|node|text/plain;q=0.9"
+          },
+          "unique_signatures": 74
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-:token-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-b217eebf86df3f06",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "b217eebf86df3f06",
+            "signature_basis": "GET|/api/zoouabvnix/:num|b|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-b08254f0d7d39566",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "b08254f0d7d39566",
+            "signature_basis": "GET|/api/fzdbvzdith/:num|a,cache,filter,x|curl|application/vnd.api+json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-95506f83e138454a",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "95506f83e138454a",
+            "signature_basis": "GET|/api/wwmximkkup/:num|cursor,ref,session,sort|node|text/html"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5c3726dd8adf737d",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5c3726dd8adf737d",
+            "signature_basis": "GET|/api/unprrrdqvc/:num|b,filter,region|curl|application/vnd.api+json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-b05445b92a5c6d3e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "b05445b92a5c6d3e",
+            "signature_basis": "GET|/api/fjmmlnqukv/:num|cache,debug,q,y|mozilla|text/plain;q=0.9"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-52d1352cdf0b8cbb",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "52d1352cdf0b8cbb",
+            "signature_basis": "GET|/api/ildjuwsejd/:num|page|python|application/json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-0191a1a11db9de40",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "0191a1a11db9de40",
+            "signature_basis": "GET|/api/frbyclgzfp/:num|a,cursor,id,session|mozilla|text/html"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-16f736453ebd8def",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "16f736453ebd8def",
+            "signature_basis": "GET|/api/zwchplruub/:num|session,x|python|application/json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-894d827ebe0687c5",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "894d827ebe0687c5",
+            "signature_basis": "GET|/api/nciqdlfnbk/:num|feature,z|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-1c4113d7eb3abad2",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "1c4113d7eb3abad2",
+            "signature_basis": "GET|/api/vbknvezxrf/:num|a,feature,filter,ref|curl|text/plain;q=0.9"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-d6c55e11c3dbb423",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "d6c55e11c3dbb423",
+            "signature_basis": "GET|/api/oasfzfmumz/:num|debug,q,z|python|application/json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-f16f6e5e1bf68038",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "f16f6e5e1bf68038",
+            "signature_basis": "GET|/api/isidsbhrhn/:num|cursor,feature,filter|node|text/plain;q=0.9"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-dd766eccef4bb3e5",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "dd766eccef4bb3e5",
+            "signature_basis": "GET|/api/rueackgkmw/:num|debug,session,x,y|python|text/plain;q=0.9"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-b51d83274557e13d",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "b51d83274557e13d",
+            "signature_basis": "GET|/api/uafnhgkcwu/:num|a,session,x|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-d4acffde6da411f7",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "d4acffde6da411f7",
+            "signature_basis": "GET|/api/giiskytcrp/:num|ts|python|application/json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-3624aa53799f6a12",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "3624aa53799f6a12",
+            "signature_basis": "GET|/api/veccbzlagy/:num|debug,q|mozilla|text/plain;q=0.9"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-3cc095a4b3755719",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "3cc095a4b3755719",
+            "signature_basis": "GET|/api/cpxoawhwtj/:num|id|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-0f9be20bdabe2aed",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "0f9be20bdabe2aed",
+            "signature_basis": "GET|/api/smtapbotkm/:num|q,y|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5903e48806c69a51",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5903e48806c69a51",
+            "signature_basis": "GET|/api/jhgsrskwaa/:num|debug,feature,z|node|text/html"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-7752d545a92e388b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "7752d545a92e388b",
+            "signature_basis": "GET|/api/btfavdzetq/:num|sort|curl|text/plain;q=0.9"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-92aaee45b798acc7",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "92aaee45b798acc7",
+            "signature_basis": "GET|/api/cxxwhwkugn/:num|ref,region,ts|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-2421085fc7116816",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "2421085fc7116816",
+            "signature_basis": "GET|/api/csokqtsvet/:num|client,debug,feature|curl|application/json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-acf0d6400b9a9d6f",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "acf0d6400b9a9d6f",
+            "signature_basis": "GET|/api/garvnkwmei/:num|cache,id,sort|curl|application/json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-8a5ba8dbc12c4d72",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "8a5ba8dbc12c4d72",
+            "signature_basis": "GET|/api/vsqqpycyjo/:num|cursor,feature,sort,view|node|text/plain;q=0.9"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-2de39cf0e1eeafed",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "2de39cf0e1eeafed",
+            "signature_basis": "GET|/api/fkzvgcrbod/:num|page|node|application/vnd.api+json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-a2a521c8b408217a",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "a2a521c8b408217a",
+            "signature_basis": "GET|/api/axrvrxteed/:num|a,cursor,session,view|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-eb8bf40df5374a2e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "eb8bf40df5374a2e",
+            "signature_basis": "GET|/api/qthlhiilxo/:num|cache,client|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-ed971c58674144fd",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "ed971c58674144fd",
+            "signature_basis": "GET|/api/ovdwyzwgen/:num|feature,ref,ts,y|node|application/vnd.api+json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-717a88b2be045d20",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "717a88b2be045d20",
+            "signature_basis": "GET|/api/tiaufjgtas/:num|feature,id|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-e80f327e606ca693",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "e80f327e606ca693",
+            "signature_basis": "GET|/api/nahzgaxllo/:num|debug,ref,view|python|application/vnd.api+json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5bf48a93ee3f51f8",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5bf48a93ee3f51f8",
+            "signature_basis": "GET|/api/oyfednbxkm/:num|z|python|application/json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-d23c0504764d430c",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "d23c0504764d430c",
+            "signature_basis": "GET|/api/miveswhzax/:num|sort|node|text/plain;q=0.9"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5d528d8c667d9f0f",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5d528d8c667d9f0f",
+            "signature_basis": "GET|/api/mlgpmrigub/:num|debug,feature,region|mozilla|application/vnd.api+json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-92634c3b6bc7089f",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "92634c3b6bc7089f",
+            "signature_basis": "GET|/api/dmwswjepdv/:num|cache,client,ref,ts|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-94101bfddec96860",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "94101bfddec96860",
+            "signature_basis": "GET|/api/megppnmzzq/:num|a,x|node|application/vnd.api+json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-4aab8d217a313dcf",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4aab8d217a313dcf",
+            "signature_basis": "GET|/api/ewsqnwbvsb/:num|feature,sort,view|node|text/plain;q=0.9"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-a39b08480f46dac9",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "a39b08480f46dac9",
+            "signature_basis": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|text/html"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-0f9d12083c5d2a3b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "0f9d12083c5d2a3b",
+            "signature_basis": "GET|/api/psvrsvzqcb/:num|client|node|application/vnd.api+json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5dbf77649bc8d55c",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5dbf77649bc8d55c",
+            "signature_basis": "GET|/api/dabtqagngb/:num|feature,ref|python|application/vnd.api+json"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-503aae2a3576d21e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "503aae2a3576d21e",
+            "signature_basis": "GET|/api/zggheegxeb/:num|filter,x,y|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-937928606ca6124d",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "937928606ca6124d",
+            "signature_basis": "GET|/api/vfmzfrdygy/:num|b,cache,page,q|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-90e9df2e330c70e3",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "90e9df2e330c70e3",
+            "signature_basis": "GET|/api/zjnkvjcdyn/:num|filter,q,ref,session|curl|text/plain;q=0.9"
+          }
+        ],
+        "filter_write_seconds": 1.001,
+        "filters_learned": 43,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/:token/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-:token-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "b217eebf86df3f06"
+            },
+            "enabled": true,
+            "id": "codex-learned-b217eebf86df3f06",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "b08254f0d7d39566"
+            },
+            "enabled": true,
+            "id": "codex-learned-b08254f0d7d39566",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "95506f83e138454a"
+            },
+            "enabled": true,
+            "id": "codex-learned-95506f83e138454a",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5c3726dd8adf737d"
+            },
+            "enabled": true,
+            "id": "codex-learned-5c3726dd8adf737d",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "b05445b92a5c6d3e"
+            },
+            "enabled": true,
+            "id": "codex-learned-b05445b92a5c6d3e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "52d1352cdf0b8cbb"
+            },
+            "enabled": true,
+            "id": "codex-learned-52d1352cdf0b8cbb",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "0191a1a11db9de40"
+            },
+            "enabled": true,
+            "id": "codex-learned-0191a1a11db9de40",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "16f736453ebd8def"
+            },
+            "enabled": true,
+            "id": "codex-learned-16f736453ebd8def",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "894d827ebe0687c5"
+            },
+            "enabled": true,
+            "id": "codex-learned-894d827ebe0687c5",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "1c4113d7eb3abad2"
+            },
+            "enabled": true,
+            "id": "codex-learned-1c4113d7eb3abad2",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "d6c55e11c3dbb423"
+            },
+            "enabled": true,
+            "id": "codex-learned-d6c55e11c3dbb423",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f16f6e5e1bf68038"
+            },
+            "enabled": true,
+            "id": "codex-learned-f16f6e5e1bf68038",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "dd766eccef4bb3e5"
+            },
+            "enabled": true,
+            "id": "codex-learned-dd766eccef4bb3e5",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "b51d83274557e13d"
+            },
+            "enabled": true,
+            "id": "codex-learned-b51d83274557e13d",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "d4acffde6da411f7"
+            },
+            "enabled": true,
+            "id": "codex-learned-d4acffde6da411f7",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "3624aa53799f6a12"
+            },
+            "enabled": true,
+            "id": "codex-learned-3624aa53799f6a12",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "3cc095a4b3755719"
+            },
+            "enabled": true,
+            "id": "codex-learned-3cc095a4b3755719",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "0f9be20bdabe2aed"
+            },
+            "enabled": true,
+            "id": "codex-learned-0f9be20bdabe2aed",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5903e48806c69a51"
+            },
+            "enabled": true,
+            "id": "codex-learned-5903e48806c69a51",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "7752d545a92e388b"
+            },
+            "enabled": true,
+            "id": "codex-learned-7752d545a92e388b",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "92aaee45b798acc7"
+            },
+            "enabled": true,
+            "id": "codex-learned-92aaee45b798acc7",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "2421085fc7116816"
+            },
+            "enabled": true,
+            "id": "codex-learned-2421085fc7116816",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "acf0d6400b9a9d6f"
+            },
+            "enabled": true,
+            "id": "codex-learned-acf0d6400b9a9d6f",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "8a5ba8dbc12c4d72"
+            },
+            "enabled": true,
+            "id": "codex-learned-8a5ba8dbc12c4d72",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "2de39cf0e1eeafed"
+            },
+            "enabled": true,
+            "id": "codex-learned-2de39cf0e1eeafed",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "a2a521c8b408217a"
+            },
+            "enabled": true,
+            "id": "codex-learned-a2a521c8b408217a",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "eb8bf40df5374a2e"
+            },
+            "enabled": true,
+            "id": "codex-learned-eb8bf40df5374a2e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "ed971c58674144fd"
+            },
+            "enabled": true,
+            "id": "codex-learned-ed971c58674144fd",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "717a88b2be045d20"
+            },
+            "enabled": true,
+            "id": "codex-learned-717a88b2be045d20",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "e80f327e606ca693"
+            },
+            "enabled": true,
+            "id": "codex-learned-e80f327e606ca693",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5bf48a93ee3f51f8"
+            },
+            "enabled": true,
+            "id": "codex-learned-5bf48a93ee3f51f8",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "d23c0504764d430c"
+            },
+            "enabled": true,
+            "id": "codex-learned-d23c0504764d430c",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5d528d8c667d9f0f"
+            },
+            "enabled": true,
+            "id": "codex-learned-5d528d8c667d9f0f",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "92634c3b6bc7089f"
+            },
+            "enabled": true,
+            "id": "codex-learned-92634c3b6bc7089f",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "94101bfddec96860"
+            },
+            "enabled": true,
+            "id": "codex-learned-94101bfddec96860",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4aab8d217a313dcf"
+            },
+            "enabled": true,
+            "id": "codex-learned-4aab8d217a313dcf",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "a39b08480f46dac9"
+            },
+            "enabled": true,
+            "id": "codex-learned-a39b08480f46dac9",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "0f9d12083c5d2a3b"
+            },
+            "enabled": true,
+            "id": "codex-learned-0f9d12083c5d2a3b",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5dbf77649bc8d55c"
+            },
+            "enabled": true,
+            "id": "codex-learned-5dbf77649bc8d55c",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "503aae2a3576d21e"
+            },
+            "enabled": true,
+            "id": "codex-learned-503aae2a3576d21e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "937928606ca6124d"
+            },
+            "enabled": true,
+            "id": "codex-learned-937928606ca6124d",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "90e9df2e330c70e3"
+            },
+            "enabled": true,
+            "id": "codex-learned-90e9df2e330c70e3",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "metrics_delta": {
+          "altura_http_blocked": 167,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 13878,
+          "altura_http_signature_rate_limited": 28,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 13850
+        },
+        "metrics_errors": [],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 2.22,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.002,
+          "first_limit_seconds": 0.016,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.07,
+            "p95": 1.791,
+            "p99": 2.214
+          },
+          "limited_percent": 97.78,
+          "requests": 7156,
+          "requests_per_second": 7150.38,
+          "statuses": {
+            "403": 159,
+            "429": 6997
+          },
+          "workers": 8
+        },
+        "scenario_description": "Rotating XFF plus Accept-header spray to diversify signatures",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.22,
+          "attacker_limited_percent": 97.78,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmpesimcott/filters-39181.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-39181.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-39181.json via deterministic",
+          "wrote 3 filters to /tmp/tmpesimcott/filters-39181.json via deterministic",
+          "wrote 3 filters to /tmp/tmpesimcott/filters-39181.json via deterministic",
+          "wrote 3 filters to /tmp/tmpesimcott/filters-39181.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.638,
+            "p95": 0.71,
+            "p99": 0.724
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.26,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.17,
+          "blocked_percent": 0.1,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.914,
+          "first_limit_seconds": 0.017,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.084,
+            "p95": 1.851,
+            "p99": 2.25
+          },
+          "limited_percent": 97.73,
+          "requests": 7012,
+          "requests_per_second": 7006.21,
+          "statuses": {
+            "204": 152,
+            "403": 7,
+            "429": 6853
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.21,
+          "attacker_limited_percent": 97.79,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 128,
+          "first_detection_seconds": 0.013,
+          "reasons": {
+            "filter_block": 2,
+            "global_observed": 126
+          },
+          "signature_bases": {
+            "00a2f39f181fede4": "GET|/api/hotueanazb/:num|a|mozilla|application/vnd.api+json",
+            "0191a1a11db9de40": "GET|/api/frbyclgzfp/:num|a,cursor,id,session|mozilla|text/html",
+            "027b513dba049b03": "GET|/api/zwfumfhxhr/:num|cache,id,page,ref|mozilla|*/*",
+            "051024f7cd1f8c61": "GET|/api/eyhzewufxs/:num|client,filter,sort,ts|curl|application/json",
+            "05d6e54d78b14ffc": "GET|/api/raczjmruax/:num|q,ts|python|*/*",
+            "06b3619b568a7e2b": "GET|/api/wbdnzjjywz/:num|a,b,feature,x|curl|text/html",
+            "0f88d2bd2aff1409": "GET|/api/znkpfcjjtk/:num|feature,id,q,ref|mozilla|*/*",
+            "0f9d12083c5d2a3b": "GET|/api/psvrsvzqcb/:num|client|node|application/vnd.api+json",
+            "15e0afcf5bf05e32": "GET|/api/eeayrkvcgw/:num|debug|curl|text/html",
+            "16f736453ebd8def": "GET|/api/zwchplruub/:num|session,x|python|application/json",
+            "1a13f605a0e15ea6": "GET|/api/hzrdtdztkn/:num|b,debug,id,sort|node|text/html",
+            "1c4113d7eb3abad2": "GET|/api/vbknvezxrf/:num|a,feature,filter,ref|curl|text/plain;q=0.9",
+            "1cccebedc3601726": "GET|/api/dqwohxtogk/:num|feature,filter,ts|curl|*/*",
+            "1f5720f522e5ccf8": "GET|/api/vvzpdewzax/:num|a,cursor,id,y|curl|text/plain;q=0.9",
+            "23377796dce59741": "GET|/api/ntgrommjpm/:num|sort|node|text/plain;q=0.9",
+            "2421085fc7116816": "GET|/api/csokqtsvet/:num|client,debug,feature|curl|application/json",
+            "2b0a26cfe43ac785": "GET|/api/pfehioiczq/:num|y|mozilla|text/plain;q=0.9",
+            "2b0e7f8ad61e5df7": "GET|/api/aziwxeogmi/:num|client|node|application/vnd.api+json",
+            "2f98393275b4aba2": "GET|/api/dgaultzeqi/:num|q|curl|*/*",
+            "3cc095a4b3755719": "GET|/api/cpxoawhwtj/:num|id|node|*/*",
+            "4aab8d217a313dcf": "GET|/api/ewsqnwbvsb/:num|feature,sort,view|node|text/plain;q=0.9",
+            "4dc751e45ba8d318": "GET|/api/pqhrpweiid/:num|cursor,debug,filter,region|curl|text/plain;q=0.9",
+            "503aae2a3576d21e": "GET|/api/zggheegxeb/:num|filter,x,y|mozilla|*/*",
+            "52d1352cdf0b8cbb": "GET|/api/ildjuwsejd/:num|page|python|application/json",
+            "5903e48806c69a51": "GET|/api/jhgsrskwaa/:num|debug,feature,z|node|text/html",
+            "5b336311c0f77a0d": "GET|/api/dspnjfmuqc/:num|id,q,z|curl|text/plain;q=0.9",
+            "5bf48a93ee3f51f8": "GET|/api/oyfednbxkm/:num|z|python|application/json",
+            "5c3726dd8adf737d": "GET|/api/unprrrdqvc/:num|b,filter,region|curl|application/vnd.api+json",
+            "5d528d8c667d9f0f": "GET|/api/mlgpmrigub/:num|debug,feature,region|mozilla|application/vnd.api+json",
+            "5dbf77649bc8d55c": "GET|/api/dabtqagngb/:num|feature,ref|python|application/vnd.api+json",
+            "5efff1b0d5319878": "GET|/api/qvfyxgxnei/:num|cursor,ref|python|text/plain;q=0.9",
+            "6c87903f76c325a3": "GET|/api/txqxngslyt/:num|x|python|*/*",
+            "7152baaad9b8dcec": "GET|/api/zxytnxnmzw/:num|filter,q,region|node|text/plain;q=0.9",
+            "717a88b2be045d20": "GET|/api/tiaufjgtas/:num|feature,id|mozilla|*/*",
+            "7752d545a92e388b": "GET|/api/btfavdzetq/:num|sort|curl|text/plain;q=0.9",
+            "8043c05d03d30807": "GET|/api/htcrrychqr/:num|debug,page|node|*/*",
+            "88f0972fd9d8fa59": "GET|/api/jkdtqyngoo/:num|sort,view|mozilla|text/plain;q=0.9",
+            "894d827ebe0687c5": "GET|/api/nciqdlfnbk/:num|feature,z|curl|*/*",
+            "8a5ba8dbc12c4d72": "GET|/api/vsqqpycyjo/:num|cursor,feature,sort,view|node|text/plain;q=0.9",
+            "8f3ff21407ea0998": "GET|/api/vydsaobaml/:num|view|curl|*/*",
+            "90e9df2e330c70e3": "GET|/api/zjnkvjcdyn/:num|filter,q,ref,session|curl|text/plain;q=0.9",
+            "92634c3b6bc7089f": "GET|/api/dmwswjepdv/:num|cache,client,ref,ts|python|*/*",
+            "92aaee45b798acc7": "GET|/api/cxxwhwkugn/:num|ref,region,ts|mozilla|*/*",
+            "937928606ca6124d": "GET|/api/vfmzfrdygy/:num|b,cache,page,q|node|*/*",
+            "94101bfddec96860": "GET|/api/megppnmzzq/:num|a,x|node|application/vnd.api+json",
+            "95506f83e138454a": "GET|/api/wwmximkkup/:num|cursor,ref,session,sort|node|text/html",
+            "a2a521c8b408217a": "GET|/api/axrvrxteed/:num|a,cursor,session,view|mozilla|*/*",
+            "a39b08480f46dac9": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|text/html",
+            "a5646f6d7d5add8f": "GET|/api/ascikcxzwf/:num|filter,q|python|*/*",
+            "acf0d6400b9a9d6f": "GET|/api/garvnkwmei/:num|cache,id,sort|curl|application/json",
+            "b05445b92a5c6d3e": "GET|/api/fjmmlnqukv/:num|cache,debug,q,y|mozilla|text/plain;q=0.9",
+            "b08254f0d7d39566": "GET|/api/fzdbvzdith/:num|a,cache,filter,x|curl|application/vnd.api+json",
+            "b217eebf86df3f06": "GET|/api/zoouabvnix/:num|b|node|*/*",
+            "b2829ac83809fff6": "GET|/api/yrcrkhmbby/:num|session,y|node|application/vnd.api+json",
+            "b2f0fe43e51eed34": "GET|/api/wuqpzeyjzk/:num|a,q,sort,z|curl|application/vnd.api+json",
+            "b51d83274557e13d": "GET|/api/uafnhgkcwu/:num|a,session,x|mozilla|*/*",
+            "ba128cfcc41483a4": "GET|/api/fbicfsjdum/:num|ref|mozilla|application/vnd.api+json",
+            "c5b5ba9b7c1a83a8": "GET|/api/bsgzoaorcs/:num|cursor,debug,sort|mozilla|application/vnd.api+json",
+            "c5d997f9ad8dc3ca": "GET|/api/wsfbgsbsmx/:num|page,sort|curl|*/*",
+            "ca1acb83e40a536a": "GET|/api/kplemwmtgm/:num|cache|curl|text/html",
+            "caed7c423f5547f3": "GET|/api/qwfwwtytaq/:num|client|mozilla|application/json",
+            "d23c0504764d430c": "GET|/api/miveswhzax/:num|sort|node|text/plain;q=0.9",
+            "d4acffde6da411f7": "GET|/api/giiskytcrp/:num|ts|python|application/json",
+            "d569f7ba282c29a6": "GET|/api/jkswodrajo/:num|b,id,x,y|python|application/vnd.api+json",
+            "d6c55e11c3dbb423": "GET|/api/oasfzfmumz/:num|debug,q,z|python|application/json",
+            "e80f327e606ca693": "GET|/api/nahzgaxllo/:num|debug,ref,view|python|application/vnd.api+json",
+            "ec9f477384e0ef2d": "GET|/api/liiohhsasq/:num|cursor|python|text/plain;q=0.9",
+            "ed3892d4ab7fc1b8": "GET|/api/sgunmqderq/:num|b,client,q,z|mozilla|*/*",
+            "ed971c58674144fd": "GET|/api/ovdwyzwgen/:num|feature,ref,ts,y|node|application/vnd.api+json",
+            "f15e920a234b4537": "GET|/api/bcwjozqovc/:num|a,ts|node|text/html"
+          },
+          "unique_signatures": 70
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-:token-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          }
+        ],
+        "filter_write_seconds": 1.001,
+        "filters_learned": 1,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/:token/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-:token-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          }
+        ],
+        "metrics_delta": {
+          "altura_http_blocked": 166,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 13879,
+          "altura_http_signature_rate_limited": 35,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 13844
+        },
+        "metrics_errors": [],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 2.21,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.002,
+          "first_limit_seconds": 0.016,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.058,
+            "p95": 1.795,
+            "p99": 2.2
+          },
+          "limited_percent": 97.79,
+          "requests": 7185,
+          "requests_per_second": 7177.74,
+          "statuses": {
+            "403": 159,
+            "429": 7026
+          },
+          "workers": 8
+        },
+        "scenario_description": "Rotating XFF plus Accept-header spray to diversify signatures",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.21,
+          "attacker_limited_percent": 97.79,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "path_shape_rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.642,
+            "p95": 0.661,
+            "p99": 0.711
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.25,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.17,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.015,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.034,
+            "p95": 1.783,
+            "p99": 2.213
+          },
+          "limited_percent": 97.83,
+          "requests": 7323,
+          "requests_per_second": 7316.58,
+          "statuses": {
+            "204": 159,
+            "429": 7164
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 97.83,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 97.83,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 64,
+          "first_detection_seconds": 0.012,
+          "reasons": {
+            "global_observed": 64
+          },
+          "signature_bases": {
+            "0191a1a11db9de40": "GET|/api/frbyclgzfp/:num|a,cursor,id,session|mozilla|text/html",
+            "05d6e54d78b14ffc": "GET|/api/raczjmruax/:num|q,ts|python|*/*",
+            "0f88d2bd2aff1409": "GET|/api/znkpfcjjtk/:num|feature,id,q,ref|mozilla|*/*",
+            "0f9be20bdabe2aed": "GET|/api/smtapbotkm/:num|q,y|curl|*/*",
+            "0f9d12083c5d2a3b": "GET|/api/psvrsvzqcb/:num|client|node|application/vnd.api+json",
+            "16f736453ebd8def": "GET|/api/zwchplruub/:num|session,x|python|application/json",
+            "1a13f605a0e15ea6": "GET|/api/hzrdtdztkn/:num|b,debug,id,sort|node|text/html",
+            "1c4113d7eb3abad2": "GET|/api/vbknvezxrf/:num|a,feature,filter,ref|curl|text/plain;q=0.9",
+            "2b0e7f8ad61e5df7": "GET|/api/aziwxeogmi/:num|client|node|application/vnd.api+json",
+            "2c78e898ef279ff4": "GET|/api/vfzsilqtrj/:num|cursor,q,ref,sort|curl|*/*",
+            "2de39cf0e1eeafed": "GET|/api/fkzvgcrbod/:num|page|node|application/vnd.api+json",
+            "3151bbcfacbea792": "GET|/api/tlfkjvgxbj/:num|q|mozilla|*/*",
+            "3cc095a4b3755719": "GET|/api/cpxoawhwtj/:num|id|node|*/*",
+            "4aab8d217a313dcf": "GET|/api/ewsqnwbvsb/:num|feature,sort,view|node|text/plain;q=0.9",
+            "503aae2a3576d21e": "GET|/api/zggheegxeb/:num|filter,x,y|mozilla|*/*",
+            "52d1352cdf0b8cbb": "GET|/api/ildjuwsejd/:num|page|python|application/json",
+            "5903e48806c69a51": "GET|/api/jhgsrskwaa/:num|debug,feature,z|node|text/html",
+            "5bf48a93ee3f51f8": "GET|/api/oyfednbxkm/:num|z|python|application/json",
+            "5c3726dd8adf737d": "GET|/api/unprrrdqvc/:num|b,filter,region|curl|application/vnd.api+json",
+            "5d528d8c667d9f0f": "GET|/api/mlgpmrigub/:num|debug,feature,region|mozilla|application/vnd.api+json",
+            "5dbf77649bc8d55c": "GET|/api/dabtqagngb/:num|feature,ref|python|application/vnd.api+json",
+            "7152baaad9b8dcec": "GET|/api/zxytnxnmzw/:num|filter,q,region|node|text/plain;q=0.9",
+            "717a88b2be045d20": "GET|/api/tiaufjgtas/:num|feature,id|mozilla|*/*",
+            "90e9df2e330c70e3": "GET|/api/zjnkvjcdyn/:num|filter,q,ref,session|curl|text/plain;q=0.9",
+            "92634c3b6bc7089f": "GET|/api/dmwswjepdv/:num|cache,client,ref,ts|python|*/*",
+            "92aaee45b798acc7": "GET|/api/cxxwhwkugn/:num|ref,region,ts|mozilla|*/*",
+            "937928606ca6124d": "GET|/api/vfmzfrdygy/:num|b,cache,page,q|node|*/*",
+            "94101bfddec96860": "GET|/api/megppnmzzq/:num|a,x|node|application/vnd.api+json",
+            "95506f83e138454a": "GET|/api/wwmximkkup/:num|cursor,ref,session,sort|node|text/html",
+            "9ae20a505e512ad4": "GET|/api/xtrmmamscd/:num|debug,region,view,x|python|application/vnd.api+json",
+            "a2a521c8b408217a": "GET|/api/axrvrxteed/:num|a,cursor,session,view|mozilla|*/*",
+            "a39b08480f46dac9": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|text/html",
+            "b05445b92a5c6d3e": "GET|/api/fjmmlnqukv/:num|cache,debug,q,y|mozilla|text/plain;q=0.9",
+            "b08254f0d7d39566": "GET|/api/fzdbvzdith/:num|a,cache,filter,x|curl|application/vnd.api+json",
+            "b217eebf86df3f06": "GET|/api/zoouabvnix/:num|b|node|*/*",
+            "b51d83274557e13d": "GET|/api/uafnhgkcwu/:num|a,session,x|mozilla|*/*",
+            "d23c0504764d430c": "GET|/api/miveswhzax/:num|sort|node|text/plain;q=0.9",
+            "d4acffde6da411f7": "GET|/api/giiskytcrp/:num|ts|python|application/json",
+            "d6c55e11c3dbb423": "GET|/api/oasfzfmumz/:num|debug,q,z|python|application/json",
+            "e80f327e606ca693": "GET|/api/nahzgaxllo/:num|debug,ref,view|python|application/vnd.api+json",
+            "eb8bf40df5374a2e": "GET|/api/qthlhiilxo/:num|cache,client|python|*/*",
+            "ed971c58674144fd": "GET|/api/ovdwyzwgen/:num|feature,ref,ts,y|node|application/vnd.api+json",
+            "f15e920a234b4537": "GET|/api/bcwjozqovc/:num|a,ts|node|text/html",
+            "f16f6e5e1bf68038": "GET|/api/isidsbhrhn/:num|cursor,feature,filter|node|text/plain;q=0.9"
+          },
+          "unique_signatures": 44
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "path-shape-rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 7164,
+          "altura_http_rate_limited": 7164,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF plus Accept-header spray to diversify signatures",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.645,
+            "p95": 0.703,
+            "p99": 0.807
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.22,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.19,
+            "p95": 1.928,
+            "p99": 2.347
+          },
+          "limited_percent": 0.0,
+          "requests": 6426,
+          "requests_per_second": 6418.93,
+          "statuses": {
+            "204": 6426
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 0,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF plus Accept-header spray to diversify signatures",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.644,
+            "p95": 0.717,
+            "p99": 0.755
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.46,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.35,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.018,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.122,
+            "p95": 1.939,
+            "p99": 2.382
+          },
+          "limited_percent": 97.65,
+          "requests": 6773,
+          "requests_per_second": 6765.92,
+          "statuses": {
+            "204": 159,
+            "429": 6614
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 97.65,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 97.65,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 64,
+          "first_detection_seconds": 0.014,
+          "reasons": {
+            "global_observed": 64
+          },
+          "signature_bases": {
+            "0191a1a11db9de40": "GET|/api/frbyclgzfp/:num|a,cursor,id,session|mozilla|text/html",
+            "0f9d12083c5d2a3b": "GET|/api/psvrsvzqcb/:num|client|node|application/vnd.api+json",
+            "16f736453ebd8def": "GET|/api/zwchplruub/:num|session,x|python|application/json",
+            "1a13f605a0e15ea6": "GET|/api/hzrdtdztkn/:num|b,debug,id,sort|node|text/html",
+            "1c4113d7eb3abad2": "GET|/api/vbknvezxrf/:num|a,feature,filter,ref|curl|text/plain;q=0.9",
+            "2b0e7f8ad61e5df7": "GET|/api/aziwxeogmi/:num|client|node|application/vnd.api+json",
+            "2de39cf0e1eeafed": "GET|/api/fkzvgcrbod/:num|page|node|application/vnd.api+json",
+            "3151bbcfacbea792": "GET|/api/tlfkjvgxbj/:num|q|mozilla|*/*",
+            "3624aa53799f6a12": "GET|/api/veccbzlagy/:num|debug,q|mozilla|text/plain;q=0.9",
+            "3cc095a4b3755719": "GET|/api/cpxoawhwtj/:num|id|node|*/*",
+            "437153d87d6b87a8": "GET|/api/emxqjikkmp/:num|filter,ref,region,ts|node|text/html",
+            "4aab8d217a313dcf": "GET|/api/ewsqnwbvsb/:num|feature,sort,view|node|text/plain;q=0.9",
+            "503aae2a3576d21e": "GET|/api/zggheegxeb/:num|filter,x,y|mozilla|*/*",
+            "52d1352cdf0b8cbb": "GET|/api/ildjuwsejd/:num|page|python|application/json",
+            "5903e48806c69a51": "GET|/api/jhgsrskwaa/:num|debug,feature,z|node|text/html",
+            "5bf48a93ee3f51f8": "GET|/api/oyfednbxkm/:num|z|python|application/json",
+            "5c3726dd8adf737d": "GET|/api/unprrrdqvc/:num|b,filter,region|curl|application/vnd.api+json",
+            "5d528d8c667d9f0f": "GET|/api/mlgpmrigub/:num|debug,feature,region|mozilla|application/vnd.api+json",
+            "5dbf77649bc8d55c": "GET|/api/dabtqagngb/:num|feature,ref|python|application/vnd.api+json",
+            "6c87903f76c325a3": "GET|/api/txqxngslyt/:num|x|python|*/*",
+            "717a88b2be045d20": "GET|/api/tiaufjgtas/:num|feature,id|mozilla|*/*",
+            "7752d545a92e388b": "GET|/api/btfavdzetq/:num|sort|curl|text/plain;q=0.9",
+            "894d827ebe0687c5": "GET|/api/nciqdlfnbk/:num|feature,z|curl|*/*",
+            "8a5ba8dbc12c4d72": "GET|/api/vsqqpycyjo/:num|cursor,feature,sort,view|node|text/plain;q=0.9",
+            "90e9df2e330c70e3": "GET|/api/zjnkvjcdyn/:num|filter,q,ref,session|curl|text/plain;q=0.9",
+            "92634c3b6bc7089f": "GET|/api/dmwswjepdv/:num|cache,client,ref,ts|python|*/*",
+            "937928606ca6124d": "GET|/api/vfmzfrdygy/:num|b,cache,page,q|node|*/*",
+            "94101bfddec96860": "GET|/api/megppnmzzq/:num|a,x|node|application/vnd.api+json",
+            "95506f83e138454a": "GET|/api/wwmximkkup/:num|cursor,ref,session,sort|node|text/html",
+            "a2a521c8b408217a": "GET|/api/axrvrxteed/:num|a,cursor,session,view|mozilla|*/*",
+            "a39b08480f46dac9": "GET|/api/zyfhqmwxoh/:num|cache,view,z|python|text/html",
+            "b05445b92a5c6d3e": "GET|/api/fjmmlnqukv/:num|cache,debug,q,y|mozilla|text/plain;q=0.9",
+            "b08254f0d7d39566": "GET|/api/fzdbvzdith/:num|a,cache,filter,x|curl|application/vnd.api+json",
+            "b217eebf86df3f06": "GET|/api/zoouabvnix/:num|b|node|*/*",
+            "b2829ac83809fff6": "GET|/api/yrcrkhmbby/:num|session,y|node|application/vnd.api+json",
+            "b51d83274557e13d": "GET|/api/uafnhgkcwu/:num|a,session,x|mozilla|*/*",
+            "c5b5ba9b7c1a83a8": "GET|/api/bsgzoaorcs/:num|cursor,debug,sort|mozilla|application/vnd.api+json",
+            "d23c0504764d430c": "GET|/api/miveswhzax/:num|sort|node|text/plain;q=0.9",
+            "d4acffde6da411f7": "GET|/api/giiskytcrp/:num|ts|python|application/json",
+            "d6c55e11c3dbb423": "GET|/api/oasfzfmumz/:num|debug,q,z|python|application/json",
+            "dd766eccef4bb3e5": "GET|/api/rueackgkmw/:num|debug,session,x,y|python|text/plain;q=0.9",
+            "e80f327e606ca693": "GET|/api/nahzgaxllo/:num|debug,ref,view|python|application/vnd.api+json",
+            "ed971c58674144fd": "GET|/api/ovdwyzwgen/:num|feature,ref,ts,y|node|application/vnd.api+json",
+            "ff6b39d8ed87a8ee": "GET|/api/qbfbpprtgv/:num|cursor,filter,sort,y|mozilla|*/*"
+          },
+          "unique_signatures": 44
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 6614,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 6614
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF plus Accept-header spray to diversify signatures",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.546,
+            "p95": 0.628,
+            "p99": 0.628
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.35,
+          "statuses": {
+            "403": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 99.71,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": 0.966,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.063,
+            "p95": 1.82,
+            "p99": 2.197
+          },
+          "limited_percent": 0.29,
+          "requests": 7166,
+          "requests_per_second": 7158.43,
+          "statuses": {
+            "403": 7145,
+            "429": 21
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 99.71,
+          "attacker_limited_percent": 0.29,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 67,
+          "first_detection_seconds": 0.006,
+          "reasons": {
+            "filter_block": 3,
+            "global_observed": 64
+          },
+          "signature_bases": {
+            "00a2f39f181fede4": "GET|/api/hotueanazb/:num|a|mozilla|application/vnd.api+json",
+            "027b513dba049b03": "GET|/api/zwfumfhxhr/:num|cache,id,page,ref|mozilla|*/*",
+            "051024f7cd1f8c61": "GET|/api/eyhzewufxs/:num|client,filter,sort,ts|curl|application/json",
+            "06b3619b568a7e2b": "GET|/api/wbdnzjjywz/:num|a,b,feature,x|curl|text/html",
+            "15e0afcf5bf05e32": "GET|/api/eeayrkvcgw/:num|debug|curl|text/html",
+            "1cccebedc3601726": "GET|/api/dqwohxtogk/:num|feature,filter,ts|curl|*/*",
+            "23377796dce59741": "GET|/api/ntgrommjpm/:num|sort|node|text/plain;q=0.9",
+            "2b0a26cfe43ac785": "GET|/api/pfehioiczq/:num|y|mozilla|text/plain;q=0.9",
+            "2de39cf0e1eeafed": "GET|/api/fkzvgcrbod/:num|page|node|application/vnd.api+json",
+            "2e28634cdb31de6c": "GET|/api/gnxpioezgy/:num|b,cursor,ref,y|curl|text/plain;q=0.9",
+            "2f98393275b4aba2": "GET|/api/dgaultzeqi/:num|q|curl|*/*",
+            "4dc751e45ba8d318": "GET|/api/pqhrpweiid/:num|cursor,debug,filter,region|curl|text/plain;q=0.9",
+            "5b336311c0f77a0d": "GET|/api/dspnjfmuqc/:num|id,q,z|curl|text/plain;q=0.9",
+            "5bf48a93ee3f51f8": "GET|/api/oyfednbxkm/:num|z|python|application/json",
+            "5efff1b0d5319878": "GET|/api/qvfyxgxnei/:num|cursor,ref|python|text/plain;q=0.9",
+            "6c87903f76c325a3": "GET|/api/txqxngslyt/:num|x|python|*/*",
+            "6e29cd975f6ab805": "GET|/api/jdtjbpgomc/:num|b,filter|curl|text/html",
+            "7752d545a92e388b": "GET|/api/btfavdzetq/:num|sort|curl|text/plain;q=0.9",
+            "8043c05d03d30807": "GET|/api/htcrrychqr/:num|debug,page|node|*/*",
+            "8816ccbad5349b21": "GET|/api/ygvssypmiu/:num|feature,page,sort,x|node|application/vnd.api+json",
+            "88f0972fd9d8fa59": "GET|/api/jkdtqyngoo/:num|sort,view|mozilla|text/plain;q=0.9",
+            "8a5ba8dbc12c4d72": "GET|/api/vsqqpycyjo/:num|cursor,feature,sort,view|node|text/plain;q=0.9",
+            "8f3ff21407ea0998": "GET|/api/vydsaobaml/:num|view|curl|*/*",
+            "9ae20a505e512ad4": "GET|/api/xtrmmamscd/:num|debug,region,view,x|python|application/vnd.api+json",
+            "acf0d6400b9a9d6f": "GET|/api/garvnkwmei/:num|cache,id,sort|curl|application/json",
+            "b2f0fe43e51eed34": "GET|/api/wuqpzeyjzk/:num|a,q,sort,z|curl|application/vnd.api+json",
+            "c1d082a017f109e6": "GET|/api/spxcelczne/:num|cursor,feature,ts|python|application/vnd.api+json",
+            "c5b5ba9b7c1a83a8": "GET|/api/bsgzoaorcs/:num|cursor,debug,sort|mozilla|application/vnd.api+json",
+            "c5d997f9ad8dc3ca": "GET|/api/wsfbgsbsmx/:num|page,sort|curl|*/*",
+            "ca1acb83e40a536a": "GET|/api/kplemwmtgm/:num|cache|curl|text/html",
+            "d8f2d02b34ff4930": "GET|/api/qgbidmmgwt/:num|b|python|*/*",
+            "e80f327e606ca693": "GET|/api/nahzgaxllo/:num|debug,ref,view|python|application/vnd.api+json",
+            "e8b2f2193eefe084": "GET|/api/sfzlmwtobi/:num|cursor,filter,sort|node|*/*",
+            "eb8bf40df5374a2e": "GET|/api/qthlhiilxo/:num|cache,client|python|*/*",
+            "ec9f477384e0ef2d": "GET|/api/liiohhsasq/:num|cursor|python|text/plain;q=0.9"
+          },
+          "unique_signatures": 35
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 7170,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 21,
+          "altura_http_signature_rate_limited": 21,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF plus Accept-header spray to diversify signatures",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      }
+    },
+    "xff-rotating": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "error_samples": [],
+        "errors": 0,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "hung_workers": 0,
+        "latency_ms": {
+          "p50": 0.627,
+          "p95": 1.487,
+          "p99": 2.005
+        },
+        "limited_percent": 0.0,
+        "requests": 11216,
+        "requests_per_second": 11203.64,
+        "statuses": {
+          "204": 11216
+        },
+        "workers": 8
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmpesimcott/filters-47307.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-47307.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-47307.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-47307.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-47307.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-47307.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.64,
+            "p95": 0.717,
+            "p99": 0.806
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.22,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.01,
+          "blocked_percent": 0.11,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.913,
+          "first_limit_seconds": 0.016,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.008,
+            "p95": 1.691,
+            "p99": 2.066
+          },
+          "limited_percent": 97.89,
+          "requests": 7579,
+          "requests_per_second": 7571.96,
+          "statuses": {
+            "204": 152,
+            "403": 8,
+            "429": 7419
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.22,
+          "attacker_limited_percent": 97.78,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 133,
+          "first_detection_seconds": 0.012,
+          "reasons": {
+            "filter_block": 4,
+            "global_observed": 125,
+            "observed": 1,
+            "trusted_proxy_rate_limited": 3
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-f2a0bf9bccb4429f",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "f2a0bf9bccb4429f",
+            "signature_basis": "GET|/api/login|none|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 1.001,
+        "filters_learned": 1,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f2a0bf9bccb4429f"
+            },
+            "enabled": true,
+            "id": "codex-learned-f2a0bf9bccb4429f",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "metrics_delta": {
+          "altura_http_blocked": 167,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 14419,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 14419
+        },
+        "metrics_errors": [],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 2.22,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.002,
+          "first_limit_seconds": 0.015,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.063,
+            "p95": 1.794,
+            "p99": 2.207
+          },
+          "limited_percent": 97.78,
+          "requests": 7159,
+          "requests_per_second": 7150.1,
+          "statuses": {
+            "403": 159,
+            "429": 7000
+          },
+          "workers": 8
+        },
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.22,
+          "attacker_limited_percent": 97.78,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmpesimcott/filters-45745.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-45745.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-45745.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-45745.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-45745.json via deterministic",
+          "wrote 1 filters to /tmp/tmpesimcott/filters-45745.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.626,
+            "p95": 0.677,
+            "p99": 0.759
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.2,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.05,
+          "blocked_percent": 0.11,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.914,
+          "first_limit_seconds": 0.016,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.022,
+            "p95": 1.744,
+            "p99": 2.125
+          },
+          "limited_percent": 97.84,
+          "requests": 7422,
+          "requests_per_second": 7414.12,
+          "statuses": {
+            "204": 152,
+            "403": 8,
+            "429": 7262
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.09,
+          "attacker_limited_percent": 97.91,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 129,
+          "first_detection_seconds": 0.012,
+          "reasons": {
+            "filter_block": 4,
+            "global_observed": 123,
+            "observed": 1,
+            "trusted_proxy_rate_limited": 1
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-f2a0bf9bccb4429f",
+            "kind": "exact_signature",
+            "not_ip_based": true,
+            "precision": "exact_request_shape",
+            "signature": "f2a0bf9bccb4429f",
+            "signature_basis": "GET|/api/login|none|curl|*/*"
+          }
+        ],
+        "filter_write_seconds": 1.001,
+        "filters_learned": 1,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f2a0bf9bccb4429f"
+            },
+            "enabled": true,
+            "id": "codex-learned-f2a0bf9bccb4429f",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "metrics_delta": {
+          "altura_http_blocked": 167,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 14719,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 14719
+        },
+        "metrics_errors": [],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 2.09,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.002,
+          "first_limit_seconds": 0.015,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.997,
+            "p95": 1.679,
+            "p99": 2.037
+          },
+          "limited_percent": 97.91,
+          "requests": 7616,
+          "requests_per_second": 7608.45,
+          "statuses": {
+            "403": 159,
+            "429": 7457
+          },
+          "workers": 8
+        },
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 2.09,
+          "attacker_limited_percent": 97.91,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "path_shape_rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.64,
+            "p95": 0.71,
+            "p99": 0.743
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.26,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.1,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.016,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.009,
+            "p95": 1.699,
+            "p99": 2.064
+          },
+          "limited_percent": 97.9,
+          "requests": 7554,
+          "requests_per_second": 7547.47,
+          "statuses": {
+            "204": 159,
+            "429": 7395
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 97.9,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 97.9,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 64,
+          "first_detection_seconds": 0.012,
+          "reasons": {
+            "global_observed": 62,
+            "observed": 1,
+            "path_shape_rate_limited": 1
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "path-shape-rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 7395,
+          "altura_http_rate_limited": 7395,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.646,
+            "p95": 0.715,
+            "p99": 0.733
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.26,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.11,
+            "p95": 1.791,
+            "p99": 2.134
+          },
+          "limited_percent": 0.0,
+          "requests": 6906,
+          "requests_per_second": 6899.84,
+          "statuses": {
+            "204": 6906
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 0,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.658,
+            "p95": 0.699,
+            "p99": 0.773
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.23,
+          "statuses": {
+            "204": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 2.11,
+          "blocked_percent": 0.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": 0.015,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.007,
+            "p95": 1.706,
+            "p99": 2.061
+          },
+          "limited_percent": 97.89,
+          "requests": 7539,
+          "requests_per_second": 7532.15,
+          "statuses": {
+            "204": 159,
+            "429": 7380
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 97.89,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 97.89,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 64,
+          "first_detection_seconds": 0.011,
+          "reasons": {
+            "global_observed": 62,
+            "observed": 1,
+            "trusted_proxy_rate_limited": 1
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 0,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 7380,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 7380
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 0.535,
+            "p95": 0.594,
+            "p99": 0.625
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.35,
+          "statuses": {
+            "403": 25
+          },
+          "workers": 1
+        },
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "error_samples": [],
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "hung_workers": 0,
+          "latency_ms": {
+            "p50": 1.004,
+            "p95": 1.684,
+            "p99": 2.051
+          },
+          "limited_percent": 0.0,
+          "requests": 7574,
+          "requests_per_second": 7566.8,
+          "statuses": {
+            "403": 7574
+          },
+          "workers": 8
+        },
+        "effective_target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 100.0,
+          "attacker_blocked_percent": 100.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "events": {
+          "count": 65,
+          "first_detection_seconds": 0.006,
+          "reasons": {
+            "filter_block": 3,
+            "global_observed": 62
+          },
+          "signature_bases": {
+            "f2a0bf9bccb4429f": "GET|/api/login|none|curl|*/*"
+          },
+          "unique_signatures": 1
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "metrics_delta": {
+          "altura_http_blocked": 7599,
+          "altura_http_path_shape_rate_limited": 0,
+          "altura_http_rate_limited": 0,
+          "altura_http_signature_rate_limited": 0,
+          "altura_http_trusted_proxy_in_flight_rejected": 0,
+          "altura_http_trusted_proxy_rate_limited": 0
+        },
+        "metrics_errors": [],
+        "replay": null,
+        "scenario_description": "",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_or_limited_percent": 0.0,
+          "attacker_blocked_percent": 0.0,
+          "attacker_limited_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 0.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": false,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      }
+    }
+  },
+  "signature_threshold_per_second": 60,
+  "source_tree": {
+    "cwd": "/tmp/altura-prot-defense-debug-20260623",
+    "git_branch": "main",
+    "git_commit": "38213a0e4262d5879bd080885b67b8b9c03baa2d",
+    "git_commit_short": "38213a0e4262",
+    "git_dirty": true,
+    "git_root": "/tmp/altura-prot-defense-debug-20260623"
+  },
+  "workdir": "/tmp/tmpesimcott",
+  "workers": 8
+}

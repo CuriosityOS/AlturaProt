@@ -1,0 +1,1938 @@
+{
+  "guardrails": {
+    "accept_encoding": {
+      "accept_encoding_stripped_delta": 1,
+      "origin_accept_encoding": null,
+      "origin_accept_encoding_stripped": true,
+      "request": {
+        "elapsed_seconds": 0.001,
+        "error": null,
+        "observed": {
+          "accept_encoding": null,
+          "cf_connecting_ip": null,
+          "client_ip": null,
+          "connection": null,
+          "fastly_client_ip": null,
+          "forwarded": null,
+          "keep_alive": null,
+          "proxy_connection": null,
+          "te": null,
+          "trailer": null,
+          "true_client_ip": null,
+          "upgrade": null,
+          "x_client_ip": null,
+          "x_cluster_client_ip": null,
+          "x_forwarded": null,
+          "x_forwarded_for": "127.0.0.1",
+          "x_forwarded_host": "127.0.0.1",
+          "x_forwarded_path": null,
+          "x_forwarded_port": null,
+          "x_forwarded_prefix": null,
+          "x_forwarded_proto": "http",
+          "x_forwarded_scheme": null,
+          "x_forwarded_server": null,
+          "x_forwarded_uri": null,
+          "x_hop_by_hop_attack": null,
+          "x_original_forwarded_for": null,
+          "x_original_host": null,
+          "x_original_url": null,
+          "x_originating_ip": null,
+          "x_real_ip": "127.0.0.1",
+          "x_remote_addr": null,
+          "x_remote_ip": null,
+          "x_rewrite_url": null
+        },
+        "status": 200
+      }
+    },
+    "adaptive_window_cap": {
+      "all_requests_ok": true,
+      "completed_statuses": {
+        "204": 512
+      },
+      "configured_max_path_shape_windows": 64,
+      "configured_max_signature_windows": 64,
+      "path_shape_window_capacity": 64,
+      "path_shape_windows_after": 64,
+      "path_shape_windows_before": 0,
+      "path_shape_windows_bounded": true,
+      "request_count": 512,
+      "signature_window_capacity": 64,
+      "signature_windows_after": 64,
+      "signature_windows_before": 0,
+      "signature_windows_bounded": true
+    },
+    "admin_control_plane": {
+      "admin_responses_not_stored": true,
+      "health_cache_control": "no-store",
+      "health_status": 200,
+      "metrics_with_token_cache_control": "no-store",
+      "metrics_with_token_status": 200,
+      "metrics_without_token_cache_control": "no-store",
+      "metrics_without_token_status": 403
+    },
+    "admin_prefix_startup": {
+      "query_prefix": {
+        "configured_admin_path_prefix": "/__altura?debug=true",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_path_prefix must not contain query or fragment markers\""
+        ]
+      },
+      "query_prefix_rejected": true,
+      "relative_prefix": {
+        "configured_admin_path_prefix": "admin",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_path_prefix must start with '/' and use a non-root absolute path prefix such as /__altura\""
+        ]
+      },
+      "relative_prefix_rejected": true,
+      "root_prefix": {
+        "configured_admin_path_prefix": "/",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_path_prefix must use a non-root absolute path prefix such as /__altura\""
+        ]
+      },
+      "root_prefix_rejected": true
+    },
+    "admin_rate_limit": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store"
+      ],
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1"
+      ],
+      "statuses": [
+        200,
+        429
+      ]
+    },
+    "admin_signature_rate": {
+      "admin_health_signature_limited": true,
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store",
+        "no-store"
+      ],
+      "configured_signature_burst": 2,
+      "configured_signature_rps": 1e-06,
+      "http_rate_limited_delta": 2,
+      "rate_limited_metric_includes_signature_limit": true,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1",
+        "1"
+      ],
+      "signature_metric_matches": true,
+      "signature_rate_limited_delta": 2,
+      "statuses": [
+        200,
+        200,
+        429,
+        429
+      ]
+    },
+    "admin_token_startup": {
+      "blank_token": {
+        "configured_admin_token_repr": "'   '",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_token must not be blank when configured\""
+        ]
+      },
+      "blank_token_rejected": true,
+      "control_token": {
+        "configured_admin_token_repr": "'line\\nfeed'",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_token must not contain control characters\""
+        ]
+      },
+      "control_token_rejected": true,
+      "empty_token": {
+        "configured_admin_token_repr": "''",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_token must not be empty when configured\""
+        ]
+      },
+      "empty_token_rejected": true,
+      "padded_token": {
+        "configured_admin_token_repr": "' secret'",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_token must not start or end with whitespace\""
+        ]
+      },
+      "padded_token_rejected": true
+    },
+    "body_min_rate": {
+      "configured_request_body_idle_timeout_ms": 500,
+      "configured_request_body_min_rate_bytes_per_second": 1000,
+      "configured_request_body_min_rate_grace_ms": 10,
+      "configured_upstream_body_idle_timeout_ms": 500,
+      "configured_upstream_body_min_rate_bytes_per_second": 1000,
+      "configured_upstream_body_min_rate_grace_ms": 10,
+      "http_body_too_slow_delta": 1,
+      "http_upstream_body_too_slow_delta": 1,
+      "request_body_response": {
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.089,
+        "error": null,
+        "status": 408
+      },
+      "request_min_rate_rejected": true,
+      "upstream_min_rate_rejected": true,
+      "upstream_response": {
+        "body_bytes": 1,
+        "elapsed_seconds": 0.084,
+        "error": null,
+        "status": 200
+      }
+    },
+    "chunked_request_body_opt_in": {
+      "chunked_request": {
+        "body_bytes": 0,
+        "cache_control": null,
+        "cache_control_no_store": false,
+        "connection": null,
+        "connection_close": false,
+        "elapsed_seconds": 2.002,
+        "error": "timeout",
+        "headers": [
+          "Transfer-Encoding: chunked"
+        ],
+        "status": null
+      },
+      "chunked_request_allowed": false,
+      "configured_allow_chunked_request_bodies": true,
+      "http_framing_rejected_delta": 0
+    },
+    "connection_request_limit": {
+      "cache_control_header_matches": true,
+      "configured_max_requests_per_connection": 2,
+      "connection_close_header_matches": true,
+      "connection_closed_before_fourth": true,
+      "connection_request_limit_observed": true,
+      "http_request_limited_delta": 1,
+      "probe": {
+        "elapsed_seconds": 0.062,
+        "error": null,
+        "first_response": {
+          "body": "",
+          "body_bytes": 0,
+          "header_complete": true,
+          "headers": {
+            "date": "Mon, 22 Jun 2026 04:52:59 GMT"
+          },
+          "status": 204
+        },
+        "fourth_error": null,
+        "fourth_response_bytes": 0,
+        "second_response": {
+          "body": "",
+          "body_bytes": 0,
+          "header_complete": true,
+          "headers": {
+            "date": "Mon, 22 Jun 2026 04:52:59 GMT"
+          },
+          "status": 204
+        },
+        "third_response": {
+          "body": "connection request limit\n",
+          "body_bytes": 25,
+          "header_complete": true,
+          "headers": {
+            "cache-control": "no-store",
+            "connection": "close",
+            "content-length": "25",
+            "date": "Mon, 22 Jun 2026 04:52:59 GMT",
+            "retry-after": "1"
+          },
+          "status": 429
+        }
+      },
+      "retry_after_header_matches": true,
+      "third_request_limited": true
+    },
+    "control_capacity_startup": {
+      "adaptive_flush_interval": {
+        "configured_field": "adaptive.event_log_flush_interval_ms",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.event_log_flush_interval_ms must be greater than zero\""
+        ]
+      },
+      "adaptive_flush_interval_rejected": true,
+      "adaptive_log_cap": {
+        "configured_field": "adaptive.event_log_max_bytes",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.event_log_max_bytes must be greater than zero\""
+        ]
+      },
+      "adaptive_log_cap_rejected": true,
+      "adaptive_queue_cap": {
+        "configured_field": "adaptive.event_log_queue_capacity",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.event_log_queue_capacity must be greater than zero\""
+        ]
+      },
+      "adaptive_queue_cap_rejected": true,
+      "adaptive_window_cap": {
+        "configured_field": "adaptive.max_signature_windows",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.max_signature_windows must be greater than zero\""
+        ]
+      },
+      "adaptive_window_cap_rejected": true,
+      "filter_file_cap": {
+        "configured_field": "filters.max_runtime_file_bytes",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.max_runtime_file_bytes must be greater than zero\""
+        ]
+      },
+      "filter_file_cap_rejected": true,
+      "filter_rule_cap": {
+        "configured_field": "filters.max_runtime_filters",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.max_runtime_filters must be greater than zero\""
+        ]
+      },
+      "filter_rule_cap_rejected": true
+    },
+    "downstream_keep_alive": {
+      "closed_before_second_response": true,
+      "elapsed_seconds": 0.061,
+      "first_response": {
+        "body": "",
+        "body_bytes": 0,
+        "header_complete": true,
+        "headers": {
+          "connection": "close",
+          "date": "Mon, 22 Jun 2026 04:52:59 GMT"
+        },
+        "status": 204
+      },
+      "framing_rejected_delta": 0,
+      "second_error": null,
+      "second_response_bytes": 0,
+      "second_status": null
+    },
+    "downstream_write_timeout": {
+      "configured_downstream_write_timeout_ms": 20,
+      "downstream_write_timeout_observed": true,
+      "http_downstream_write_timeouts_delta": 1,
+      "slow_reader_response": {
+        "elapsed_seconds": 0.251,
+        "error": null,
+        "first_body_bytes": 3995,
+        "first_read_bytes": 4096,
+        "status": 200
+      }
+    },
+    "early_rejection_close": {
+      "body_bearing_early_rejections_close_connection": true,
+      "body_bearing_early_rejections_not_stored": true,
+      "probes": {
+        "filter_with_body": {
+          "body_bytes_sent": 19,
+          "elapsed_seconds": 0.001,
+          "error": null,
+          "first": {
+            "connection": null,
+            "connection_close": false,
+            "status": 204
+          },
+          "method": "POST",
+          "second": {
+            "body_bytes": 8,
+            "cache_control": "no-store",
+            "cache_control_no_store": true,
+            "connection": "close",
+            "connection_close": true,
+            "status": 403
+          },
+          "target_bytes": 15
+        },
+        "method_with_body": {
+          "body_bytes_sent": 19,
+          "elapsed_seconds": 0.002,
+          "error": null,
+          "first": {
+            "connection": null,
+            "connection_close": false,
+            "status": 204
+          },
+          "method": "TRACE",
+          "second": {
+            "body_bytes": 19,
+            "cache_control": "no-store",
+            "cache_control_no_store": true,
+            "connection": "close",
+            "connection_close": true,
+            "status": 405
+          },
+          "target_bytes": 1
+        },
+        "uri_with_body": {
+          "body_bytes_sent": 16,
+          "elapsed_seconds": 0.001,
+          "error": null,
+          "first": {
+            "connection": null,
+            "connection_close": false,
+            "status": 204
+          },
+          "method": "POST",
+          "second": {
+            "body_bytes": 21,
+            "cache_control": "no-store",
+            "cache_control_no_store": true,
+            "connection": "close",
+            "connection_close": true,
+            "status": 414
+          },
+          "target_bytes": 86
+        }
+      }
+    },
+    "edge_template_port_coverage": {
+      "covered_public_ports_allowed": true,
+      "covered_public_ports_status": 0,
+      "loopback_missing_port_allowed": true,
+      "loopback_missing_port_status": 0,
+      "missing_public_port_rejected": true,
+      "missing_public_port_status": 1,
+      "missing_public_port_stderr": "protected_tcp_ports is missing public AlturaProt listener ports: 7000",
+      "missing_udp_drop_rejected": true,
+      "missing_udp_drop_status": 1,
+      "missing_udp_drop_stderr": "missing raw UDP drop for protected TCP service ports: expected `udp dport @protected_tcp_ports drop` in chain preraw"
+    },
+    "event_log_async_queue": {
+      "all_requests_completed": true,
+      "completed_statuses": {
+        "204": 2000
+      },
+      "configured_event_log_queue_capacity": 1,
+      "drained_bytes": 8592,
+      "dropped_delta": 1982,
+      "event_log_queue_dropped": true,
+      "request_count": 2000,
+      "requests_elapsed_seconds": 0.297,
+      "requests_per_second": 6743.13
+    },
+    "event_log_field_bounds": {
+      "all_event_fields_bounded": true,
+      "bounded_fields": true,
+      "bounded_header_name": true,
+      "bounded_query_keys": true,
+      "event_line_bytes": 4749,
+      "field_lengths": {
+        "path": 1024,
+        "query": 1024,
+        "signature_basis": 1024,
+        "user_agent": 512,
+        "x_forwarded_for": 512
+      },
+      "max_query_key_length": 128,
+      "query_key_count": 1,
+      "status": 204,
+      "visible_lines": 1
+    },
+    "event_log_flush": {
+      "all_requests_ok": true,
+      "burst_flush_batched": true,
+      "burst_visible_lines": 1,
+      "configured_event_log_flush_interval_ms": 1000,
+      "final_visible_lines": 10,
+      "first_event_flushed_immediately": true,
+      "first_visible_lines": 1,
+      "interval_flush_observed": true,
+      "statuses": [
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204
+      ]
+    },
+    "event_log_rotation": {
+      "active_log_present": true,
+      "all_requests_ok": true,
+      "backup_present": true,
+      "configured_event_log_backup_count": 1,
+      "configured_event_log_max_bytes": 1800,
+      "jsonl_stats": {
+        "invalid_json_lines": 0,
+        "line_counts": {
+          "event-log-rotation-events.jsonl": 1,
+          "event-log-rotation-events.jsonl.1": 3
+        },
+        "sizes": {
+          "event-log-rotation-events.jsonl": 516,
+          "event-log-rotation-events.jsonl.1": 1548
+        },
+        "total_bytes": 2064,
+        "total_lines": 4,
+        "valid_json_lines": 4
+      },
+      "jsonl_valid": true,
+      "request_count": 24,
+      "statuses": [
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204
+      ],
+      "total_bytes_bounded": true
+    },
+    "expect_guard": {
+      "expect_continue": {
+        "body": "expect header not supported\n",
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.001,
+        "error": null,
+        "status": 417
+      },
+      "expect_continue_rejected": true,
+      "expect_rejected_delta": 2,
+      "expect_rejections_not_stored": true,
+      "no_expect_status": 200,
+      "normal_request_allowed": true,
+      "unsupported_expectation": {
+        "body": "expect header not supported\n",
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "status": 417
+      },
+      "unsupported_expectation_rejected": true
+    },
+    "forwarded_header_bounds": {
+      "configured_max_forwarded_for_bytes": 64,
+      "configured_max_forwarded_for_hops": 2,
+      "forwarded_rejections_not_stored": true,
+      "malformed_chain_rejected": true,
+      "malformed_response": {
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "35",
+          "date": "Mon, 22 Jun 2026 04:52:54 GMT"
+        },
+        "status": 400
+      },
+      "oversized_chain_rejected": true,
+      "rejected_delta": 3,
+      "rejection_metric_matches": true,
+      "too_long_response": {
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "36",
+          "date": "Mon, 22 Jun 2026 04:52:54 GMT"
+        },
+        "status": 400
+      },
+      "too_many_hops_rejected": true,
+      "too_many_hops_response": {
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "34",
+          "date": "Mon, 22 Jun 2026 04:52:54 GMT"
+        },
+        "status": 400
+      },
+      "valid_chain_allowed": true,
+      "valid_response": {
+        "headers": {
+          "connection": "close",
+          "date": "Mon, 22 Jun 2026 04:52:54 GMT"
+        },
+        "status": 204
+      }
+    },
+    "forwarded_headers": {
+      "trusted_proxy": {
+        "canonical_headers_valid": true,
+        "hop_by_hop_headers_stripped": true,
+        "metrics_delta": {
+          "altura_http_forwarded_sanitized": 1
+        },
+        "probe": {
+          "elapsed_seconds": 0.002,
+          "error": null,
+          "observed": {
+            "accept_encoding": null,
+            "cf_connecting_ip": null,
+            "client_ip": null,
+            "connection": null,
+            "fastly_client_ip": null,
+            "forwarded": null,
+            "keep_alive": null,
+            "proxy_connection": null,
+            "te": null,
+            "trailer": null,
+            "true_client_ip": null,
+            "upgrade": null,
+            "x_client_ip": null,
+            "x_cluster_client_ip": null,
+            "x_forwarded": null,
+            "x_forwarded_for": "203.0.113.200, 127.0.0.1",
+            "x_forwarded_host": "good.local",
+            "x_forwarded_path": null,
+            "x_forwarded_port": null,
+            "x_forwarded_prefix": null,
+            "x_forwarded_proto": "http",
+            "x_forwarded_scheme": null,
+            "x_forwarded_server": null,
+            "x_forwarded_uri": null,
+            "x_hop_by_hop_attack": null,
+            "x_original_forwarded_for": null,
+            "x_original_host": null,
+            "x_original_url": null,
+            "x_originating_ip": null,
+            "x_real_ip": "203.0.113.200",
+            "x_remote_addr": null,
+            "x_remote_ip": null,
+            "x_rewrite_url": null
+          },
+          "status": 200
+        },
+        "spoof_headers_stripped": true,
+        "trusted_proxy": true
+      },
+      "untrusted_direct": {
+        "canonical_headers_valid": true,
+        "hop_by_hop_headers_stripped": true,
+        "metrics_delta": {
+          "altura_http_forwarded_sanitized": 1
+        },
+        "probe": {
+          "elapsed_seconds": 0.002,
+          "error": null,
+          "observed": {
+            "accept_encoding": null,
+            "cf_connecting_ip": null,
+            "client_ip": null,
+            "connection": null,
+            "fastly_client_ip": null,
+            "forwarded": null,
+            "keep_alive": null,
+            "proxy_connection": null,
+            "te": null,
+            "trailer": null,
+            "true_client_ip": null,
+            "upgrade": null,
+            "x_client_ip": null,
+            "x_cluster_client_ip": null,
+            "x_forwarded": null,
+            "x_forwarded_for": "127.0.0.1",
+            "x_forwarded_host": "good.local",
+            "x_forwarded_path": null,
+            "x_forwarded_port": null,
+            "x_forwarded_prefix": null,
+            "x_forwarded_proto": "http",
+            "x_forwarded_scheme": null,
+            "x_forwarded_server": null,
+            "x_forwarded_uri": null,
+            "x_hop_by_hop_attack": null,
+            "x_original_forwarded_for": null,
+            "x_original_host": null,
+            "x_original_url": null,
+            "x_originating_ip": null,
+            "x_real_ip": "127.0.0.1",
+            "x_remote_addr": null,
+            "x_remote_ip": null,
+            "x_rewrite_url": null
+          },
+          "status": 200
+        },
+        "spoof_headers_stripped": true,
+        "trusted_proxy": false
+      }
+    },
+    "framing_guard": {
+      "generated_framing_rejection_closes_connection": true,
+      "generated_framing_rejection_not_stored": true,
+      "metrics_delta": {
+        "altura_http_framing_rejected": 9
+      },
+      "probes": {
+        "comma_content_length": {
+          "body_bytes": 30,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Content-Length: 0, 0"
+          ],
+          "status": 400
+        },
+        "conflicting_content_length": {
+          "body_bytes": 32,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Content-Length: 0",
+            "Content-Length: 1"
+          ],
+          "status": 400
+        },
+        "default_chunked_rejected": {
+          "body_bytes": 33,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Transfer-Encoding: chunked"
+          ],
+          "status": 400
+        },
+        "duplicate_identical_content_length": {
+          "body_bytes": 32,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Content-Length: 0",
+            "Content-Length: 0"
+          ],
+          "status": 400
+        },
+        "duplicate_transfer_encoding": {
+          "body_bytes": 35,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Transfer-Encoding: chunked",
+            "Transfer-Encoding: chunked"
+          ],
+          "status": 400
+        },
+        "invalid_content_length": {
+          "body_bytes": 30,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Content-Length: nope"
+          ],
+          "status": 400
+        },
+        "keepalive_followup_chunked_rejected": {
+          "elapsed_seconds": 0.001,
+          "error": null,
+          "first": {
+            "connection": null,
+            "connection_close": false,
+            "status": 200
+          },
+          "headers": [
+            "Transfer-Encoding: chunked"
+          ],
+          "second": {
+            "body_bytes": 33,
+            "cache_control": "no-store",
+            "cache_control_no_store": true,
+            "connection": "close",
+            "connection_close": true,
+            "status": 400
+          }
+        },
+        "te_and_content_length": {
+          "body_bytes": 47,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Transfer-Encoding: chunked",
+            "Content-Length: 0"
+          ],
+          "status": 400
+        },
+        "unsupported_transfer_encoding": {
+          "body_bytes": 30,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Transfer-Encoding: gzip"
+          ],
+          "status": 400
+        },
+        "valid_content_length": {
+          "body_bytes": 0,
+          "cache_control": null,
+          "cache_control_no_store": false,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.002,
+          "error": null,
+          "headers": [
+            "Content-Length: 0"
+          ],
+          "status": 200
+        }
+      }
+    },
+    "header_count": {
+      "body_bytes": 32,
+      "cache_control": "no-store",
+      "closed": true,
+      "connection": "close",
+      "elapsed_seconds": 0.0,
+      "error": null,
+      "header_count_guard_observed": true,
+      "http_initial_headers_too_many_delta": 1,
+      "raw_initial_431_closes_connection": true,
+      "raw_initial_431_not_stored": true,
+      "sent_headers": 27,
+      "status": 431
+    },
+    "header_timeout": {
+      "configured_header_read_timeout_ms": 100,
+      "http_initial_header_timeouts_delta": 1,
+      "idle_keepalive": {
+        "closed_before_reuse": true,
+        "elapsed_seconds": 0.261,
+        "error": null,
+        "first_response": {
+          "body": "",
+          "body_bytes": 0,
+          "header_complete": true,
+          "headers": {
+            "date": "Mon, 22 Jun 2026 04:52:42 GMT"
+          },
+          "status": 204
+        },
+        "second_response_bytes": 0
+      },
+      "raw_initial_408_closes_connection": true,
+      "raw_initial_408_not_stored": true,
+      "slow_header": {
+        "body_bytes": 16,
+        "cache_control": "no-store",
+        "closed": false,
+        "connection": "close",
+        "elapsed_seconds": 0.261,
+        "error": null,
+        "response_bytes": 138,
+        "status": 408
+      },
+      "slow_initial_header_timeout_observed": true
+    },
+    "host_guard": {
+      "configured": {
+        "allowed_hosts": [
+          "good.local",
+          "api.good.local:8080"
+        ],
+        "max_host_bytes": 32
+      },
+      "host_rejections_not_stored": true,
+      "metrics_delta": {
+        "altura_http_host_rejected": 6
+      },
+      "probes": {
+        "absolute_form_allowed_authority": {
+          "body_bytes": 0,
+          "cache_control": null,
+          "cache_control_no_store": false,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "evil.local"
+          ],
+          "status": 204,
+          "target": "http://good.local/"
+        },
+        "absolute_form_disallowed_authority": {
+          "body_bytes": 17,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "good.local"
+          ],
+          "status": 400,
+          "target": "http://evil.local/"
+        },
+        "allowed_host": {
+          "body_bytes": 0,
+          "cache_control": null,
+          "cache_control_no_store": false,
+          "elapsed_seconds": 0.002,
+          "error": null,
+          "hosts": [
+            "good.local"
+          ],
+          "status": 204,
+          "target": "/"
+        },
+        "allowed_host_port": {
+          "body_bytes": 0,
+          "cache_control": null,
+          "cache_control_no_store": false,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "api.good.local:8080"
+          ],
+          "status": 204,
+          "target": "/"
+        },
+        "disallowed_host": {
+          "body_bytes": 17,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "evil.local"
+          ],
+          "status": 400,
+          "target": "/"
+        },
+        "duplicate_host": {
+          "body_bytes": 22,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "good.local",
+            "evil.local"
+          ],
+          "status": 400,
+          "target": "/"
+        },
+        "invalid_host": {
+          "body_bytes": 20,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "http://evil.local"
+          ],
+          "status": 400,
+          "target": "/"
+        },
+        "long_host": {
+          "body_bytes": 21,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.local"
+          ],
+          "status": 400,
+          "target": "/"
+        },
+        "missing_host": {
+          "body_bytes": 20,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [],
+          "status": 400,
+          "target": "/"
+        }
+      }
+    },
+    "http_connection_rate": {
+      "accepted_requests": 2,
+      "configured_per_ip_connect_burst": 4,
+      "configured_per_ip_connects_per_second": 1.0,
+      "connection_rate_limited": true,
+      "connections_rejected_metric_delta": 6,
+      "rejected_connection_attempts": 6,
+      "statuses": [
+        204,
+        204,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "initial_framing_precheck_response": {
+      "header_too_large_response": {
+        "body_bytes": 32,
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "status": 431
+      },
+      "http_framing_rejected_delta": 1,
+      "http_initial_header_too_large_delta": 1,
+      "initial_framing_precheck_response_observed": true,
+      "initial_header_too_large_response_observed": true,
+      "raw_initial_400_closes_connection": true,
+      "raw_initial_400_not_stored": true,
+      "raw_initial_431_closes_connection": true,
+      "raw_initial_431_not_stored": true,
+      "response": {
+        "body_bytes": 28,
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "status": 400
+      }
+    },
+    "listen_backlog": {
+      "configured_backlog": 128,
+      "http_status": 204,
+      "tcp_echo_ok": true
+    },
+    "log_suppression": {
+      "bursts": [
+        {
+          "attempted": 48,
+          "errors": {},
+          "hold_seconds": 0.12,
+          "opened": 48
+        },
+        {
+          "attempted": 1,
+          "errors": {},
+          "hold_seconds": 0.08,
+          "opened": 1
+        }
+      ],
+      "configured_header_read_timeout_ms": 35,
+      "stderr_line_count": 5,
+      "suppressed_marker_seen": true,
+      "timeout_log_line_count": 2,
+      "timeout_log_lines_bounded": true,
+      "timeout_log_sample": [
+        "initial http header timeout from 127.0.0.1:56666",
+        "initial http header timeout from 127.0.0.1:56702 (suppressed 47 similar messages)"
+      ]
+    },
+    "method_guard": {
+      "allow_headers": [
+        "GET, POST",
+        "GET, POST",
+        "GET, POST",
+        "GET, POST"
+      ],
+      "cache_control_headers": [
+        "no-store",
+        "no-store",
+        "no-store",
+        "no-store"
+      ],
+      "configured": {
+        "allowed_methods": [
+          "GET",
+          "POST"
+        ]
+      },
+      "generated_405_not_stored": true,
+      "metrics_delta": {
+        "altura_http_method_rejected": 4
+      },
+      "probes": {
+        "allowed_get": {
+          "allow": null,
+          "body_bytes": 0,
+          "cache_control": null,
+          "elapsed_seconds": 0.002,
+          "error": null,
+          "method": "GET",
+          "status": 204,
+          "target": "/"
+        },
+        "allowed_post": {
+          "allow": null,
+          "body_bytes": 0,
+          "cache_control": null,
+          "elapsed_seconds": 0.001,
+          "error": null,
+          "method": "POST",
+          "status": 200,
+          "target": "/drain"
+        },
+        "arbitrary": {
+          "allow": "GET, POST",
+          "body_bytes": 19,
+          "cache_control": "no-store",
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "method": "JEFF",
+          "status": 405,
+          "target": "/"
+        },
+        "connect": {
+          "allow": "GET, POST",
+          "body_bytes": 19,
+          "cache_control": "no-store",
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "method": "CONNECT",
+          "status": 405,
+          "target": "127.0.0.1:443"
+        },
+        "trace": {
+          "allow": "GET, POST",
+          "body_bytes": 19,
+          "cache_control": "no-store",
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "method": "TRACE",
+          "status": 405,
+          "target": "/"
+        },
+        "track": {
+          "allow": "GET, POST",
+          "body_bytes": 19,
+          "cache_control": "no-store",
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "method": "TRACK",
+          "status": 405,
+          "target": "/"
+        }
+      }
+    },
+    "metrics_delta": {
+      "altura_http_accept_encoding_stripped": 4,
+      "altura_http_body_rejected": 1,
+      "altura_http_body_timeouts": 1,
+      "altura_http_body_too_slow": 0,
+      "altura_http_connections_rejected": 0,
+      "altura_http_content_encoding_rejected": 1,
+      "altura_http_downstream_write_timeouts": 0,
+      "altura_http_expect_rejected": 2,
+      "altura_http_forwarded_rejected": 0,
+      "altura_http_forwarded_sanitized": 0,
+      "altura_http_framing_rejected": 0,
+      "altura_http_host_rejected": 0,
+      "altura_http_initial_header_timeouts": 0,
+      "altura_http_initial_header_too_large": 0,
+      "altura_http_initial_headers_too_many": 0,
+      "altura_http_initial_request_target_rejected": 0,
+      "altura_http_method_rejected": 0,
+      "altura_http_path_shape_rate_limited": 0,
+      "altura_http_range_rejected": 3,
+      "altura_http_rate_limited": 0,
+      "altura_http_request_trailers_dropped": 0,
+      "altura_http_request_trailers_rejected": 0,
+      "altura_http_signature_rate_limited": 0,
+      "altura_http_trusted_proxy_in_flight_rejected": 0,
+      "altura_http_trusted_proxy_rate_limited": 0,
+      "altura_http_upstream_body_rejected": 0,
+      "altura_http_upstream_body_timeouts": 0,
+      "altura_http_upstream_body_too_slow": 0,
+      "altura_http_upstream_errors": 0,
+      "altura_http_upstream_header_rejected": 0,
+      "altura_http_upstream_in_flight_rejected": 0,
+      "altura_http_upstream_timeouts": 0,
+      "altura_http_upstream_trailers_dropped": 0,
+      "altura_http_upstream_trailers_rejected": 0,
+      "altura_http_uri_rejected": 0,
+      "altura_tcp_downstream_too_slow": 0,
+      "altura_tcp_global_connect_rate_limited": 6,
+      "altura_tcp_idle_timeouts": 1,
+      "altura_tcp_rejected": 7,
+      "altura_tcp_upstream_too_slow": 0
+    },
+    "metrics_without_token_status": 403,
+    "negative_rate_startup": {
+      "http_negative_rate": {
+        "configured_field": "http.limits.per_ip_rps",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.limits.per_ip_rps must be finite and non-negative, got -1\""
+        ]
+      },
+      "negative_http_rate_rejected": true,
+      "negative_tcp_rate_rejected": true,
+      "tcp_negative_rate": {
+        "configured_field": "tcp[0].limits.global_connects_per_second",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"tcp[0].limits.global_connects_per_second must be finite and non-negative, got -1\""
+        ]
+      }
+    },
+    "oversized_content_length": {
+      "cache_control": "no-store",
+      "cache_control_no_store": true,
+      "connection": "close",
+      "connection_close": true,
+      "status": 413
+    },
+    "oversized_content_length_status": 413,
+    "path_shape_rate": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store",
+        "no-store"
+      ],
+      "configured_path_shape_burst": 2,
+      "configured_path_shape_rps": 1e-06,
+      "hot_path_shape_limited": true,
+      "hot_paths": [
+        "/api/abcdefghij/123",
+        "/api/klmnopqrst/456",
+        "/api/ZYXWVUTSRQ/789",
+        "/api/qwertyuiop/321"
+      ],
+      "hot_statuses": [
+        204,
+        204,
+        429,
+        429
+      ],
+      "http_rate_limited_delta": 2,
+      "other_shape_allowed": true,
+      "other_shape_status": 204,
+      "path_shape_metric_matches": true,
+      "path_shape_rate_limited_delta": 2,
+      "rate_limited_metric_includes_path_shape_limit": true,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1",
+        "1"
+      ]
+    },
+    "range_guard": {
+      "malformed_range": {
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "elapsed_seconds": 0.0,
+        "status": 416
+      },
+      "malformed_range_rejected": true,
+      "multi_range": {
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "elapsed_seconds": 0.0,
+        "status": 416
+      },
+      "multi_range_rejected": true,
+      "range_rejected_delta": 3,
+      "range_rejections_not_stored": true,
+      "single_range": {
+        "cache_control": null,
+        "cache_control_no_store": false,
+        "elapsed_seconds": 0.001,
+        "status": 204
+      },
+      "single_range_allowed": true,
+      "unsupported_range": {
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "elapsed_seconds": 0.0,
+        "status": 416
+      },
+      "unsupported_range_rejected": true
+    },
+    "rate_limiter_fairness": {
+      "statuses": [
+        204,
+        429,
+        204
+      ]
+    },
+    "request_content_encoding": {
+      "accept_encoding_identity_advertised": true,
+      "compressed_request_closes_connection": true,
+      "compressed_request_not_stored": true,
+      "compressed_request_rejected": true,
+      "content_encoding_rejected_delta": 1,
+      "gzip_request": {
+        "accept_encoding": "identity",
+        "cache_control": "no-store",
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.001,
+        "status": 415
+      },
+      "identity_request": {
+        "accept_encoding": null,
+        "cache_control": null,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.001,
+        "status": 200
+      },
+      "identity_request_allowed": true
+    },
+    "request_trailer_policy": {
+      "configured_forward_request_trailers": true,
+      "configured_max_trailer_bytes": 8,
+      "configured_max_trailers": 1,
+      "connection_closed_before_followup": true,
+      "generated_431_closes_connection": true,
+      "generated_431_not_stored": true,
+      "http_request_trailers_rejected_delta": 1,
+      "oversized_request_trailer_rejected": true,
+      "oversized_trailer": {
+        "body": "request trailers too large\n",
+        "cache_control": "no-store",
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.061,
+        "error": null,
+        "followup_error": null,
+        "followup_response_bytes": 0,
+        "status": 431
+      },
+      "request_trailer_policy_observed": true
+    },
+    "runtime_filter_bounds": {
+      "active_filters_after": 1,
+      "availability_ok": true,
+      "configured_max_runtime_file_bytes": 4096,
+      "configured_max_runtime_filters": 4,
+      "initial_block_status": 403,
+      "normal_status_after_errors": 204,
+      "oversized_file_bytes": 8388,
+      "oversized_file_rejected_and_last_good_preserved": true,
+      "post_oversized_block_status": 403,
+      "post_oversized_new_rule_status": 204,
+      "post_too_many_block_status": 403,
+      "post_too_many_new_rule_status": 204,
+      "reload_error_logged": true,
+      "too_many_file_bytes": 958,
+      "too_many_rules_rejected_and_last_good_preserved": true
+    },
+    "runtime_filter_hot_path": {
+      "active_filters_after_start": 512,
+      "configured_rule_count": 512,
+      "control_request_allowed": true,
+      "control_status": 204,
+      "filter_file_bytes": 155646,
+      "many_rules_loaded": true,
+      "matching_request_blocked": true,
+      "matching_status": 403,
+      "normal_request_allowed": true,
+      "normal_status": 204
+    },
+    "runtime_nofile": {
+      "configured_min_nofile": 2048,
+      "health_status": 200,
+      "runtime_nofile_observed": true,
+      "runtime_status_line": "runtime nofile limit soft=1048575 hard=18446744073709551615 target=1048575 changed=false"
+    },
+    "runtime_nofile_capacity": {
+      "capacity_rejected": true,
+      "configured_min_nofile": 1024,
+      "exit_code": 1,
+      "expected_required_nofile": 3269,
+      "stderr_tail": [
+        "runtime nofile limit soft=1024 hard=1024 target=1024 changed=false",
+        "Error: \"runtime.min_nofile capacity check failed: configured connection caps require at least 3269 file descriptors, but the process soft RLIMIT_NOFILE is 1024. Breakdown: reserve=256, listeners=1, http_downstream=1500, http_upstream_in_flight=1000, http_upstream_idle_pool=512, tcp_downstream=0, tcp_upstream=0. Increase runtime.min_nofile and the service hard limit, or lower HTTP/TCP connection caps.\""
+      ]
+    },
+    "runtime_sigterm": {
+      "exit_code": 0,
+      "health_status": 200,
+      "sigterm_graceful": true,
+      "stderr_tail": [
+        "http proxy listening on 127.0.0.1:56581, upstream http://127.0.0.1:50750",
+        "shutdown signal received: SIGTERM",
+        "http proxy listener shutting down"
+      ]
+    },
+    "signature_rate": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store",
+        "no-store"
+      ],
+      "cold_status": 204,
+      "configured_signature_burst": 2,
+      "configured_signature_rps": 1e-06,
+      "hot_signature_limited": true,
+      "hot_statuses": [
+        204,
+        204,
+        429,
+        429
+      ],
+      "http_rate_limited_delta": 2,
+      "other_signature_allowed": true,
+      "rate_limited_metric_includes_signature_limit": true,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1",
+        "1"
+      ],
+      "signature_metric_matches": true,
+      "signature_rate_limited_delta": 2
+    },
+    "slow_body": {
+      "cache_control": "no-store",
+      "cache_control_no_store": true,
+      "connection": "close",
+      "connection_close": true,
+      "elapsed_seconds": 0.206,
+      "error": null,
+      "status": 408
+    },
+    "tcp_global_connection_cap": {
+      "held_connections": 2,
+      "rejected_closed": true,
+      "rejected_error": "ConnectionResetError"
+    },
+    "tcp_global_connection_rate": {
+      "accepted_echoes": 2,
+      "attempt_results": [
+        {
+          "closed": false,
+          "echoed": true,
+          "error": null
+        },
+        {
+          "closed": false,
+          "echoed": true,
+          "error": null
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        }
+      ],
+      "attempts": 8,
+      "configured_global_connect_burst": 2,
+      "configured_global_connects_per_second": 1.0,
+      "global_connection_rate_limited": true,
+      "rejected_attempts": 6,
+      "tcp_global_connect_rate_limited_delta": 6,
+      "tcp_rejected_delta": 6
+    },
+    "tcp_idle_timeout": {
+      "closed": true,
+      "elapsed_seconds": 1.211,
+      "error": null
+    },
+    "tcp_min_rate": {
+      "configured_downstream_min_rate_bytes_per_second": 1000,
+      "configured_min_rate_grace_ms": 10,
+      "configured_upstream_min_rate_bytes_per_second": 0,
+      "slow_drip": {
+        "closed_or_reset": true,
+        "elapsed_seconds": 0.091,
+        "error": null,
+        "first_echo_bytes": 1,
+        "second_echo_bytes": 0
+      },
+      "tcp_downstream_too_slow_delta": 1,
+      "tcp_min_rate_rejected": true,
+      "tcp_upstream_too_slow_delta": 0
+    },
+    "tracked_ip_cap": {
+      "statuses": [
+        204,
+        429,
+        204,
+        204
+      ]
+    },
+    "trusted_proxy_aggregate_rate": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store",
+        "no-store"
+      ],
+      "configured_trusted_proxy_burst": 2,
+      "configured_trusted_proxy_rps": 1e-06,
+      "first_burst_allowed": true,
+      "http_rate_limited_delta": 2,
+      "rate_limited_metric_includes_proxy_limit": true,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1",
+        "1"
+      ],
+      "rotating_xff_aggregate_limited": true,
+      "statuses": [
+        204,
+        204,
+        429,
+        429
+      ],
+      "trusted_proxy_metric_matches": true,
+      "trusted_proxy_rate_limited_delta": 2
+    },
+    "trusted_proxy_global_trust_startup": {
+      "exit_code": 1,
+      "global_trusted_proxy_rejected": true,
+      "stderr_tail": [
+        "Error: \"http.client_ip.trusted_proxies entry '0.0.0.0/0' must not trust all IPv4 peers on non-loopback listener 0.0.0.0:59297; configure exact trusted proxy CIDRs instead\""
+      ]
+    },
+    "trusted_proxy_in_flight": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store"
+      ],
+      "configured_trusted_proxy_max_in_flight_requests": 1,
+      "first_slow_request_completed": true,
+      "first_status": 204,
+      "http_upstream_in_flight_rejected_delta": 1,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1"
+      ],
+      "rotating_xff_peer_concurrency_limited": true,
+      "second_status": 503,
+      "trusted_proxy_in_flight_rejected_delta": 1,
+      "trusted_proxy_metric_matches": true,
+      "upstream_metric_includes_proxy_limit": true
+    },
+    "upstream_connect_timeout": {
+      "configured_upstream_connect_timeout_ms": 75,
+      "configured_upstream_timeout_ms": 1000,
+      "first_response": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.079,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 04:52:41 GMT"
+        },
+        "status": 502
+      },
+      "generated_502_closes_connection": true,
+      "generated_502_not_stored": true,
+      "held_backlog_connections": 1,
+      "http_upstream_errors_delta": 2,
+      "http_upstream_in_flight_rejected_delta": 0,
+      "http_upstream_timeouts_delta": 0,
+      "loopback_backlog_blocked": true,
+      "second_response": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.078,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 04:52:41 GMT"
+        },
+        "status": 502
+      },
+      "upstream_connect_timeout_observed": true
+    },
+    "upstream_header_guard": {
+      "configured_upstream_max_header_bytes": 8192,
+      "configured_upstream_max_headers": 8,
+      "generated_502_closes_connection": true,
+      "generated_502_not_stored": true,
+      "http_upstream_errors_delta": 2,
+      "http_upstream_header_rejected_delta": 2,
+      "huge_header_response": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.002,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 04:52:42 GMT"
+        },
+        "status": 502
+      },
+      "many_headers_response": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.001,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 04:52:42 GMT"
+        },
+        "status": 502
+      },
+      "upstream_header_guard_observed": true
+    },
+    "upstream_in_flight": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store"
+      ],
+      "first_status": 204,
+      "metrics_delta": {
+        "altura_http_upstream_in_flight_rejected": 1
+      },
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1"
+      ],
+      "second_status": 503
+    },
+    "upstream_pool": {
+      "accepted_upstream_connections": 2,
+      "statuses": [
+        204,
+        204
+      ]
+    },
+    "upstream_response_guard": {
+      "hop_by_hop_headers_stripped": true,
+      "hop_by_hop_response": {
+        "body_bytes": 2,
+        "closed": true,
+        "elapsed_seconds": 0.002,
+        "error": null,
+        "headers": {
+          "connection": "close",
+          "content-length": "2",
+          "date": "Mon, 22 Jun 2026 04:52:58 GMT"
+        },
+        "status": 200
+      },
+      "metrics_delta": {
+        "altura_http_upstream_body_rejected": 1,
+        "altura_http_upstream_body_timeouts": 1
+      },
+      "oversized_response": {
+        "body_bytes": 0,
+        "closed": true,
+        "elapsed_seconds": 0.001,
+        "error": null,
+        "headers": {},
+        "status": null
+      },
+      "stalled_response": {
+        "body_bytes": 0,
+        "closed": true,
+        "elapsed_seconds": 0.105,
+        "error": null,
+        "headers": {
+          "connection": "close",
+          "content-length": "4",
+          "date": "Mon, 22 Jun 2026 04:52:58 GMT"
+        },
+        "status": 200
+      }
+    },
+    "upstream_timeout_response": {
+      "configured_upstream_connect_timeout_ms": 1000,
+      "configured_upstream_timeout_ms": 100,
+      "generated_504_closes_connection": true,
+      "generated_504_not_stored": true,
+      "http_upstream_errors_delta": 0,
+      "http_upstream_timeouts_delta": 1,
+      "timeout_response": {
+        "body_bytes": 16,
+        "closed": true,
+        "elapsed_seconds": 0.104,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "16",
+          "date": "Mon, 22 Jun 2026 04:52:42 GMT"
+        },
+        "status": 504
+      },
+      "upstream_timeout_response_observed": true
+    },
+    "upstream_trailer_policy": {
+      "body_seen": true,
+      "configured_forward_response_trailers": false,
+      "configured_upstream_max_trailer_bytes": 64,
+      "configured_upstream_max_trailers": 4,
+      "http_upstream_trailers_dropped_delta": 1,
+      "http_upstream_trailers_rejected_delta": 0,
+      "raw_response_bytes": 118,
+      "status": 200,
+      "trailer_seen": false,
+      "upstream_trailer_policy_observed": true
+    },
+    "uri_guard": {
+      "cache_control_headers": [
+        "no-store",
+        "no-store",
+        "no-store",
+        "no-store"
+      ],
+      "configured": {
+        "max_path_segments": 3,
+        "max_query_bytes": 16,
+        "max_query_pairs": 2,
+        "max_uri_bytes": 64
+      },
+      "connection_headers": [
+        "close",
+        "close",
+        "close",
+        "close"
+      ],
+      "generated_414_closes_connection": true,
+      "generated_414_not_stored": true,
+      "metrics_delta": {
+        "altura_http_initial_request_target_rejected": 4,
+        "altura_http_uri_rejected": 4
+      },
+      "probes": {
+        "long_query": {
+          "body_bytes": 23,
+          "cache_control": "no-store",
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "status": 414,
+          "target_bytes": 38
+        },
+        "long_uri": {
+          "body_bytes": 21,
+          "cache_control": "no-store",
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "status": 414,
+          "target_bytes": 86
+        },
+        "many_path_segments": {
+          "body_bytes": 23,
+          "cache_control": "no-store",
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "status": 414,
+          "target_bytes": 8
+        },
+        "many_query_pairs": {
+          "body_bytes": 26,
+          "cache_control": "no-store",
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "status": 414,
+          "target_bytes": 15
+        }
+      },
+      "raw_initial_request_target_guard_observed": true
+    },
+    "zero_capacity_startup": {
+      "http_connection_cap": {
+        "configured_field": "http.limits.max_connections",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.limits.max_connections must be greater than zero\""
+        ]
+      },
+      "http_connection_cap_rejected": true,
+      "http_forwarded_cap": {
+        "configured_field": "http.client_ip.max_forwarded_for_hops",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.client_ip.max_forwarded_for_hops must be greater than zero\""
+        ]
+      },
+      "http_forwarded_cap_rejected": true,
+      "http_metadata_cap": {
+        "configured_field": "http.max_header_bytes",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_header_bytes must be greater than zero\""
+        ]
+      },
+      "http_metadata_cap_rejected": true,
+      "tcp_connection_cap": {
+        "configured_field": "tcp[0].limits.max_connections",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"tcp[0].limits.max_connections must be greater than zero\""
+        ]
+      },
+      "tcp_connection_cap_rejected": true
+    }
+  },
+  "health": {
+    "duration_seconds": 3.008,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 13.704,
+      "p50": 12.69,
+      "p95": 25.562,
+      "p99": 34.63
+    },
+    "requests": 27142,
+    "requests_per_second": 9021.99,
+    "statuses": {
+      "200": 27142
+    },
+    "url": "http://127.0.0.1:50749/__altura/health",
+    "workers": 128
+  },
+  "proxy": {
+    "duration_seconds": 3.008,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 13.591,
+      "p50": 12.743,
+      "p95": 24.925,
+      "p99": 32.686
+    },
+    "requests": 27360,
+    "requests_per_second": 9096.6,
+    "statuses": {
+      "204": 27360
+    },
+    "url": "http://127.0.0.1:50749/",
+    "workers": 128
+  },
+  "tcp": {
+    "connections": 32,
+    "duration_seconds": 3.002,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 1.657,
+      "p50": 1.538,
+      "p95": 3.052,
+      "p99": 3.87
+    },
+    "messages": 57876,
+    "messages_per_second": 19276.45,
+    "workers": 32
+  }
+}

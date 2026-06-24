@@ -1,0 +1,94 @@
+{
+  "guardrails": {
+    "admin_rate_limit": {
+      "statuses": [
+        200,
+        429
+      ]
+    },
+    "metrics_delta": {
+      "altura_http_body_rejected": 1,
+      "altura_http_body_timeouts": 1,
+      "altura_http_upstream_errors": 0,
+      "altura_http_upstream_in_flight_rejected": 0,
+      "altura_tcp_rejected": 1
+    },
+    "metrics_without_token_status": 403,
+    "oversized_content_length_status": 413,
+    "rate_limiter_fairness": {
+      "statuses": [
+        204,
+        429,
+        204
+      ]
+    },
+    "slow_body": {
+      "elapsed_seconds": 0.2,
+      "error": null,
+      "status": 408
+    },
+    "tcp_global_connection_cap": {
+      "held_connections": 2,
+      "rejected_closed": true,
+      "rejected_error": "ConnectionResetError"
+    },
+    "upstream_in_flight": {
+      "first_status": 204,
+      "metrics_delta": {
+        "altura_http_upstream_in_flight_rejected": 1
+      },
+      "second_status": 503
+    }
+  },
+  "health": {
+    "duration_seconds": 10.044,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 22.722,
+      "p50": 15.198,
+      "p95": 65.819,
+      "p99": 105.141
+    },
+    "requests": 112575,
+    "requests_per_second": 11208.45,
+    "statuses": {
+      "200": 112575
+    },
+    "url": "http://127.0.0.1:37427/__altura/health",
+    "workers": 512
+  },
+  "proxy": {
+    "duration_seconds": 10.044,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 24.106,
+      "p50": 15.247,
+      "p95": 70.689,
+      "p99": 106.163
+    },
+    "requests": 117194,
+    "requests_per_second": 11667.74,
+    "statuses": {
+      "204": 117194
+    },
+    "url": "http://127.0.0.1:37427/",
+    "workers": 512
+  },
+  "tcp": {
+    "connections": 32,
+    "duration_seconds": 10.007,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 1.251,
+      "p50": 1.129,
+      "p95": 2.553,
+      "p99": 3.36
+    },
+    "messages": 255070,
+    "messages_per_second": 25489.43,
+    "workers": 32
+  }
+}

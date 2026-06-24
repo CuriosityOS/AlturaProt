@@ -1,0 +1,106 @@
+{
+  "title": "Full Codebase Review",
+  "slug": "full-codebase-review-20260619",
+  "created_at": "2026-06-19T03:20:00Z",
+  "updated_at": "2026-06-19T03:55:00Z",
+  "status": "complete",
+  "mode": "delegated",
+  "baseline_ref": "a3bdedc318c7dd049927f3d035c7ea3388617b3c",
+  "risk_level": "medium",
+  "eval_contract": {
+    "level": "inline",
+    "path": null,
+    "status": "checked"
+  },
+  "approval": {
+    "required": false,
+    "granted": true,
+    "notes": "read-only review; no approval gate for inspection per policy"
+  },
+  "delegation": {
+    "native_agent_available": true,
+    "native_agent_planned": true,
+    "native_agent_used": true,
+    "agent_count": 4,
+    "wave_count": 1,
+    "no_delegation_reason": "All 4 explore subagents (task_ids 019edc28-d343-7dc3-8b71-4300190a02ac etc) launched successfully but returned status=cancelled after 34-51s with no outputs or result files written. Concrete reason: host/harness cancelled the long-running read-only explorer agents (possible timeout/tool budget on multi-file read+grep sessions). Fallback: parent executed packet objectives sequentially with native tools. All file writes used run_terminal_command only.",
+    "notes": "4 explore agents attempted; 0 succeeded. Parent fallback complete. All packets, integration, verification, final-report done. Post-run system notifications (after status=complete) for all 4 subagents confirmed via get_command_or_subagent_output: all cancelled, no output files or content beyond \"Subagent was cancelled\". See integration.md \"Post-completion subagent status notification\" section. Parent results authoritative. Subsequent notifications for remaining agents (e.g. 03-config-docs 019edc28-f902-...) also returned cancelled/no-output via get_command_or_subagent_output. All logged in integration.md and final-report.md. Fallback authoritative. Final notification for 02-python-tools (019edc28-e7ce-79a3-92b7-d3c8af6a7d4d) also returned cancelled with no output (get_command_or_subagent_output, 45.51s, 13 calls). This accounts for all 4 spawned explorers. See appended notes in integration.md and final-report.md. Parent fallback is the complete authoritative review for the codebase audit."
+  },
+  "packets": [
+    {
+      "id": "01-rust-core",
+      "status": "complete",
+      "owner": "parent (fallback)",
+      "write_scope": [],
+      "result_path": "results/01-rust-core.md"
+    },
+    {
+      "id": "02-python-tools",
+      "status": "complete",
+      "owner": "parent (fallback)",
+      "write_scope": [],
+      "result_path": "results/02-python-tools.md"
+    },
+    {
+      "id": "03-config-docs",
+      "status": "complete",
+      "owner": "parent (fallback)",
+      "write_scope": [],
+      "result_path": "results/03-config-docs.md"
+    },
+    {
+      "id": "04-surfaces-risks",
+      "status": "complete",
+      "owner": "parent (fallback)",
+      "write_scope": [],
+      "result_path": "results/04-surfaces-risks.md"
+    }
+  ],
+  "verification": {
+    "status": "complete",
+    "checks": [
+      {
+        "name": "python-analyzer-tests",
+        "command": "PYTHONPATH=tools python3 -m unittest tools.test_ai_tools -v",
+        "required": true,
+        "status": "pass",
+        "evidence": "9/9 tests OK (pre-run + during packet 02 + final re-run)"
+      },
+      {
+        "name": "cargo-check",
+        "command": "cargo check --quiet",
+        "required": false,
+        "status": "skipped",
+        "evidence": "cargo not on PATH in Grok Build shell; per AGENTS.md run on core server or local rustup machine. Command: cargo check"
+      },
+      {
+        "name": "cargo-test",
+        "command": "cargo test",
+        "required": false,
+        "status": "skipped",
+        "evidence": "no cargo in env; execute manually on rust machine: cargo test (or ssh core)"
+      },
+      {
+        "name": "no-ai-in-hotpath",
+        "command": "grep -rE 'openai|codex|anthropic|openrouter|ai_provider' --include='*.rs' src/ || true",
+        "required": true,
+        "status": "pass",
+        "evidence": "0 matches (parent grep before, during, and final verification)"
+      },
+      {
+        "name": "loopback-guards",
+        "command": "grep -n 'loopback|assert_loopback|allow-non-loopback' tools/local_http_flood.py tools/run_local_bench.py tools/run_codexsdgate_e2e.py tools/run_defense_bench.py",
+        "required": true,
+        "status": "pass",
+        "evidence": "guards + safety comments present in all 4 (flood, local_bench, e2e, defense_bench); confirmed in packet 02+04 + final grep (4 files)"
+      },
+      {
+        "name": "hardening-checklist",
+        "command": "manual cross-map OPERATIONS.md hardening items to source",
+        "required": true,
+        "status": "pass",
+        "evidence": "All 9 items mapped in packet 03 result; code/config support or correct caveat (TLS missing noted in ops). Final audit confirmed."
+      }
+    ]
+  }
+}

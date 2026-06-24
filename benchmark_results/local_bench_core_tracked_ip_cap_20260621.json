@@ -1,0 +1,102 @@
+{
+  "guardrails": {
+    "admin_rate_limit": {
+      "statuses": [
+        200,
+        429
+      ]
+    },
+    "metrics_delta": {
+      "altura_http_body_rejected": 1,
+      "altura_http_body_timeouts": 1,
+      "altura_http_upstream_errors": 0,
+      "altura_http_upstream_in_flight_rejected": 0,
+      "altura_tcp_rejected": 1
+    },
+    "metrics_without_token_status": 403,
+    "oversized_content_length_status": 413,
+    "rate_limiter_fairness": {
+      "statuses": [
+        204,
+        429,
+        204
+      ]
+    },
+    "slow_body": {
+      "elapsed_seconds": 0.2,
+      "error": null,
+      "status": 408
+    },
+    "tcp_global_connection_cap": {
+      "held_connections": 2,
+      "rejected_closed": true,
+      "rejected_error": "ConnectionResetError"
+    },
+    "tracked_ip_cap": {
+      "statuses": [
+        204,
+        429,
+        204,
+        204
+      ]
+    },
+    "upstream_in_flight": {
+      "first_status": 204,
+      "metrics_delta": {
+        "altura_http_upstream_in_flight_rejected": 1
+      },
+      "second_status": 503
+    }
+  },
+  "health": {
+    "duration_seconds": 10.045,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 22.233,
+      "p50": 15.167,
+      "p95": 65.681,
+      "p99": 101.083
+    },
+    "requests": 115876,
+    "requests_per_second": 11535.77,
+    "statuses": {
+      "200": 115876
+    },
+    "url": "http://127.0.0.1:47785/__altura/health",
+    "workers": 512
+  },
+  "proxy": {
+    "duration_seconds": 10.045,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 28.832,
+      "p50": 20.263,
+      "p95": 80.844,
+      "p99": 121.5
+    },
+    "requests": 118150,
+    "requests_per_second": 11761.57,
+    "statuses": {
+      "204": 118150
+    },
+    "url": "http://127.0.0.1:47785/",
+    "workers": 512
+  },
+  "tcp": {
+    "connections": 32,
+    "duration_seconds": 10.007,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 1.173,
+      "p50": 1.061,
+      "p95": 2.375,
+      "p99": 3.151
+    },
+    "messages": 271726,
+    "messages_per_second": 27154.01,
+    "workers": 32
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "title": "DDoS Protection Review",
+  "slug": "ddos-protection-review-20260622",
+  "created_at": "2026-06-22T00:00:00Z",
+  "updated_at": "2026-06-22T12:00:00Z",
+  "status": "complete",
+  "mode": "delegated",
+  "baseline_ref": "38213a0e4262d5879bd080885b67b8b9c03baa2d",
+  "risk_level": "high",
+  "eval_contract": {
+    "level": "inline",
+    "path": null,
+    "status": "ready"
+  },
+  "approval": {
+    "required": false,
+    "granted": null,
+    "notes": "Read-only audit"
+  },
+  "delegation": {
+    "native_agent_available": true,
+    "native_agent_planned": true,
+    "native_agent_used": true,
+    "agent_count": 4,
+    "wave_count": 1,
+    "no_delegation_reason": "",
+    "notes": "4 parallel read-only Task explorers"
+  },
+  "packets": [
+    {
+      "id": "01-http-hot-path",
+      "status": "complete",
+      "owner": "read-only-agent",
+      "write_scope": [],
+      "result_path": "results/01-http-hot-path.md"
+    },
+    {
+      "id": "02-tcp-edge",
+      "status": "complete",
+      "owner": "read-only-agent",
+      "write_scope": [],
+      "result_path": "results/02-tcp-edge.md"
+    },
+    {
+      "id": "03-adaptive-filters",
+      "status": "complete",
+      "owner": "read-only-agent",
+      "write_scope": [],
+      "result_path": "results/03-adaptive-filters.md"
+    },
+    {
+      "id": "04-benchmark-gaps",
+      "status": "complete",
+      "owner": "read-only-agent",
+      "write_scope": [],
+      "result_path": "results/04-benchmark-gaps.md"
+    }
+  ],
+  "verification": {
+    "status": "pass",
+    "checks": [
+      {
+        "name": "cargo test lib",
+        "command": "cargo test --lib",
+        "required": true,
+        "status": "pass",
+        "evidence": "294 passed, 0 failed"
+      },
+      {
+        "name": "architecture cross-check",
+        "command": "manual",
+        "required": true,
+        "status": "pass",
+        "evidence": "Top findings verified against source"
+      }
+    ]
+  }
+}

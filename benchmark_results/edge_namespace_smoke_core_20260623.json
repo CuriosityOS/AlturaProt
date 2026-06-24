@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/usr/bin/unshare",
+    "--net",
+    "--",
+    "/bin/sh",
+    "-c",
+    "set -eu\nip link set lo up\nnft -f '/root/altura-prot-edge-smoke-20260623/ops/nftables/altura-prot-edge.nft'\nnft list table inet altura_prot_edge"
+  ],
+  "icmpv4_control_exemption_present": true,
+  "icmpv6_control_exemption_present": true,
+  "ipv6_prefix_connlimit_present": true,
+  "ipv6_prefix_syn_backstop_present": true,
+  "listed_edge_table": true,
+  "nft_loaded": true,
+  "protected_tcp_ports_present": true,
+  "returncode": 0,
+  "skipped": false,
+  "stderr": "",
+  "stdout": "table inet altura_prot_edge {\n\tset protected_tcp_ports {\n\t\ttype inet_service\n\t\telements = { 80, 443, 8080 }\n\t}\n\n\tset tcp4_connlimit {\n\t\ttype ipv4_addr . inet_service\n\t\tsize 65535\n\t\tflags dynamic\n\t}\n\n\tset tcp6_connlimit {\n\t\ttype ipv6_addr . inet_service\n\t\tsize 65535\n\t\tflags dynamic\n\t}\n\n\tset tcp4_syn_rate {\n\t\ttype ipv4_addr . inet_service\n\t\tsize 65535\n\t\tflags dynamic,timeout\n\t\ttimeout 10s\n\t}\n\n\tset tcp6_syn_rate {\n\t\ttype ipv6_addr . inet_service\n\t\tsize 65535\n\t\tflags dynamic,timeout\n\t\ttimeout 10s\n\t}\n\n\tchain preraw {\n\t\ttype filter hook prerouting priority raw; policy accept;\n\t\ttcp dport @protected_tcp_ports tcp flags ! fin,syn,rst,ack drop\n\t\ttcp dport @protected_tcp_ports tcp flags & (fin | syn | rst | psh | ack | urg) == fin | psh | urg drop\n\t\tudp dport @protected_tcp_ports drop\n\t\tip protocol tcp tcp dport @protected_tcp_ports tcp flags & (fin | syn | rst | ack) == syn update @tcp4_syn_rate { ip saddr . tcp dport limit rate over 200/second burst 400 packets } drop\n\t\ttcp dport @protected_tcp_ports tcp flags & (fin | syn | rst | ack) == syn update @tcp6_syn_rate { ip6 saddr & ffff:ffff:ffff:ffff:: . tcp dport limit rate over 200/second burst 400 packets } drop\n\t\ttcp dport @protected_tcp_ports tcp flags & (fin | syn | rst | ack) == syn limit rate over 5000/second burst 10000 packets drop\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority filter; policy accept;\n\t\tct state invalid drop\n\t\ttcp dport @protected_tcp_ports ct state new tcp flags & (fin | syn | rst | ack) != syn drop\n\t\tip protocol tcp tcp dport @protected_tcp_ports ct state new add @tcp4_connlimit { ip saddr . tcp dport ct count over 128 } drop\n\t\ttcp dport @protected_tcp_ports ct state new add @tcp6_connlimit { ip6 saddr & ffff:ffff:ffff:ffff:: . tcp dport ct count over 128 } drop\n\t\ttcp dport @protected_tcp_ports ct state new limit rate over 5000/second burst 10000 packets drop\n\t\tip protocol icmp icmp type { destination-unreachable, time-exceeded, parameter-problem } accept\n\t\tip protocol icmp limit rate over 100/second burst 200 packets drop\n\t\ticmpv6 type { destination-unreachable, packet-too-big, time-exceeded, parameter-problem, nd-router-solicit, nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } accept\n\t\tmeta l4proto ipv6-icmp limit rate over 100/second burst 200 packets drop\n\t}\n}\n",
+  "tcp4_connlimit_present": true,
+  "tcp6_connlimit_present": true,
+  "udp_protected_port_drop_present": true
+}

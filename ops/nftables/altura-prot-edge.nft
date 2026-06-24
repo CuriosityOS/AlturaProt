@@ -1,0 +1,90 @@
+#!/usr/sbin/nft -f
+# AlturaProt host-edge nftables template.
+# Validate with: nft -c -f ops/nftables/altura-prot-edge.nft
+# Install only after adjusting protected_tcp_ports and management allow rules.
+
+destroy table inet altura_prot_edge
+
+table inet altura_prot_edge {
+  set protected_tcp_ports {
+    type inet_service
+    elements = { 80, 443, 8080 }
+  }
+
+  set tcp4_connlimit {
+    type ipv4_addr . inet_service
+    size 65535
+    flags dynamic
+  }
+
+  set tcp6_connlimit {
+    type ipv6_addr . inet_service
+    size 65535
+    flags dynamic
+  }
+
+  set tcp4_syn_rate {
+    type ipv4_addr . inet_service
+    size 65535
+    flags dynamic,timeout
+    timeout 10s
+  }
+
+  set tcp6_syn_rate {
+    type ipv6_addr . inet_service
+    size 65535
+    flags dynamic,timeout
+    timeout 10s
+  }
+
+  chain preraw {
+    type filter hook prerouting priority raw; policy accept;
+
+    # Drop impossible "new connection" flag combinations before conntrack.
+    meta l4proto tcp tcp dport @protected_tcp_ports tcp flags & (fin|syn|rst|ack) == 0 drop
+    meta l4proto tcp tcp dport @protected_tcp_ports tcp flags & (fin|syn|rst|psh|ack|urg) == fin|psh|urg drop
+
+    # AlturaProt protects TCP listeners. Drop UDP directed at those service
+    # ports before conntrack; remove or narrow this if the same host also serves
+    # UDP/QUIC on one of these ports. Use meta l4proto so IPv6 extension
+    # headers cannot bypass the protected-port UDP drop.
+    meta l4proto udp udp dport @protected_tcp_ports drop
+
+    # Pre-conntrack SYN backstop. This protects conntrack and accept queues
+    # from small-to-medium host-visible floods; provider scrubbing is still
+    # required when the link itself is saturated. IPv6 is keyed by /64 to match
+    # AlturaProt's default client-prefix buckets and avoid privacy-address
+    # rotation bypassing the host-edge per-source backstop. Use meta l4proto on
+    # IPv6 so extension headers do not bypass protected-port TCP backstops.
+    ip protocol tcp tcp dport @protected_tcp_ports tcp flags & (fin|syn|rst|ack) == syn update @tcp4_syn_rate { ip saddr . tcp dport limit rate over 200/second burst 400 packets } drop
+    meta nfproto ipv6 meta l4proto tcp tcp dport @protected_tcp_ports tcp flags & (fin|syn|rst|ack) == syn update @tcp6_syn_rate { ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport limit rate over 200/second burst 400 packets } drop
+    meta l4proto tcp tcp dport @protected_tcp_ports tcp flags & (fin|syn|rst|ack) == syn limit rate over 5000/second burst 10000 packets drop
+  }
+
+  chain input {
+    type filter hook input priority filter; policy accept;
+
+    ct state invalid drop
+
+    # After conntrack, reject packets that claim to open a protected TCP
+    # service without being a clean SYN.
+    meta l4proto tcp tcp dport @protected_tcp_ports ct state new tcp flags & (fin|syn|rst|ack) != syn drop
+
+    # Per-source established/new connection cap for protected ports. This is a
+    # coarse host backstop; AlturaProt still performs request-aware limits.
+    ip protocol tcp tcp dport @protected_tcp_ports ct state new add @tcp4_connlimit { ip saddr . tcp dport ct count over 128 } drop
+    meta nfproto ipv6 meta l4proto tcp tcp dport @protected_tcp_ports ct state new add @tcp6_connlimit { ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport ct count over 128 } drop
+
+    # Coarse host-level backstop for connection storms. AlturaProt still performs
+    # request-aware L7 filtering after packets pass this layer.
+    meta l4proto tcp tcp dport @protected_tcp_ports ct state new limit rate over 5000/second burst 10000 packets drop
+
+    # Keep basic ICMP usable while dropping obvious local floods. IPv4 and IPv6
+    # need core ICMP control messages for Path MTU Discovery; IPv6 also needs
+    # Neighbor Discovery, so exempt those before the generic flood backstops.
+    ip protocol icmp icmp type { destination-unreachable, time-exceeded, parameter-problem } accept
+    ip protocol icmp limit rate over 100/second burst 200 packets drop
+    meta nfproto ipv6 meta l4proto ipv6-icmp icmpv6 type { destination-unreachable, packet-too-big, time-exceeded, parameter-problem, nd-router-solicit, nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } accept
+    meta nfproto ipv6 meta l4proto ipv6-icmp limit rate over 100/second burst 200 packets drop
+  }
+}

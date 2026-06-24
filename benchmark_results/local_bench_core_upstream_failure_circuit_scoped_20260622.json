@@ -1,0 +1,3462 @@
+{
+  "guardrails": {
+    "accept_encoding": {
+      "accept_encoding_stripped_delta": 1,
+      "origin_accept_encoding": null,
+      "origin_accept_encoding_stripped": true,
+      "request": {
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "observed": {
+          "accept_encoding": null,
+          "cf_connecting_ip": null,
+          "client_ip": null,
+          "connection": null,
+          "fastly_client_ip": null,
+          "forwarded": null,
+          "keep_alive": null,
+          "proxy_connection": null,
+          "te": null,
+          "trailer": null,
+          "true_client_ip": null,
+          "upgrade": null,
+          "x_client_ip": null,
+          "x_cluster_client_ip": null,
+          "x_forwarded": null,
+          "x_forwarded_for": "127.0.0.1",
+          "x_forwarded_host": "127.0.0.1",
+          "x_forwarded_path": null,
+          "x_forwarded_port": null,
+          "x_forwarded_prefix": null,
+          "x_forwarded_proto": "http",
+          "x_forwarded_scheme": null,
+          "x_forwarded_server": null,
+          "x_forwarded_uri": null,
+          "x_hop_by_hop_attack": null,
+          "x_original_forwarded_for": null,
+          "x_original_host": null,
+          "x_original_url": null,
+          "x_originating_ip": null,
+          "x_real_ip": "127.0.0.1",
+          "x_remote_addr": null,
+          "x_remote_ip": null,
+          "x_rewrite_url": null
+        },
+        "status": 200
+      }
+    },
+    "adaptive_catalog_shape": {
+      "catalog_shape_activated": true,
+      "configured_signature_threshold_per_second": 2,
+      "filter_headers": [
+        "catalog-shape",
+        "catalog-shape",
+        "catalog-shape"
+      ],
+      "http_blocked_delta": 3,
+      "paths": [
+        "/api/catalog/1",
+        "/api/catalog/2",
+        "/api/catalog/3",
+        "/api/catalog/4"
+      ],
+      "statuses": [
+        204,
+        403,
+        403,
+        403
+      ]
+    },
+    "adaptive_window_cap": {
+      "all_requests_ok": true,
+      "completed_statuses": {
+        "204": 512
+      },
+      "configured_max_path_shape_windows": 64,
+      "configured_max_signature_windows": 64,
+      "path_shape_window_capacity": 64,
+      "path_shape_windows_after": 1,
+      "path_shape_windows_before": 0,
+      "path_shape_windows_bounded": true,
+      "request_count": 512,
+      "signature_window_capacity": 64,
+      "signature_windows_after": 64,
+      "signature_windows_before": 0,
+      "signature_windows_bounded": true
+    },
+    "admin_control_plane": {
+      "admin_responses_close_connection": true,
+      "admin_responses_not_stored": true,
+      "body_bearing_admin_responses_not_stored": true,
+      "body_bearing_health": {
+        "body_bytes_sent": 10,
+        "elapsed_seconds": 0.051,
+        "error": null,
+        "first": {
+          "body_bytes": 12,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "status": 200
+        },
+        "followup": {
+          "closed_without_response": true,
+          "error": null,
+          "header_complete": false,
+          "response_received": false,
+          "status": null
+        },
+        "path": "/__altura/health"
+      },
+      "body_bearing_health_closes_connection": true,
+      "body_bearing_metrics_with_token": {
+        "body_bytes_sent": 10,
+        "elapsed_seconds": 0.051,
+        "error": null,
+        "first": {
+          "body_bytes": 1848,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "status": 200
+        },
+        "followup": {
+          "closed_without_response": true,
+          "error": null,
+          "header_complete": false,
+          "response_received": false,
+          "status": null
+        },
+        "path": "/__altura/metrics"
+      },
+      "body_bearing_metrics_with_token_closes_connection": true,
+      "body_bearing_metrics_without_token": {
+        "body_bytes_sent": 10,
+        "elapsed_seconds": 0.051,
+        "error": null,
+        "first": {
+          "body_bytes": 10,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "status": 403
+        },
+        "followup": {
+          "closed_without_response": true,
+          "error": null,
+          "header_complete": false,
+          "response_received": false,
+          "status": null
+        },
+        "path": "/__altura/metrics"
+      },
+      "body_bearing_metrics_without_token_closes_connection": true,
+      "health_cache_control": "no-store",
+      "health_connection": "close",
+      "health_connection_close": true,
+      "health_status": 200,
+      "metrics_with_token_cache_control": "no-store",
+      "metrics_with_token_connection": "close",
+      "metrics_with_token_connection_close": true,
+      "metrics_with_token_status": 200,
+      "metrics_without_token_cache_control": "no-store",
+      "metrics_without_token_connection": "close",
+      "metrics_without_token_connection_close": true,
+      "metrics_without_token_status": 403
+    },
+    "admin_prefix_startup": {
+      "query_prefix": {
+        "configured_admin_path_prefix": "/__altura?debug=true",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_path_prefix must not contain query or fragment markers\""
+        ]
+      },
+      "query_prefix_rejected": true,
+      "relative_prefix": {
+        "configured_admin_path_prefix": "admin",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_path_prefix must start with '/' and use a non-root absolute path prefix such as /__altura\""
+        ]
+      },
+      "relative_prefix_rejected": true,
+      "root_prefix": {
+        "configured_admin_path_prefix": "/",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_path_prefix must use a non-root absolute path prefix such as /__altura\""
+        ]
+      },
+      "root_prefix_rejected": true
+    },
+    "admin_rate_limit": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store"
+      ],
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1"
+      ],
+      "statuses": [
+        200,
+        429
+      ]
+    },
+    "admin_signature_rate": {
+      "admin_health_signature_limited": true,
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store",
+        "no-store"
+      ],
+      "configured_signature_burst": 2,
+      "configured_signature_rps": 1e-06,
+      "http_rate_limited_delta": 2,
+      "rate_limited_metric_includes_signature_limit": true,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1",
+        "1"
+      ],
+      "signature_metric_matches": true,
+      "signature_rate_limited_delta": 2,
+      "statuses": [
+        200,
+        200,
+        429,
+        429
+      ]
+    },
+    "admin_token_startup": {
+      "blank_token": {
+        "configured_admin_token_repr": "'   '",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_token must not be blank when configured\""
+        ]
+      },
+      "blank_token_rejected": true,
+      "control_token": {
+        "configured_admin_token_repr": "'line\\nfeed'",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_token must not contain control characters\""
+        ]
+      },
+      "control_token_rejected": true,
+      "empty_token": {
+        "configured_admin_token_repr": "''",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_token must not be empty when configured\""
+        ]
+      },
+      "empty_token_rejected": true,
+      "padded_token": {
+        "configured_admin_token_repr": "' secret'",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.admin_token must not start or end with whitespace\""
+        ]
+      },
+      "padded_token_rejected": true
+    },
+    "allowed_hosts_startup": {
+      "blank": {
+        "configured_allowed_hosts": [
+          ""
+        ],
+        "configured_max_host_bytes": null,
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_hosts[0] must not be empty\""
+        ]
+      },
+      "blank_rejected": true,
+      "duplicate": {
+        "configured_allowed_hosts": [
+          "good.local",
+          "GOOD.local"
+        ],
+        "configured_max_host_bytes": null,
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_hosts[1] duplicates 'GOOD.local'\""
+        ]
+      },
+      "duplicate_rejected": true,
+      "invalid_authority": {
+        "configured_allowed_hosts": [
+          "http://good.local"
+        ],
+        "configured_max_host_bytes": null,
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_hosts[0] is not a valid HTTP authority: invalid uri character\""
+        ]
+      },
+      "invalid_authority_rejected": true,
+      "oversized": {
+        "configured_allowed_hosts": [
+          "too-long.local"
+        ],
+        "configured_max_host_bytes": 8,
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_hosts[0] is 14 bytes, above configured cap of 8 bytes\""
+        ]
+      },
+      "oversized_rejected": true,
+      "too_many": {
+        "configured_allowed_hosts": [
+          "h0.good.local",
+          "h1.good.local",
+          "h2.good.local",
+          "h3.good.local",
+          "h4.good.local",
+          "h5.good.local",
+          "h6.good.local",
+          "h7.good.local",
+          "h8.good.local",
+          "h9.good.local",
+          "h10.good.local",
+          "h11.good.local",
+          "h12.good.local",
+          "h13.good.local",
+          "h14.good.local",
+          "h15.good.local",
+          "h16.good.local",
+          "h17.good.local",
+          "h18.good.local",
+          "h19.good.local",
+          "h20.good.local",
+          "h21.good.local",
+          "h22.good.local",
+          "h23.good.local",
+          "h24.good.local",
+          "h25.good.local",
+          "h26.good.local",
+          "h27.good.local",
+          "h28.good.local",
+          "h29.good.local",
+          "h30.good.local",
+          "h31.good.local",
+          "h32.good.local",
+          "h33.good.local",
+          "h34.good.local",
+          "h35.good.local",
+          "h36.good.local",
+          "h37.good.local",
+          "h38.good.local",
+          "h39.good.local",
+          "h40.good.local",
+          "h41.good.local",
+          "h42.good.local",
+          "h43.good.local",
+          "h44.good.local",
+          "h45.good.local",
+          "h46.good.local",
+          "h47.good.local",
+          "h48.good.local",
+          "h49.good.local",
+          "h50.good.local",
+          "h51.good.local",
+          "h52.good.local",
+          "h53.good.local",
+          "h54.good.local",
+          "h55.good.local",
+          "h56.good.local",
+          "h57.good.local",
+          "h58.good.local",
+          "h59.good.local",
+          "h60.good.local",
+          "h61.good.local",
+          "h62.good.local",
+          "h63.good.local",
+          "h64.good.local",
+          "h65.good.local",
+          "h66.good.local",
+          "h67.good.local",
+          "h68.good.local",
+          "h69.good.local",
+          "h70.good.local",
+          "h71.good.local",
+          "h72.good.local",
+          "h73.good.local",
+          "h74.good.local",
+          "h75.good.local",
+          "h76.good.local",
+          "h77.good.local",
+          "h78.good.local",
+          "h79.good.local",
+          "h80.good.local",
+          "h81.good.local",
+          "h82.good.local",
+          "h83.good.local",
+          "h84.good.local",
+          "h85.good.local",
+          "h86.good.local",
+          "h87.good.local",
+          "h88.good.local",
+          "h89.good.local",
+          "h90.good.local",
+          "h91.good.local",
+          "h92.good.local",
+          "h93.good.local",
+          "h94.good.local",
+          "h95.good.local",
+          "h96.good.local",
+          "h97.good.local",
+          "h98.good.local",
+          "h99.good.local",
+          "h100.good.local",
+          "h101.good.local",
+          "h102.good.local",
+          "h103.good.local",
+          "h104.good.local",
+          "h105.good.local",
+          "h106.good.local",
+          "h107.good.local",
+          "h108.good.local",
+          "h109.good.local",
+          "h110.good.local",
+          "h111.good.local",
+          "h112.good.local",
+          "h113.good.local",
+          "h114.good.local",
+          "h115.good.local",
+          "h116.good.local",
+          "h117.good.local",
+          "h118.good.local",
+          "h119.good.local",
+          "h120.good.local",
+          "h121.good.local",
+          "h122.good.local",
+          "h123.good.local",
+          "h124.good.local",
+          "h125.good.local",
+          "h126.good.local",
+          "h127.good.local",
+          "h128.good.local"
+        ],
+        "configured_max_host_bytes": null,
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_hosts contains 129 hosts, above configured cap of 128\""
+        ]
+      },
+      "too_many_rejected": true,
+      "userinfo": {
+        "configured_allowed_hosts": [
+          "user@good.local"
+        ],
+        "configured_max_host_bytes": null,
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_hosts[0] must not contain URI userinfo\""
+        ]
+      },
+      "userinfo_rejected": true,
+      "whitespace": {
+        "configured_allowed_hosts": [
+          " good.local"
+        ],
+        "configured_max_host_bytes": null,
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_hosts[0] must not start or end with whitespace\""
+        ]
+      },
+      "whitespace_rejected": true,
+      "wildcard": {
+        "configured_allowed_hosts": [
+          "*.good.local"
+        ],
+        "configured_max_host_bytes": null,
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_hosts[0] must be an exact host or host:port, not a wildcard\""
+        ]
+      },
+      "wildcard_rejected": true
+    },
+    "allowed_methods_startup": {
+      "duplicate": {
+        "configured_allowed_methods": [
+          "GET",
+          "GET"
+        ],
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_methods[1] duplicates 'GET'\""
+        ]
+      },
+      "duplicate_rejected": true,
+      "empty": {
+        "configured_allowed_methods": [],
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_methods must contain at least one method\""
+        ]
+      },
+      "empty_rejected": true,
+      "invalid_token": {
+        "configured_allowed_methods": [
+          "BAD METHOD"
+        ],
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_methods[0] is not a valid HTTP method token\""
+        ]
+      },
+      "invalid_token_rejected": true,
+      "oversized_token": {
+        "configured_allowed_methods": [
+          "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        ],
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_methods[0] is 33 bytes, above configured cap of 32 bytes\""
+        ]
+      },
+      "oversized_token_rejected": true,
+      "too_many": {
+        "configured_allowed_methods": [
+          "M0",
+          "M1",
+          "M2",
+          "M3",
+          "M4",
+          "M5",
+          "M6",
+          "M7",
+          "M8",
+          "M9",
+          "M10",
+          "M11",
+          "M12",
+          "M13",
+          "M14",
+          "M15",
+          "M16"
+        ],
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.allowed_methods contains 17 methods, above configured cap of 16\""
+        ]
+      },
+      "too_many_rejected": true
+    },
+    "body_min_rate": {
+      "configured_request_body_idle_timeout_ms": 500,
+      "configured_request_body_min_rate_bytes_per_second": 1000,
+      "configured_request_body_min_rate_grace_ms": 10,
+      "configured_upstream_body_idle_timeout_ms": 500,
+      "configured_upstream_body_min_rate_bytes_per_second": 1000,
+      "configured_upstream_body_min_rate_grace_ms": 10,
+      "http_body_too_slow_delta": 1,
+      "http_upstream_body_too_slow_delta": 1,
+      "request_body_response": {
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.161,
+        "error": null,
+        "status": 408
+      },
+      "request_min_rate_rejected": true,
+      "upstream_min_rate_rejected": true,
+      "upstream_response": {
+        "body_bytes": 2,
+        "elapsed_seconds": 0.162,
+        "error": null,
+        "status": 200
+      }
+    },
+    "body_size_ceiling_startup": {
+      "max_body_bytes": {
+        "configured_field": "http.max_body_bytes",
+        "configured_value": 1073741825,
+        "exit_code": 1,
+        "maximum_bytes": 1073741824,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_body_bytes must be no higher than 1073741824\""
+        ]
+      },
+      "max_body_bytes_rejected": true,
+      "max_upstream_body_bytes": {
+        "configured_field": "http.max_upstream_body_bytes",
+        "configured_value": 1073741825,
+        "exit_code": 1,
+        "maximum_bytes": 1073741824,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_upstream_body_bytes must be no higher than 1073741824\""
+        ]
+      },
+      "max_upstream_body_bytes_rejected": true
+    },
+    "chunked_request_body_opt_in": {
+      "chunked_request": {
+        "body_bytes": 0,
+        "cache_control": null,
+        "cache_control_no_store": false,
+        "connection": null,
+        "connection_close": false,
+        "elapsed_seconds": 2.002,
+        "error": "TimeoutError",
+        "headers": [
+          "Transfer-Encoding: chunked"
+        ],
+        "status": null
+      },
+      "chunked_request_allowed": false,
+      "configured_allow_chunked_request_bodies": true,
+      "http_framing_rejected_delta": 0
+    },
+    "client_ip_config_startup": {
+      "blank_trusted_proxy": {
+        "configured_client_ip": {
+          "trusted_proxies": [
+            ""
+          ]
+        },
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.client_ip.trusted_proxies[0] must not be empty\""
+        ]
+      },
+      "blank_trusted_proxy_rejected": true,
+      "duplicate_trusted_proxy": {
+        "configured_client_ip": {
+          "trusted_proxies": [
+            "127.0.0.1/32",
+            "127.0.0.1/32"
+          ]
+        },
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.client_ip.trusted_proxies[1] duplicates '127.0.0.1/32'\""
+        ]
+      },
+      "duplicate_trusted_proxy_rejected": true,
+      "invalid_header": {
+        "configured_client_ip": {
+          "header": "bad header"
+        },
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.client_ip.header is not a valid HTTP field name: invalid HTTP header name\""
+        ]
+      },
+      "invalid_header_rejected": true,
+      "invalid_trusted_proxy": {
+        "configured_client_ip": {
+          "trusted_proxies": [
+            "not-a-cidr"
+          ]
+        },
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"invalid http.client_ip.trusted_proxies entry 'not-a-cidr': invalid IP address: invalid IP address syntax\""
+        ]
+      },
+      "invalid_trusted_proxy_rejected": true,
+      "oversized_header": {
+        "configured_client_ip": {
+          "header": "x-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.client_ip.header is 65 bytes, above configured cap of 64 bytes\""
+        ]
+      },
+      "oversized_header_rejected": true,
+      "oversized_trusted_proxy": {
+        "configured_client_ip": {
+          "trusted_proxies": [
+            "11111111111111111111111111111111111111111111111111111111111111111"
+          ]
+        },
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.client_ip.trusted_proxies[0] is 65 bytes, above configured cap of 64 bytes\""
+        ]
+      },
+      "oversized_trusted_proxy_rejected": true,
+      "too_many_trusted_proxies": {
+        "configured_client_ip": {
+          "trusted_proxies": [
+            "2001:db8::0",
+            "2001:db8::1",
+            "2001:db8::2",
+            "2001:db8::3",
+            "2001:db8::4",
+            "2001:db8::5",
+            "2001:db8::6",
+            "2001:db8::7",
+            "2001:db8::8",
+            "2001:db8::9",
+            "2001:db8::10",
+            "2001:db8::11",
+            "2001:db8::12",
+            "2001:db8::13",
+            "2001:db8::14",
+            "2001:db8::15",
+            "2001:db8::16",
+            "2001:db8::17",
+            "2001:db8::18",
+            "2001:db8::19",
+            "2001:db8::20",
+            "2001:db8::21",
+            "2001:db8::22",
+            "2001:db8::23",
+            "2001:db8::24",
+            "2001:db8::25",
+            "2001:db8::26",
+            "2001:db8::27",
+            "2001:db8::28",
+            "2001:db8::29",
+            "2001:db8::30",
+            "2001:db8::31",
+            "2001:db8::32",
+            "2001:db8::33",
+            "2001:db8::34",
+            "2001:db8::35",
+            "2001:db8::36",
+            "2001:db8::37",
+            "2001:db8::38",
+            "2001:db8::39",
+            "2001:db8::40",
+            "2001:db8::41",
+            "2001:db8::42",
+            "2001:db8::43",
+            "2001:db8::44",
+            "2001:db8::45",
+            "2001:db8::46",
+            "2001:db8::47",
+            "2001:db8::48",
+            "2001:db8::49",
+            "2001:db8::50",
+            "2001:db8::51",
+            "2001:db8::52",
+            "2001:db8::53",
+            "2001:db8::54",
+            "2001:db8::55",
+            "2001:db8::56",
+            "2001:db8::57",
+            "2001:db8::58",
+            "2001:db8::59",
+            "2001:db8::60",
+            "2001:db8::61",
+            "2001:db8::62",
+            "2001:db8::63",
+            "2001:db8::64",
+            "2001:db8::65",
+            "2001:db8::66",
+            "2001:db8::67",
+            "2001:db8::68",
+            "2001:db8::69",
+            "2001:db8::70",
+            "2001:db8::71",
+            "2001:db8::72",
+            "2001:db8::73",
+            "2001:db8::74",
+            "2001:db8::75",
+            "2001:db8::76",
+            "2001:db8::77",
+            "2001:db8::78",
+            "2001:db8::79",
+            "2001:db8::80",
+            "2001:db8::81",
+            "2001:db8::82",
+            "2001:db8::83",
+            "2001:db8::84",
+            "2001:db8::85",
+            "2001:db8::86",
+            "2001:db8::87",
+            "2001:db8::88",
+            "2001:db8::89",
+            "2001:db8::90",
+            "2001:db8::91",
+            "2001:db8::92",
+            "2001:db8::93",
+            "2001:db8::94",
+            "2001:db8::95",
+            "2001:db8::96",
+            "2001:db8::97",
+            "2001:db8::98",
+            "2001:db8::99",
+            "2001:db8::100",
+            "2001:db8::101",
+            "2001:db8::102",
+            "2001:db8::103",
+            "2001:db8::104",
+            "2001:db8::105",
+            "2001:db8::106",
+            "2001:db8::107",
+            "2001:db8::108",
+            "2001:db8::109",
+            "2001:db8::110",
+            "2001:db8::111",
+            "2001:db8::112",
+            "2001:db8::113",
+            "2001:db8::114",
+            "2001:db8::115",
+            "2001:db8::116",
+            "2001:db8::117",
+            "2001:db8::118",
+            "2001:db8::119",
+            "2001:db8::120",
+            "2001:db8::121",
+            "2001:db8::122",
+            "2001:db8::123",
+            "2001:db8::124",
+            "2001:db8::125",
+            "2001:db8::126",
+            "2001:db8::127",
+            "2001:db8::128"
+          ]
+        },
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.client_ip.trusted_proxies contains 129 entries, above configured cap of 128\""
+        ]
+      },
+      "too_many_trusted_proxies_rejected": true
+    },
+    "config_file_startup": {
+      "non_regular_config": {
+        "config_path": "/tmp/tmp7kas2snn/non-regular-startup-config.json",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"config file /tmp/tmp7kas2snn/non-regular-startup-config.json must be a regular file\""
+        ]
+      },
+      "non_regular_config_rejected": true,
+      "oversized_config": {
+        "config_path": "/tmp/tmp7kas2snn/oversized-startup-config.json",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"config file /tmp/tmp7kas2snn/oversized-startup-config.json is 1049615 bytes, above configured cap of 1048576 bytes\""
+        ]
+      },
+      "oversized_config_rejected": true
+    },
+    "connect_timeout_ceiling_startup": {
+      "http_upstream_connect_timeout": {
+        "configured_field": "http.upstream_connect_timeout_ms",
+        "configured_value": 60001,
+        "exit_code": 1,
+        "maximum_ms": 60000,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_connect_timeout_ms must be no higher than 60000\""
+        ]
+      },
+      "http_upstream_connect_timeout_rejected": true,
+      "tcp_connect_timeout": {
+        "configured_field": "tcp[0].connect_timeout_ms",
+        "configured_value": 60001,
+        "exit_code": 1,
+        "maximum_ms": 60000,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"tcp[0].connect_timeout_ms must be no higher than 60000\""
+        ]
+      },
+      "tcp_connect_timeout_rejected": true
+    },
+    "connection_duration_ceiling_startup": {
+      "http_max_connection_duration": {
+        "configured_field": "http.max_connection_duration_seconds",
+        "configured_value": 3601,
+        "exit_code": 1,
+        "maximum_seconds": 3600,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_connection_duration_seconds must be no higher than 3600\""
+        ]
+      },
+      "http_max_connection_duration_rejected": true,
+      "tcp_max_connection_duration": {
+        "configured_field": "tcp[0].max_connection_duration_seconds",
+        "configured_value": 3601,
+        "exit_code": 1,
+        "maximum_seconds": 3600,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"tcp[0].max_connection_duration_seconds must be no higher than 3600\""
+        ]
+      },
+      "tcp_max_connection_duration_rejected": true
+    },
+    "connection_request_count_ceiling_startup": {
+      "configured_field": "http.max_requests_per_connection",
+      "configured_value": 10001,
+      "exit_code": 1,
+      "max_requests_per_connection_rejected": true,
+      "maximum_requests": 10000,
+      "startup_rejected": true,
+      "stderr_tail": [
+        "Error: \"http.max_requests_per_connection must be no higher than 10000\""
+      ]
+    },
+    "connection_request_limit": {
+      "cache_control_header_matches": true,
+      "configured_max_requests_per_connection": 2,
+      "connection_close_header_matches": true,
+      "connection_closed_before_fourth": true,
+      "connection_request_limit_observed": true,
+      "http_request_limited_delta": 1,
+      "probe": {
+        "elapsed_seconds": 0.052,
+        "error": null,
+        "first_response": {
+          "body": "",
+          "body_bytes": 0,
+          "header_complete": true,
+          "headers": {
+            "date": "Mon, 22 Jun 2026 12:49:12 GMT"
+          },
+          "status": 204
+        },
+        "fourth_error": null,
+        "fourth_response_bytes": 0,
+        "second_response": {
+          "body": "",
+          "body_bytes": 0,
+          "header_complete": true,
+          "headers": {
+            "date": "Mon, 22 Jun 2026 12:49:12 GMT"
+          },
+          "status": 204
+        },
+        "third_response": {
+          "body": "connection request limit\n",
+          "body_bytes": 25,
+          "header_complete": true,
+          "headers": {
+            "cache-control": "no-store",
+            "connection": "close",
+            "content-length": "25",
+            "date": "Mon, 22 Jun 2026 12:49:12 GMT",
+            "retry-after": "1"
+          },
+          "status": 429
+        }
+      },
+      "retry_after_header_matches": true,
+      "third_request_limited": true
+    },
+    "control_capacity_startup": {
+      "adaptive_flush_interval": {
+        "configured_field": "adaptive.event_log_flush_interval_ms",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.event_log_flush_interval_ms must be greater than zero\""
+        ]
+      },
+      "adaptive_flush_interval_rejected": true,
+      "adaptive_log_cap": {
+        "configured_field": "adaptive.event_log_max_bytes",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.event_log_max_bytes must be greater than zero\""
+        ]
+      },
+      "adaptive_log_cap_rejected": true,
+      "adaptive_queue_cap": {
+        "configured_field": "adaptive.event_log_queue_capacity",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.event_log_queue_capacity must be greater than zero\""
+        ]
+      },
+      "adaptive_queue_cap_rejected": true,
+      "adaptive_window_cap": {
+        "configured_field": "adaptive.max_signature_windows",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.max_signature_windows must be greater than zero\""
+        ]
+      },
+      "adaptive_window_cap_rejected": true,
+      "filter_file_cap": {
+        "configured_field": "filters.max_runtime_file_bytes",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.max_runtime_file_bytes must be greater than zero\""
+        ]
+      },
+      "filter_file_cap_rejected": true,
+      "filter_rule_cap": {
+        "configured_field": "filters.max_runtime_filters",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.max_runtime_filters must be greater than zero\""
+        ]
+      },
+      "filter_rule_cap_rejected": true
+    },
+    "downstream_keep_alive": {
+      "closed_before_second_response": true,
+      "elapsed_seconds": 0.051,
+      "first_response": {
+        "body": "",
+        "body_bytes": 0,
+        "header_complete": true,
+        "headers": {
+          "connection": "close",
+          "date": "Mon, 22 Jun 2026 12:49:11 GMT"
+        },
+        "status": 204
+      },
+      "framing_rejected_delta": 0,
+      "second_error": null,
+      "second_response_bytes": 0,
+      "second_status": null
+    },
+    "downstream_write_timeout": {
+      "configured_downstream_write_timeout_ms": 20,
+      "downstream_write_timeout_observed": true,
+      "http_downstream_write_timeouts_delta": 1,
+      "slow_reader_response": {
+        "elapsed_seconds": 0.251,
+        "error": null,
+        "first_body_bytes": 3995,
+        "first_read_bytes": 4096,
+        "status": 200
+      }
+    },
+    "dynamic_state_ceiling_startup": {
+      "adaptive_activation_ttl_seconds": {
+        "configured_ceiling": 86400,
+        "configured_field": "adaptive.activation_ttl_seconds",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.activation_ttl_seconds must be no higher than 86400\""
+        ]
+      },
+      "adaptive_event_log_max_bytes": {
+        "configured_ceiling": 1073741824,
+        "configured_field": "adaptive.event_log_max_bytes",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.event_log_max_bytes must be no higher than 1073741824\""
+        ]
+      },
+      "adaptive_path_shape_windows": {
+        "configured_ceiling": 262144,
+        "configured_field": "adaptive.max_path_shape_windows",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.max_path_shape_windows must be no higher than 262144\""
+        ]
+      },
+      "adaptive_signature_windows": {
+        "configured_ceiling": 262144,
+        "configured_field": "adaptive.max_signature_windows",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"adaptive.max_signature_windows must be no higher than 262144\""
+        ]
+      },
+      "all_dynamic_state_ceilings_rejected": true,
+      "filter_runtime_file_bytes": {
+        "configured_ceiling": 16777216,
+        "configured_field": "filters.max_runtime_file_bytes",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.max_runtime_file_bytes must be no higher than 16777216\""
+        ]
+      },
+      "filter_runtime_filters": {
+        "configured_ceiling": 8192,
+        "configured_field": "filters.max_runtime_filters",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.max_runtime_filters must be no higher than 8192\""
+        ]
+      },
+      "filter_static_filters": {
+        "configured_ceiling": 8192,
+        "configured_field": "filters.max_static_filters",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.max_static_filters must be no higher than 8192\""
+        ]
+      },
+      "http_max_tracked_ips": {
+        "configured_ceiling": 1048576,
+        "configured_field": "http.limits.max_tracked_ips",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.limits.max_tracked_ips must be no higher than 1048576\""
+        ]
+      },
+      "http_max_tracked_path_shapes": {
+        "configured_ceiling": 262144,
+        "configured_field": "http.limits.max_tracked_path_shapes",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.limits.max_tracked_path_shapes must be no higher than 262144\""
+        ]
+      },
+      "http_max_tracked_signatures": {
+        "configured_ceiling": 262144,
+        "configured_field": "http.limits.max_tracked_signatures",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.limits.max_tracked_signatures must be no higher than 262144\""
+        ]
+      },
+      "static_filter_ttl_seconds": {
+        "configured_ceiling": 86400,
+        "configured_field": "filters.static_rules[0].ttl_seconds",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.static_rules[0].ttl_seconds must be no higher than 86400\""
+        ]
+      },
+      "tcp_max_tracked_ips": {
+        "configured_ceiling": 1048576,
+        "configured_field": "tcp[0].limits.max_tracked_ips",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"tcp[0].limits.max_tracked_ips must be no higher than 1048576\""
+        ]
+      }
+    },
+    "early_rejection_close": {
+      "body_bearing_early_rejections_close_connection": true,
+      "body_bearing_early_rejections_not_stored": true,
+      "probes": {
+        "filter_with_body": {
+          "body_bytes_sent": 19,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "first": {
+            "connection": null,
+            "connection_close": false,
+            "status": 204
+          },
+          "method": "POST",
+          "second": {
+            "body_bytes": 8,
+            "cache_control": "no-store",
+            "cache_control_no_store": true,
+            "connection": "close",
+            "connection_close": true,
+            "status": 403
+          },
+          "target_bytes": 15
+        },
+        "method_with_body": {
+          "body_bytes_sent": 19,
+          "elapsed_seconds": 0.001,
+          "error": null,
+          "first": {
+            "connection": null,
+            "connection_close": false,
+            "status": 204
+          },
+          "method": "TRACE",
+          "second": {
+            "body_bytes": 19,
+            "cache_control": "no-store",
+            "cache_control_no_store": true,
+            "connection": "close",
+            "connection_close": true,
+            "status": 405
+          },
+          "target_bytes": 1
+        },
+        "uri_with_body": {
+          "body_bytes_sent": 16,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "first": {
+            "connection": null,
+            "connection_close": false,
+            "status": 204
+          },
+          "method": "POST",
+          "second": {
+            "body_bytes": 21,
+            "cache_control": "no-store",
+            "cache_control_no_store": true,
+            "connection": "close",
+            "connection_close": true,
+            "status": 414
+          },
+          "target_bytes": 86
+        }
+      }
+    },
+    "edge_template_port_coverage": {
+      "connlimit_set_sizes_allowed": true,
+      "covered_public_ports_allowed": true,
+      "covered_public_ports_status": 0,
+      "excessive_fragment_time_rejected": true,
+      "excessive_fragment_time_status": 1,
+      "excessive_fragment_time_stderr": "net.ipv4.ipfrag_time=60 exceeds fragment queue retention cap 30s",
+      "excessive_systemd_capabilities_rejected": true,
+      "excessive_systemd_capabilities_status": 1,
+      "excessive_systemd_capabilities_stderr": "AmbientCapabilities must be exactly CAP_NET_BIND_SERVICE so the proxy can bind privileged ports without broader root capabilities",
+      "fragment_sysctls_allowed": true,
+      "generic_tcp_backstops_allowed": true,
+      "icmpv4_control_exemption_allowed": true,
+      "icmpv6_control_exemption_allowed": true,
+      "insufficient_systemd_nofile_rejected": true,
+      "insufficient_systemd_nofile_status": 1,
+      "insufficient_systemd_nofile_stderr": "LimitNOFILE=1024 is lower than required runtime.min_nofile 65536",
+      "invalid_fragment_thresholds_rejected": true,
+      "invalid_fragment_thresholds_status": 1,
+      "invalid_fragment_thresholds_stderr": "net.ipv6.ip6frag_low_thresh must be less than or equal to net.ipv6.ip6frag_high_thresh",
+      "ipv6_extension_safe_protocols_allowed": true,
+      "ipv6_prefix_backstops_allowed": true,
+      "late_icmpv4_control_exemption_rejected": true,
+      "late_icmpv4_control_exemption_status": 1,
+      "late_icmpv4_control_exemption_stderr": "ICMPv4 control exemption must appear before generic ICMPv4 flood drop",
+      "late_icmpv6_control_exemption_rejected": true,
+      "late_icmpv6_control_exemption_status": 1,
+      "late_icmpv6_control_exemption_stderr": "ICMPv6 control exemption must appear before generic ICMPv6 flood drop",
+      "loopback_missing_port_allowed": true,
+      "loopback_missing_port_status": 0,
+      "missing_connlimit_set_size_rejected": true,
+      "missing_connlimit_set_size_status": 1,
+      "missing_connlimit_set_size_stderr": "connlimit set tcp4_connlimit must define an explicit positive size\nconnlimit set tcp6_connlimit must define an explicit positive size",
+      "missing_fragment_sysctls_rejected": true,
+      "missing_fragment_sysctls_status": 1,
+      "missing_fragment_sysctls_stderr": "missing fragment reassembly sysctl bounds: net.ipv4.ipfrag_high_thresh, net.ipv4.ipfrag_max_dist, net.ipv4.ipfrag_time, net.ipv6.ip6frag_high_thresh, net.ipv6.ip6frag_low_thresh, net.ipv6.ip6frag_time",
+      "missing_generic_tcp_l4proto_rejected": true,
+      "missing_generic_tcp_l4proto_status": 1,
+      "missing_generic_tcp_l4proto_stderr": "missing generic TCP extension-safe null TCP flag drop: expected `meta l4proto tcp` before protected-port TCP match\nmissing generic TCP extension-safe Xmas TCP flag drop: expected `meta l4proto tcp` before protected-port TCP match\nmissing generic TCP extension-safe global SYN flood drop: expected `meta l4proto tcp` before protected-port TCP match\nmissing generic TCP extension-safe new non-SYN drop: expected `meta l4proto tcp` before protected-port TCP match\nmissing generic TCP extension-safe global new-connection flood drop: expected `meta l4proto tcp` before protected-port TCP match",
+      "missing_icmpv4_control_exemption_rejected": true,
+      "missing_icmpv4_control_exemption_status": 1,
+      "missing_icmpv4_control_exemption_stderr": "missing ICMPv4 control exemption before flood backstop: expected `ip protocol icmp icmp type { ... } accept`",
+      "missing_icmpv6_control_exemption_rejected": true,
+      "missing_icmpv6_control_exemption_status": 1,
+      "missing_icmpv6_control_exemption_stderr": "missing ICMPv6 control exemption before flood backstop: expected `meta nfproto ipv6 meta l4proto ipv6-icmp icmpv6 type { ... } accept`",
+      "missing_ipv6_connlimit_l4proto_rejected": true,
+      "missing_ipv6_connlimit_l4proto_status": 1,
+      "missing_ipv6_connlimit_l4proto_stderr": "missing IPv6 extension-safe connection-count protocol match: expected `meta nfproto ipv6 meta l4proto tcp` before add @tcp6_connlimit",
+      "missing_ipv6_icmp_l4proto_rejected": true,
+      "missing_ipv6_icmp_l4proto_status": 1,
+      "missing_ipv6_icmp_l4proto_stderr": "missing IPv6 extension-safe ICMPv6 flood protocol match: expected `meta nfproto ipv6 meta l4proto ipv6-icmp`\nmissing generic ICMPv6 flood drop after control exemption",
+      "missing_ipv6_prefix_connlimit_rejected": true,
+      "missing_ipv6_prefix_connlimit_status": 1,
+      "missing_ipv6_prefix_connlimit_stderr": "missing IPv6 /64 connection-count backstop: expected `ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport ct count over ...` in chain input",
+      "missing_ipv6_prefix_syn_backstop_rejected": true,
+      "missing_ipv6_prefix_syn_status": 1,
+      "missing_ipv6_prefix_syn_stderr": "missing IPv6 /64 SYN backstop: expected `ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport` inside tcp6_syn_rate",
+      "missing_ipv6_syn_l4proto_rejected": true,
+      "missing_ipv6_syn_l4proto_status": 1,
+      "missing_ipv6_syn_l4proto_stderr": "missing IPv6 extension-safe SYN protocol match: expected `meta nfproto ipv6 meta l4proto tcp` before meter tcp6_syn_rate",
+      "missing_public_port_rejected": true,
+      "missing_public_port_status": 1,
+      "missing_public_port_stderr": "protected_tcp_ports is missing public AlturaProt listener ports: 7000",
+      "missing_syn_rate_set_size_rejected": true,
+      "missing_syn_rate_set_size_status": 1,
+      "missing_syn_rate_set_size_stderr": "SYN rate set tcp4_syn_rate must define an explicit positive size\nSYN rate set tcp6_syn_rate must define an explicit positive size",
+      "missing_syn_rate_set_timeout_rejected": true,
+      "missing_syn_rate_set_timeout_status": 1,
+      "missing_syn_rate_set_timeout_stderr": "SYN rate set tcp4_syn_rate must use flags timeout\nSYN rate set tcp4_syn_rate must define a positive timeout\nSYN rate set tcp6_syn_rate must use flags timeout\nSYN rate set tcp6_syn_rate must define a positive timeout",
+      "missing_udp_drop_rejected": true,
+      "missing_udp_drop_status": 1,
+      "missing_udp_drop_stderr": "missing raw UDP drop for protected TCP service ports: expected `udp dport @protected_tcp_ports drop` in chain preraw",
+      "syn_rate_set_bounds_allowed": true,
+      "systemd_unit_allowed": true,
+      "weak_systemd_sandbox_rejected": true,
+      "weak_systemd_sandbox_status": 1,
+      "weak_systemd_sandbox_stderr": "ProtectSystem=false is weaker than required values: ['strict']"
+    },
+    "event_log_async_queue": {
+      "all_requests_completed": true,
+      "completed_statuses": {
+        "204": 2000
+      },
+      "configured_event_log_queue_capacity": 1,
+      "drained_bytes": 40790,
+      "dropped_delta": 1919,
+      "event_log_queue_dropped": true,
+      "request_count": 2000,
+      "requests_elapsed_seconds": 0.426,
+      "requests_per_second": 4700.1
+    },
+    "event_log_backup_count_ceiling_startup": {
+      "configured_field": "adaptive.event_log_backup_count",
+      "configured_value": 129,
+      "event_log_backup_count_rejected": true,
+      "exit_code": 1,
+      "maximum_backups": 128,
+      "startup_rejected": true,
+      "stderr_tail": [
+        "Error: \"adaptive.event_log_backup_count must be no higher than 128\""
+      ]
+    },
+    "event_log_field_bounds": {
+      "all_event_fields_bounded": true,
+      "bounded_fields": true,
+      "bounded_header_name": true,
+      "bounded_query_keys": true,
+      "event_line_bytes": 4749,
+      "field_lengths": {
+        "path": 1024,
+        "query": 1024,
+        "signature_basis": 1024,
+        "user_agent": 512,
+        "x_forwarded_for": 512
+      },
+      "max_query_key_length": 128,
+      "query_key_count": 1,
+      "status": 204,
+      "visible_lines": 1
+    },
+    "event_log_flush": {
+      "all_requests_ok": true,
+      "burst_flush_batched": true,
+      "burst_visible_lines": 1,
+      "configured_event_log_flush_interval_ms": 1000,
+      "final_visible_lines": 10,
+      "first_event_flushed_immediately": true,
+      "first_visible_lines": 1,
+      "interval_flush_observed": true,
+      "statuses": [
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204
+      ]
+    },
+    "event_log_queue_capacity_ceiling_startup": {
+      "configured_field": "adaptive.event_log_queue_capacity",
+      "configured_value": 8193,
+      "event_log_queue_capacity_rejected": true,
+      "exit_code": 1,
+      "maximum_events": 8192,
+      "startup_rejected": true,
+      "stderr_tail": [
+        "Error: \"adaptive.event_log_queue_capacity must be no higher than 8192\""
+      ]
+    },
+    "event_log_rotation": {
+      "active_log_present": true,
+      "all_requests_ok": true,
+      "backup_present": true,
+      "configured_event_log_backup_count": 1,
+      "configured_event_log_max_bytes": 1800,
+      "jsonl_stats": {
+        "invalid_json_lines": 0,
+        "line_counts": {
+          "event-log-rotation-events.jsonl": 2,
+          "event-log-rotation-events.jsonl.1": 3
+        },
+        "sizes": {
+          "event-log-rotation-events.jsonl": 1032,
+          "event-log-rotation-events.jsonl.1": 1548
+        },
+        "total_bytes": 2580,
+        "total_lines": 5,
+        "valid_json_lines": 5
+      },
+      "jsonl_valid": true,
+      "request_count": 24,
+      "statuses": [
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204,
+        204
+      ],
+      "total_bytes_bounded": true
+    },
+    "expect_guard": {
+      "expect_continue": {
+        "body": "expect header not supported\n",
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "status": 417
+      },
+      "expect_continue_rejected": true,
+      "expect_rejected_delta": 2,
+      "expect_rejections_not_stored": true,
+      "no_expect_status": 200,
+      "normal_request_allowed": true,
+      "unsupported_expectation": {
+        "body": "expect header not supported\n",
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "status": 417
+      },
+      "unsupported_expectation_rejected": true
+    },
+    "filter_rule_startup": {
+      "empty_condition": {
+        "config_path": "/tmp/tmp7kas2snn/filter-rule-empty-condition-config.json",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.static_rules[0].condition must include at least one matcher\""
+        ]
+      },
+      "empty_condition_rejected": true,
+      "invalid_status": {
+        "config_path": "/tmp/tmp7kas2snn/filter-rule-invalid-status-config.json",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.static_rules[0].action.status must be an HTTP 4xx or 5xx status\""
+        ]
+      },
+      "invalid_status_rejected": true,
+      "oversized_body": {
+        "config_path": "/tmp/tmp7kas2snn/filter-rule-oversized-body-config.json",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.static_rules[0].action.body is 2048 bytes, above configured cap 1024\""
+        ]
+      },
+      "oversized_body_rejected": true,
+      "too_many_static_filters": {
+        "config_path": "/tmp/tmp7kas2snn/filter-rule-static-count-config.json",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"filters.static_rules contains 2 filters, above configured cap 1\""
+        ]
+      },
+      "too_many_static_filters_rejected": true
+    },
+    "forwarded_header_bounds": {
+      "configured_max_forwarded_for_bytes": 64,
+      "configured_max_forwarded_for_hops": 2,
+      "forwarded_rejections_not_stored": true,
+      "malformed_chain_rejected": true,
+      "malformed_response": {
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "35",
+          "date": "Mon, 22 Jun 2026 12:49:05 GMT"
+        },
+        "status": 400
+      },
+      "oversized_chain_rejected": true,
+      "rejected_delta": 3,
+      "rejection_metric_matches": true,
+      "too_long_response": {
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "36",
+          "date": "Mon, 22 Jun 2026 12:49:05 GMT"
+        },
+        "status": 400
+      },
+      "too_many_hops_rejected": true,
+      "too_many_hops_response": {
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "34",
+          "date": "Mon, 22 Jun 2026 12:49:05 GMT"
+        },
+        "status": 400
+      },
+      "valid_chain_allowed": true,
+      "valid_response": {
+        "headers": {
+          "connection": "close",
+          "date": "Mon, 22 Jun 2026 12:49:05 GMT"
+        },
+        "status": 204
+      }
+    },
+    "forwarded_headers": {
+      "trusted_proxy": {
+        "canonical_headers_valid": true,
+        "hop_by_hop_headers_stripped": true,
+        "metrics_delta": {
+          "altura_http_forwarded_sanitized": 1
+        },
+        "probe": {
+          "elapsed_seconds": 0.001,
+          "error": null,
+          "observed": {
+            "accept_encoding": null,
+            "cf_connecting_ip": null,
+            "client_ip": null,
+            "connection": null,
+            "fastly_client_ip": null,
+            "forwarded": null,
+            "keep_alive": null,
+            "proxy_connection": null,
+            "te": null,
+            "trailer": null,
+            "true_client_ip": null,
+            "upgrade": null,
+            "x_client_ip": null,
+            "x_cluster_client_ip": null,
+            "x_forwarded": null,
+            "x_forwarded_for": "203.0.113.200, 127.0.0.1",
+            "x_forwarded_host": "good.local",
+            "x_forwarded_path": null,
+            "x_forwarded_port": null,
+            "x_forwarded_prefix": null,
+            "x_forwarded_proto": "http",
+            "x_forwarded_scheme": null,
+            "x_forwarded_server": null,
+            "x_forwarded_uri": null,
+            "x_hop_by_hop_attack": null,
+            "x_original_forwarded_for": null,
+            "x_original_host": null,
+            "x_original_url": null,
+            "x_originating_ip": null,
+            "x_real_ip": "203.0.113.200",
+            "x_remote_addr": null,
+            "x_remote_ip": null,
+            "x_rewrite_url": null
+          },
+          "status": 200
+        },
+        "spoof_headers_stripped": true,
+        "trusted_proxy": true
+      },
+      "untrusted_direct": {
+        "canonical_headers_valid": true,
+        "hop_by_hop_headers_stripped": true,
+        "metrics_delta": {
+          "altura_http_forwarded_sanitized": 1
+        },
+        "probe": {
+          "elapsed_seconds": 0.001,
+          "error": null,
+          "observed": {
+            "accept_encoding": null,
+            "cf_connecting_ip": null,
+            "client_ip": null,
+            "connection": null,
+            "fastly_client_ip": null,
+            "forwarded": null,
+            "keep_alive": null,
+            "proxy_connection": null,
+            "te": null,
+            "trailer": null,
+            "true_client_ip": null,
+            "upgrade": null,
+            "x_client_ip": null,
+            "x_cluster_client_ip": null,
+            "x_forwarded": null,
+            "x_forwarded_for": "127.0.0.1",
+            "x_forwarded_host": "good.local",
+            "x_forwarded_path": null,
+            "x_forwarded_port": null,
+            "x_forwarded_prefix": null,
+            "x_forwarded_proto": "http",
+            "x_forwarded_scheme": null,
+            "x_forwarded_server": null,
+            "x_forwarded_uri": null,
+            "x_hop_by_hop_attack": null,
+            "x_original_forwarded_for": null,
+            "x_original_host": null,
+            "x_original_url": null,
+            "x_originating_ip": null,
+            "x_real_ip": "127.0.0.1",
+            "x_remote_addr": null,
+            "x_remote_ip": null,
+            "x_rewrite_url": null
+          },
+          "status": 200
+        },
+        "spoof_headers_stripped": true,
+        "trusted_proxy": false
+      }
+    },
+    "framing_guard": {
+      "generated_framing_rejection_closes_connection": true,
+      "generated_framing_rejection_not_stored": true,
+      "metrics_delta": {
+        "altura_http_framing_rejected": 9
+      },
+      "probes": {
+        "comma_content_length": {
+          "body_bytes": 30,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Content-Length: 0, 0"
+          ],
+          "status": 400
+        },
+        "conflicting_content_length": {
+          "body_bytes": 32,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Content-Length: 0",
+            "Content-Length: 1"
+          ],
+          "status": 400
+        },
+        "default_chunked_rejected": {
+          "body_bytes": 33,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Transfer-Encoding: chunked"
+          ],
+          "status": 400
+        },
+        "duplicate_identical_content_length": {
+          "body_bytes": 32,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Content-Length: 0",
+            "Content-Length: 0"
+          ],
+          "status": 400
+        },
+        "duplicate_transfer_encoding": {
+          "body_bytes": 35,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Transfer-Encoding: chunked",
+            "Transfer-Encoding: chunked"
+          ],
+          "status": 400
+        },
+        "invalid_content_length": {
+          "body_bytes": 30,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Content-Length: nope"
+          ],
+          "status": 400
+        },
+        "keepalive_followup_chunked_rejected": {
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "first": {
+            "connection": null,
+            "connection_close": false,
+            "status": 200
+          },
+          "headers": [
+            "Transfer-Encoding: chunked"
+          ],
+          "second": {
+            "body_bytes": 33,
+            "cache_control": "no-store",
+            "cache_control_no_store": true,
+            "connection": "close",
+            "connection_close": true,
+            "status": 400
+          }
+        },
+        "te_and_content_length": {
+          "body_bytes": 47,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Transfer-Encoding: chunked",
+            "Content-Length: 0"
+          ],
+          "status": 400
+        },
+        "unsupported_transfer_encoding": {
+          "body_bytes": 30,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "headers": [
+            "Transfer-Encoding: gzip"
+          ],
+          "status": 400
+        },
+        "valid_content_length": {
+          "body_bytes": 0,
+          "cache_control": null,
+          "cache_control_no_store": false,
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.001,
+          "error": null,
+          "headers": [
+            "Content-Length: 0"
+          ],
+          "status": 200
+        }
+      }
+    },
+    "header_buffer_ceiling_startup": {
+      "downstream_max_header_bytes": {
+        "configured_field": "http.max_header_bytes",
+        "configured_value": 262145,
+        "exit_code": 1,
+        "maximum_bytes": 262144,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_header_bytes must be no higher than 262144\""
+        ]
+      },
+      "downstream_max_header_bytes_rejected": true,
+      "upstream_max_header_bytes": {
+        "configured_field": "http.upstream_max_header_bytes",
+        "configured_value": 262145,
+        "exit_code": 1,
+        "maximum_bytes": 262144,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_max_header_bytes must be no higher than 262144\""
+        ]
+      },
+      "upstream_max_header_bytes_rejected": true
+    },
+    "header_buffer_floor_startup": {
+      "downstream_max_header_bytes": {
+        "configured_field": "http.max_header_bytes",
+        "configured_value": 8191,
+        "exit_code": 1,
+        "minimum_bytes": 8192,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_header_bytes must be at least 8192\""
+        ]
+      },
+      "downstream_max_header_bytes_rejected": true,
+      "upstream_max_header_bytes": {
+        "configured_field": "http.upstream_max_header_bytes",
+        "configured_value": 8191,
+        "exit_code": 1,
+        "minimum_bytes": 8192,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_max_header_bytes must be at least 8192\""
+        ]
+      },
+      "upstream_max_header_bytes_rejected": true
+    },
+    "header_count": {
+      "body_bytes": 32,
+      "cache_control": "no-store",
+      "closed": true,
+      "connection": "close",
+      "elapsed_seconds": 0.0,
+      "error": null,
+      "header_count_guard_observed": true,
+      "http_initial_headers_too_many_delta": 1,
+      "raw_initial_431_closes_connection": true,
+      "raw_initial_431_not_stored": true,
+      "sent_headers": 27,
+      "status": 431
+    },
+    "header_count_ceiling_startup": {
+      "downstream_max_headers": {
+        "configured_field": "http.max_headers",
+        "configured_value": 1025,
+        "exit_code": 1,
+        "maximum_headers": 1024,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_headers must be no higher than 1024\""
+        ]
+      },
+      "downstream_max_headers_rejected": true,
+      "upstream_max_headers": {
+        "configured_field": "http.upstream_max_headers",
+        "configured_value": 1025,
+        "exit_code": 1,
+        "maximum_headers": 1024,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_max_headers must be no higher than 1024\""
+        ]
+      },
+      "upstream_max_headers_rejected": true
+    },
+    "header_line_cap": {
+      "configured_max_header_bytes": 8192,
+      "configured_max_header_line_bytes": 128,
+      "configured_upstream_max_header_bytes": 32768,
+      "configured_upstream_max_header_line_bytes": 128,
+      "header_line_cap_observed": true,
+      "http_header_line_rejected_delta": 1,
+      "http_initial_header_too_large_delta": 1,
+      "http_upstream_errors_delta": 1,
+      "http_upstream_header_rejected_delta": 1,
+      "keepalive_followup_response": {
+        "elapsed_seconds": 0.001,
+        "error": null,
+        "first": {
+          "connection": null,
+          "connection_close": false,
+          "status": 200
+        },
+        "headers": [
+          "X-Oversized-Header: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "Content-Length: 0"
+        ],
+        "second": {
+          "body_bytes": 23,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "connection": "close",
+          "connection_close": true,
+          "status": 431
+        }
+      },
+      "keepalive_second_431": true,
+      "raw_initial_431": true,
+      "raw_initial_response": {
+        "body_bytes": 32,
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "status": 431
+      },
+      "upstream_502": true,
+      "upstream_response": {
+        "body_bytes": 36,
+        "closed": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "36",
+          "date": "Mon, 22 Jun 2026 12:48:53 GMT"
+        },
+        "status": 502
+      }
+    },
+    "header_read_timeout_ceiling_startup": {
+      "configured_field": "http.header_read_timeout_ms",
+      "configured_value": 60001,
+      "exit_code": 1,
+      "header_read_timeout_rejected": true,
+      "maximum_ms": 60000,
+      "startup_rejected": true,
+      "stderr_tail": [
+        "Error: \"http.header_read_timeout_ms must be no higher than 60000\""
+      ]
+    },
+    "header_timeout": {
+      "configured_header_read_timeout_ms": 100,
+      "http_initial_header_timeouts_delta": 1,
+      "idle_keepalive": {
+        "closed_before_reuse": true,
+        "elapsed_seconds": 0.251,
+        "error": null,
+        "first_response": {
+          "body": "",
+          "body_bytes": 0,
+          "header_complete": true,
+          "headers": {
+            "date": "Mon, 22 Jun 2026 12:48:54 GMT"
+          },
+          "status": 204
+        },
+        "second_response_bytes": 0
+      },
+      "raw_initial_408_closes_connection": true,
+      "raw_initial_408_not_stored": true,
+      "slow_header": {
+        "body_bytes": 16,
+        "cache_control": "no-store",
+        "closed": false,
+        "connection": "close",
+        "elapsed_seconds": 0.251,
+        "error": null,
+        "response_bytes": 138,
+        "status": 408
+      },
+      "slow_initial_header_timeout_observed": true
+    },
+    "host_guard": {
+      "configured": {
+        "allowed_hosts": [
+          "good.local",
+          "api.good.local:8080"
+        ],
+        "max_host_bytes": 32
+      },
+      "host_rejections_not_stored": true,
+      "metrics_delta": {
+        "altura_http_host_rejected": 6
+      },
+      "probes": {
+        "absolute_form_allowed_authority": {
+          "body_bytes": 0,
+          "cache_control": null,
+          "cache_control_no_store": false,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "evil.local"
+          ],
+          "status": 204,
+          "target": "http://good.local/"
+        },
+        "absolute_form_disallowed_authority": {
+          "body_bytes": 17,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "good.local"
+          ],
+          "status": 400,
+          "target": "http://evil.local/"
+        },
+        "allowed_host": {
+          "body_bytes": 0,
+          "cache_control": null,
+          "cache_control_no_store": false,
+          "elapsed_seconds": 0.001,
+          "error": null,
+          "hosts": [
+            "good.local"
+          ],
+          "status": 204,
+          "target": "/"
+        },
+        "allowed_host_port": {
+          "body_bytes": 0,
+          "cache_control": null,
+          "cache_control_no_store": false,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "api.good.local:8080"
+          ],
+          "status": 204,
+          "target": "/"
+        },
+        "disallowed_host": {
+          "body_bytes": 17,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "evil.local"
+          ],
+          "status": 400,
+          "target": "/"
+        },
+        "duplicate_host": {
+          "body_bytes": 22,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "good.local",
+            "evil.local"
+          ],
+          "status": 400,
+          "target": "/"
+        },
+        "invalid_host": {
+          "body_bytes": 20,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "http://evil.local"
+          ],
+          "status": 400,
+          "target": "/"
+        },
+        "long_host": {
+          "body_bytes": 21,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.local"
+          ],
+          "status": 400,
+          "target": "/"
+        },
+        "missing_host": {
+          "body_bytes": 20,
+          "cache_control": "no-store",
+          "cache_control_no_store": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "hosts": [],
+          "status": 400,
+          "target": "/"
+        }
+      }
+    },
+    "http_connection_rate": {
+      "accepted_requests": 2,
+      "configured_per_ip_connect_burst": 4,
+      "configured_per_ip_connects_per_second": 1.0,
+      "connection_rate_limited": true,
+      "connections_rejected_metric_delta": 6,
+      "rejected_connection_attempts": 6,
+      "statuses": [
+        204,
+        204,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "http_metadata_ceiling_startup": {
+      "all_http_metadata_ceilings_rejected": true,
+      "max_forwarded_for_bytes": {
+        "configured_field": "http.client_ip.max_forwarded_for_bytes",
+        "configured_value": 16385,
+        "exit_code": 1,
+        "maximum": 16384,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.client_ip.max_forwarded_for_bytes must be no higher than 16384\""
+        ]
+      },
+      "max_forwarded_for_hops": {
+        "configured_field": "http.client_ip.max_forwarded_for_hops",
+        "configured_value": 257,
+        "exit_code": 1,
+        "maximum": 256,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.client_ip.max_forwarded_for_hops must be no higher than 256\""
+        ]
+      },
+      "max_host_bytes": {
+        "configured_field": "http.max_host_bytes",
+        "configured_value": 1025,
+        "exit_code": 1,
+        "maximum": 1024,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_host_bytes must be no higher than 1024\""
+        ]
+      },
+      "max_path_segments": {
+        "configured_field": "http.max_path_segments",
+        "configured_value": 4097,
+        "exit_code": 1,
+        "maximum": 4096,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_path_segments must be no higher than 4096\""
+        ]
+      },
+      "max_query_bytes": {
+        "configured_field": "http.max_query_bytes",
+        "configured_value": 65537,
+        "exit_code": 1,
+        "maximum": 65536,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_query_bytes must be no higher than 65536\""
+        ]
+      },
+      "max_query_pairs": {
+        "configured_field": "http.max_query_pairs",
+        "configured_value": 8193,
+        "exit_code": 1,
+        "maximum": 8192,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_query_pairs must be no higher than 8192\""
+        ]
+      },
+      "max_trailer_bytes": {
+        "configured_field": "http.max_trailer_bytes",
+        "configured_value": 262145,
+        "exit_code": 1,
+        "maximum": 262144,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_trailer_bytes must be no higher than 262144\""
+        ]
+      },
+      "max_trailers": {
+        "configured_field": "http.max_trailers",
+        "configured_value": 1025,
+        "exit_code": 1,
+        "maximum": 1024,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_trailers must be no higher than 1024\""
+        ]
+      },
+      "max_uri_bytes": {
+        "configured_field": "http.max_uri_bytes",
+        "configured_value": 65537,
+        "exit_code": 1,
+        "maximum": 65536,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_uri_bytes must be no higher than 65536\""
+        ]
+      },
+      "upstream_max_trailer_bytes": {
+        "configured_field": "http.upstream_max_trailer_bytes",
+        "configured_value": 262145,
+        "exit_code": 1,
+        "maximum": 262144,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_max_trailer_bytes must be no higher than 262144\""
+        ]
+      },
+      "upstream_max_trailers": {
+        "configured_field": "http.upstream_max_trailers",
+        "configured_value": 1025,
+        "exit_code": 1,
+        "maximum": 1024,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_max_trailers must be no higher than 1024\""
+        ]
+      }
+    },
+    "http_stream_timeout_ceiling_startup": {
+      "downstream_write_timeout": {
+        "configured_field": "http.downstream_write_timeout_ms",
+        "configured_value": 60001,
+        "exit_code": 1,
+        "maximum_ms": 60000,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.downstream_write_timeout_ms must be no higher than 60000\""
+        ]
+      },
+      "downstream_write_timeout_rejected": true,
+      "request_body_idle_timeout": {
+        "configured_field": "http.request_body_idle_timeout_ms",
+        "configured_value": 60001,
+        "exit_code": 1,
+        "maximum_ms": 60000,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.request_body_idle_timeout_ms must be no higher than 60000\""
+        ]
+      },
+      "request_body_idle_timeout_rejected": true,
+      "request_body_min_rate_grace": {
+        "configured_field": "http.request_body_min_rate_grace_ms",
+        "configured_value": 60001,
+        "exit_code": 1,
+        "maximum_ms": 60000,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.request_body_min_rate_grace_ms must be no higher than 60000\""
+        ]
+      },
+      "request_body_min_rate_grace_rejected": true,
+      "upstream_body_idle_timeout": {
+        "configured_field": "http.upstream_body_idle_timeout_ms",
+        "configured_value": 60001,
+        "exit_code": 1,
+        "maximum_ms": 60000,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_body_idle_timeout_ms must be no higher than 60000\""
+        ]
+      },
+      "upstream_body_idle_timeout_rejected": true,
+      "upstream_body_min_rate_grace": {
+        "configured_field": "http.upstream_body_min_rate_grace_ms",
+        "configured_value": 60001,
+        "exit_code": 1,
+        "maximum_ms": 60000,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_body_min_rate_grace_ms must be no higher than 60000\""
+        ]
+      },
+      "upstream_body_min_rate_grace_rejected": true
+    },
+    "initial_framing_precheck_response": {
+      "header_too_large_response": {
+        "body_bytes": 32,
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "status": 431
+      },
+      "http_framing_rejected_delta": 1,
+      "http_initial_header_too_large_delta": 2,
+      "initial_framing_precheck_response_observed": true,
+      "initial_header_late_terminator_over_cap_observed": true,
+      "initial_header_too_large_response_observed": true,
+      "late_terminator_response": {
+        "body_bytes": 32,
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "status": 431
+      },
+      "raw_initial_400_closes_connection": true,
+      "raw_initial_400_not_stored": true,
+      "raw_initial_431_closes_connection": true,
+      "raw_initial_431_not_stored": true,
+      "raw_initial_late_terminator_431_closes_connection": true,
+      "raw_initial_late_terminator_431_not_stored": true,
+      "response": {
+        "body_bytes": 28,
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "status": 400
+      }
+    },
+    "ip_prefix_aggregation": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store"
+      ],
+      "configured_ipv4_prefix_len": 32,
+      "configured_ipv6_prefix_len": 64,
+      "different_ipv6_prefix_allowed": true,
+      "http_rate_limited_delta": 1,
+      "ipv4_exact_default_allows_neighbor": true,
+      "rate_limited_metric_matches": true,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1"
+      ],
+      "same_ipv6_prefix_limited": true,
+      "statuses": {
+        "ipv4_first": 204,
+        "ipv4_neighbor": 204,
+        "ipv6_different_prefix": 204,
+        "ipv6_first": 204,
+        "ipv6_same_prefix": 429
+      }
+    },
+    "listen_backlog": {
+      "accept_shards_started": true,
+      "configured_accept_shards": 2,
+      "configured_backlog": 128,
+      "http_status": 204,
+      "tcp_echo_ok": true
+    },
+    "log_suppression": {
+      "bursts": [
+        {
+          "attempted": 48,
+          "errors": {},
+          "hold_seconds": 0.12,
+          "opened": 48
+        },
+        {
+          "attempted": 1,
+          "errors": {},
+          "hold_seconds": 0.08,
+          "opened": 1
+        }
+      ],
+      "configured_header_read_timeout_ms": 35,
+      "stderr_line_count": 5,
+      "suppressed_marker_seen": true,
+      "timeout_log_line_count": 2,
+      "timeout_log_lines_bounded": true,
+      "timeout_log_sample": [
+        "initial http header timeout from 127.0.0.1:49116",
+        "initial http header timeout from 127.0.0.1:38320 (suppressed 47 similar messages)"
+      ]
+    },
+    "method_guard": {
+      "allow_headers": [
+        "GET, POST",
+        "GET, POST",
+        "GET, POST",
+        "GET, POST"
+      ],
+      "cache_control_headers": [
+        "no-store",
+        "no-store",
+        "no-store",
+        "no-store"
+      ],
+      "configured": {
+        "allowed_methods": [
+          "GET",
+          "POST"
+        ]
+      },
+      "generated_405_not_stored": true,
+      "metrics_delta": {
+        "altura_http_method_rejected": 4
+      },
+      "probes": {
+        "allowed_get": {
+          "allow": null,
+          "body_bytes": 0,
+          "cache_control": null,
+          "elapsed_seconds": 0.001,
+          "error": null,
+          "method": "GET",
+          "status": 204,
+          "target": "/"
+        },
+        "allowed_post": {
+          "allow": null,
+          "body_bytes": 0,
+          "cache_control": null,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "method": "POST",
+          "status": 200,
+          "target": "/drain"
+        },
+        "arbitrary": {
+          "allow": "GET, POST",
+          "body_bytes": 19,
+          "cache_control": "no-store",
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "method": "JEFF",
+          "status": 405,
+          "target": "/"
+        },
+        "connect": {
+          "allow": "GET, POST",
+          "body_bytes": 19,
+          "cache_control": "no-store",
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "method": "CONNECT",
+          "status": 405,
+          "target": "127.0.0.1:443"
+        },
+        "trace": {
+          "allow": "GET, POST",
+          "body_bytes": 19,
+          "cache_control": "no-store",
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "method": "TRACE",
+          "status": 405,
+          "target": "/"
+        },
+        "track": {
+          "allow": "GET, POST",
+          "body_bytes": 19,
+          "cache_control": "no-store",
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "method": "TRACK",
+          "status": 405,
+          "target": "/"
+        }
+      }
+    },
+    "metrics_delta": {
+      "altura_http_accept_encoding_stripped": 4,
+      "altura_http_body_rejected": 1,
+      "altura_http_body_timeouts": 1,
+      "altura_http_body_too_slow": 0,
+      "altura_http_connections_rejected": 0,
+      "altura_http_content_encoding_rejected": 1,
+      "altura_http_downstream_write_timeouts": 0,
+      "altura_http_expect_rejected": 2,
+      "altura_http_forwarded_rejected": 0,
+      "altura_http_forwarded_sanitized": 0,
+      "altura_http_framing_rejected": 0,
+      "altura_http_header_line_rejected": 0,
+      "altura_http_host_rejected": 0,
+      "altura_http_initial_header_timeouts": 0,
+      "altura_http_initial_header_too_large": 0,
+      "altura_http_initial_headers_too_many": 0,
+      "altura_http_initial_request_target_rejected": 0,
+      "altura_http_method_rejected": 0,
+      "altura_http_path_shape_rate_limited": 0,
+      "altura_http_range_rejected": 3,
+      "altura_http_rate_limited": 0,
+      "altura_http_request_trailers_dropped": 0,
+      "altura_http_request_trailers_rejected": 0,
+      "altura_http_signature_rate_limited": 0,
+      "altura_http_trusted_proxy_in_flight_rejected": 0,
+      "altura_http_trusted_proxy_rate_limited": 0,
+      "altura_http_upstream_body_rejected": 0,
+      "altura_http_upstream_body_timeouts": 0,
+      "altura_http_upstream_body_too_slow": 0,
+      "altura_http_upstream_circuit_open": 0,
+      "altura_http_upstream_errors": 0,
+      "altura_http_upstream_header_rejected": 0,
+      "altura_http_upstream_in_flight_rejected": 0,
+      "altura_http_upstream_timeouts": 0,
+      "altura_http_upstream_trailers_dropped": 0,
+      "altura_http_upstream_trailers_rejected": 0,
+      "altura_http_uri_rejected": 0,
+      "altura_tcp_downstream_too_slow": 0,
+      "altura_tcp_global_connect_rate_limited": 6,
+      "altura_tcp_idle_timeouts": 1,
+      "altura_tcp_rejected": 7,
+      "altura_tcp_upstream_too_slow": 0
+    },
+    "metrics_without_token_status": 403,
+    "min_rate_ceiling_startup": {
+      "all_min_rate_ceilings_rejected": true,
+      "http_request_body_min_rate": {
+        "configured_field": "http.request_body_min_rate_bytes_per_second",
+        "configured_value": 1048577,
+        "exit_code": 1,
+        "maximum_bytes_per_second": 1048576,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.request_body_min_rate_bytes_per_second must be no higher than 1048576\""
+        ]
+      },
+      "http_request_body_min_rate_rejected": true,
+      "http_upstream_body_min_rate": {
+        "configured_field": "http.upstream_body_min_rate_bytes_per_second",
+        "configured_value": 1048577,
+        "exit_code": 1,
+        "maximum_bytes_per_second": 1048576,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_body_min_rate_bytes_per_second must be no higher than 1048576\""
+        ]
+      },
+      "http_upstream_body_min_rate_rejected": true,
+      "tcp_downstream_min_rate": {
+        "configured_field": "tcp[0].downstream_min_rate_bytes_per_second",
+        "configured_value": 1048577,
+        "exit_code": 1,
+        "maximum_bytes_per_second": 1048576,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"tcp[0].downstream_min_rate_bytes_per_second must be no higher than 1048576\""
+        ]
+      },
+      "tcp_downstream_min_rate_rejected": true,
+      "tcp_upstream_min_rate": {
+        "configured_field": "tcp[0].upstream_min_rate_bytes_per_second",
+        "configured_value": 1048577,
+        "exit_code": 1,
+        "maximum_bytes_per_second": 1048576,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"tcp[0].upstream_min_rate_bytes_per_second must be no higher than 1048576\""
+        ]
+      },
+      "tcp_upstream_min_rate_rejected": true
+    },
+    "negative_rate_startup": {
+      "http_negative_rate": {
+        "configured_field": "http.limits.per_ip_rps",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.limits.per_ip_rps must be finite and non-negative, got -1\""
+        ]
+      },
+      "negative_http_rate_rejected": true,
+      "negative_tcp_rate_rejected": true,
+      "tcp_negative_rate": {
+        "configured_field": "tcp[0].limits.global_connects_per_second",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"tcp[0].limits.global_connects_per_second must be finite and non-negative, got -1\""
+        ]
+      }
+    },
+    "oversized_content_length": {
+      "cache_control": "no-store",
+      "cache_control_no_store": true,
+      "connection": "close",
+      "connection_close": true,
+      "status": 413
+    },
+    "oversized_content_length_status": 413,
+    "path_shape_rate": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store",
+        "no-store",
+        "no-store",
+        "no-store"
+      ],
+      "configured_path_shape_burst": 2,
+      "configured_path_shape_rps": 1e-06,
+      "hot_path_shape_limited": true,
+      "hot_paths": [
+        "/api/abcdefghij/123",
+        "/api/klmnopqrst/456",
+        "/api/ZYXWVUTSRQ/789",
+        "/api/qwertyuiop/321"
+      ],
+      "hot_statuses": [
+        204,
+        204,
+        429,
+        429
+      ],
+      "http_rate_limited_delta": 4,
+      "other_shape_allowed": true,
+      "other_shape_status": 204,
+      "path_shape_metric_matches": true,
+      "path_shape_rate_limited_delta": 4,
+      "rate_limited_metric_includes_path_shape_limit": true,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "short_token_path_shape_limited": true,
+      "short_token_paths": [
+        "/api/ab",
+        "/api/cd",
+        "/api/ef",
+        "/api/gh"
+      ],
+      "short_token_statuses": [
+        204,
+        204,
+        429,
+        429
+      ],
+      "version_shape_allowed": true,
+      "version_shape_status": 204
+    },
+    "range_guard": {
+      "malformed_range": {
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "elapsed_seconds": 0.0,
+        "status": 416
+      },
+      "malformed_range_rejected": true,
+      "multi_range": {
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "elapsed_seconds": 0.0,
+        "status": 416
+      },
+      "multi_range_rejected": true,
+      "range_rejected_delta": 3,
+      "range_rejections_not_stored": true,
+      "single_range": {
+        "cache_control": null,
+        "cache_control_no_store": false,
+        "elapsed_seconds": 0.0,
+        "status": 204
+      },
+      "single_range_allowed": true,
+      "unsupported_range": {
+        "cache_control": "no-store",
+        "cache_control_no_store": true,
+        "elapsed_seconds": 0.0,
+        "status": 416
+      },
+      "unsupported_range_rejected": true
+    },
+    "rate_limiter_fairness": {
+      "statuses": [
+        204,
+        429,
+        204
+      ]
+    },
+    "request_content_encoding": {
+      "accept_encoding_identity_advertised": true,
+      "compressed_request_closes_connection": true,
+      "compressed_request_not_stored": true,
+      "compressed_request_rejected": true,
+      "content_encoding_rejected_delta": 1,
+      "gzip_request": {
+        "accept_encoding": "identity",
+        "cache_control": "no-store",
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.0,
+        "status": 415
+      },
+      "identity_request": {
+        "accept_encoding": null,
+        "cache_control": null,
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.001,
+        "status": 200
+      },
+      "identity_request_allowed": true
+    },
+    "request_trailer_policy": {
+      "configured_forward_request_trailers": true,
+      "configured_max_trailer_bytes": 8,
+      "configured_max_trailers": 1,
+      "connection_closed_before_followup": true,
+      "generated_431_closes_connection": true,
+      "generated_431_not_stored": true,
+      "http_request_trailers_rejected_delta": 1,
+      "oversized_request_trailer_rejected": true,
+      "oversized_trailer": {
+        "body": "request trailers too large\n",
+        "cache_control": "no-store",
+        "connection": "close",
+        "connection_close": true,
+        "elapsed_seconds": 0.051,
+        "error": null,
+        "followup_error": null,
+        "followup_response_bytes": 0,
+        "status": 431
+      },
+      "request_trailer_policy_observed": true
+    },
+    "runtime_filter_bounds": {
+      "active_filters_after": 1,
+      "availability_ok": true,
+      "configured_max_runtime_file_bytes": 4096,
+      "configured_max_runtime_filters": 4,
+      "initial_block_status": 403,
+      "normal_status_after_errors": 204,
+      "oversized_file_bytes": 8388,
+      "oversized_file_rejected_and_last_good_preserved": true,
+      "post_oversized_block_status": 403,
+      "post_oversized_new_rule_status": 204,
+      "post_too_many_block_status": 403,
+      "post_too_many_new_rule_status": 204,
+      "reload_error_logged": true,
+      "too_many_file_bytes": 958,
+      "too_many_rules_rejected_and_last_good_preserved": true
+    },
+    "runtime_filter_hot_path": {
+      "active_filters_after_start": 512,
+      "configured_rule_count": 512,
+      "control_request_allowed": true,
+      "control_status": 204,
+      "filter_file_bytes": 155646,
+      "many_rules_loaded": true,
+      "matching_request_blocked": true,
+      "matching_status": 403,
+      "normal_request_allowed": true,
+      "normal_status": 204
+    },
+    "runtime_nofile": {
+      "configured_min_nofile": 2048,
+      "health_status": 200,
+      "runtime_nofile_observed": true,
+      "runtime_status_line": "runtime nofile limit soft=2048 hard=524288 target=2048 changed=true"
+    },
+    "runtime_nofile_capacity": {
+      "capacity_rejected": true,
+      "configured_min_nofile": 1024,
+      "exit_code": 1,
+      "expected_required_nofile": 3269,
+      "stderr_tail": [
+        "runtime nofile limit soft=1024 hard=1024 target=1024 changed=false",
+        "Error: \"runtime.min_nofile capacity check failed: configured connection caps require at least 3269 file descriptors, but the process soft RLIMIT_NOFILE is 1024. Breakdown: reserve=256, listeners=1, http_downstream=1500, http_upstream_in_flight=1000, http_upstream_idle_pool=512, tcp_downstream=0, tcp_upstream=0. Increase runtime.min_nofile and the service hard limit, or lower HTTP/TCP connection caps.\""
+      ]
+    },
+    "runtime_sigterm": {
+      "exit_code": 0,
+      "health_status": 200,
+      "sigterm_graceful": true,
+      "stderr_tail": [
+        "http proxy listening on 127.0.0.1:48683, upstream http://127.0.0.1:42121, accept_shards=1",
+        "shutdown signal received: SIGTERM",
+        "http proxy listener shard 1 shutting down"
+      ]
+    },
+    "signature_rate": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store",
+        "no-store"
+      ],
+      "cold_status": 204,
+      "configured_signature_burst": 2,
+      "configured_signature_rps": 1e-06,
+      "hot_signature_limited": true,
+      "hot_statuses": [
+        204,
+        204,
+        429,
+        429
+      ],
+      "http_rate_limited_delta": 2,
+      "other_signature_allowed": true,
+      "rate_limited_metric_includes_signature_limit": true,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1",
+        "1"
+      ],
+      "signature_metric_matches": true,
+      "signature_rate_limited_delta": 2
+    },
+    "slow_body": {
+      "cache_control": "no-store",
+      "cache_control_no_store": true,
+      "connection": "close",
+      "connection_close": true,
+      "elapsed_seconds": 0.201,
+      "error": null,
+      "status": 408
+    },
+    "tcp_global_connection_cap": {
+      "held_connections": 2,
+      "rejected_closed": true,
+      "rejected_error": "ConnectionResetError"
+    },
+    "tcp_global_connection_rate": {
+      "accepted_echoes": 2,
+      "attempt_results": [
+        {
+          "closed": false,
+          "echoed": true,
+          "error": null
+        },
+        {
+          "closed": false,
+          "echoed": true,
+          "error": null
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": null
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        },
+        {
+          "closed": true,
+          "echoed": false,
+          "error": "ConnectionResetError"
+        }
+      ],
+      "attempts": 8,
+      "configured_global_connect_burst": 2,
+      "configured_global_connects_per_second": 1.0,
+      "global_connection_rate_limited": true,
+      "rejected_attempts": 6,
+      "tcp_global_connect_rate_limited_delta": 6,
+      "tcp_rejected_delta": 6
+    },
+    "tcp_idle_timeout": {
+      "closed": true,
+      "elapsed_seconds": 1.201,
+      "error": null
+    },
+    "tcp_min_rate": {
+      "configured_downstream_min_rate_bytes_per_second": 1000,
+      "configured_min_rate_grace_ms": 10,
+      "configured_upstream_min_rate_bytes_per_second": 0,
+      "slow_drip": {
+        "closed_or_reset": true,
+        "elapsed_seconds": 0.162,
+        "error": null,
+        "first_echo_bytes": 1,
+        "second_echo_bytes": 1,
+        "third_echo_bytes": 0
+      },
+      "tcp_downstream_too_slow_delta": 1,
+      "tcp_min_rate_rejected": true,
+      "tcp_upstream_too_slow_delta": 0
+    },
+    "tracked_ip_cap": {
+      "statuses": [
+        204,
+        429,
+        204,
+        204
+      ]
+    },
+    "trusted_proxy_aggregate_rate": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store",
+        "no-store"
+      ],
+      "configured_trusted_proxy_burst": 2,
+      "configured_trusted_proxy_rps": 1e-06,
+      "first_burst_allowed": true,
+      "http_rate_limited_delta": 2,
+      "rate_limited_metric_includes_proxy_limit": true,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1",
+        "1"
+      ],
+      "rotating_xff_aggregate_limited": true,
+      "statuses": [
+        204,
+        204,
+        429,
+        429
+      ],
+      "trusted_proxy_metric_matches": true,
+      "trusted_proxy_rate_limited_delta": 2
+    },
+    "trusted_proxy_global_trust_startup": {
+      "exit_code": 1,
+      "global_trusted_proxy_rejected": true,
+      "stderr_tail": [
+        "Error: \"http.client_ip.trusted_proxies entry '0.0.0.0/0' must not trust all IPv4 peers on non-loopback listener 0.0.0.0:33155; configure exact trusted proxy CIDRs instead\""
+      ]
+    },
+    "trusted_proxy_in_flight": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store"
+      ],
+      "configured_trusted_proxy_max_in_flight_requests": 1,
+      "first_slow_request_completed": true,
+      "first_status": 204,
+      "http_upstream_in_flight_rejected_delta": 1,
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1"
+      ],
+      "rotating_xff_peer_concurrency_limited": true,
+      "second_status": 503,
+      "trusted_proxy_in_flight_rejected_delta": 1,
+      "trusted_proxy_metric_matches": true,
+      "upstream_metric_includes_proxy_limit": true
+    },
+    "upstream_connect_timeout": {
+      "configured_upstream_connect_timeout_ms": 75,
+      "configured_upstream_timeout_ms": 1000,
+      "first_response": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.077,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 12:48:52 GMT"
+        },
+        "status": 502
+      },
+      "generated_502_closes_connection": true,
+      "generated_502_not_stored": true,
+      "held_backlog_connections": 2,
+      "http_upstream_errors_delta": 2,
+      "http_upstream_in_flight_rejected_delta": 0,
+      "http_upstream_timeouts_delta": 0,
+      "loopback_backlog_blocked": true,
+      "second_response": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.077,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 12:48:52 GMT"
+        },
+        "status": 502
+      },
+      "upstream_connect_timeout_observed": true
+    },
+    "upstream_failure_circuit": {
+      "circuit_opened_after_consecutive_failures": true,
+      "circuit_reallowed_after_open_window": true,
+      "circuit_scoped_to_path_shape": true,
+      "configured_upstream_connect_timeout_ms": 75,
+      "configured_upstream_failure_open_ms": 200,
+      "configured_upstream_failure_threshold": 2,
+      "first_response": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.076,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 12:48:52 GMT"
+        },
+        "status": 502
+      },
+      "fourth_response_after_open_window": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.076,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 12:48:53 GMT"
+        },
+        "status": 502
+      },
+      "generated_503_cache_control": [
+        "no-store"
+      ],
+      "generated_503_retry_after": [
+        "1"
+      ],
+      "http_upstream_circuit_open_delta": 1,
+      "http_upstream_errors_delta": 4,
+      "http_upstream_timeouts_delta": 0,
+      "loopback_backlog_blocked": true,
+      "second_response": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.076,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 12:48:52 GMT"
+        },
+        "status": 502
+      },
+      "third_response": {
+        "body_bytes": 22,
+        "closed": true,
+        "elapsed_seconds": 0.0,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "22",
+          "date": "Mon, 22 Jun 2026 12:48:52 GMT",
+          "retry-after": "1"
+        },
+        "status": 503
+      },
+      "unrelated_shape_response_while_circuit_open": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.077,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 12:48:52 GMT"
+        },
+        "status": 502
+      }
+    },
+    "upstream_failure_circuit_ceiling_startup": {
+      "upstream_failure_open_ms": {
+        "configured_field": "http.upstream_failure_open_ms",
+        "configured_value": 300001,
+        "exit_code": 1,
+        "maximum_ms": 300000,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_failure_open_ms must be no higher than 300000\""
+        ]
+      },
+      "upstream_failure_open_ms_rejected": true,
+      "upstream_failure_threshold": {
+        "configured_field": "http.upstream_failure_threshold",
+        "configured_value": 1025,
+        "exit_code": 1,
+        "maximum_failures": 1024,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_failure_threshold must be no higher than 1024\""
+        ]
+      },
+      "upstream_failure_threshold_rejected": true
+    },
+    "upstream_header_guard": {
+      "configured_upstream_max_header_bytes": 8192,
+      "configured_upstream_max_headers": 8,
+      "generated_502_closes_connection": true,
+      "generated_502_not_stored": true,
+      "http_upstream_errors_delta": 2,
+      "http_upstream_header_rejected_delta": 2,
+      "huge_header_response": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.001,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 12:48:53 GMT"
+        },
+        "status": 502
+      },
+      "many_headers_response": {
+        "body_bytes": 12,
+        "closed": true,
+        "elapsed_seconds": 0.001,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "12",
+          "date": "Mon, 22 Jun 2026 12:48:53 GMT"
+        },
+        "status": 502
+      },
+      "upstream_header_guard_observed": true
+    },
+    "upstream_idle_pool_ceiling_startup": {
+      "upstream_pool_idle_timeout": {
+        "configured_field": "http.upstream_pool_idle_timeout_ms",
+        "configured_value": 60001,
+        "exit_code": 1,
+        "maximum_ms": 60000,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_pool_idle_timeout_ms must be no higher than 60000\""
+        ]
+      },
+      "upstream_pool_idle_timeout_rejected": true,
+      "upstream_pool_max_idle_per_host": {
+        "configured_field": "http.upstream_pool_max_idle_per_host",
+        "configured_value": 4097,
+        "exit_code": 1,
+        "maximum_connections": 4096,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_pool_max_idle_per_host must be no higher than 4096\""
+        ]
+      },
+      "upstream_pool_max_idle_per_host_rejected": true
+    },
+    "upstream_in_flight": {
+      "cache_control_header_matches": true,
+      "cache_control_headers": [
+        "no-store"
+      ],
+      "first_status": 204,
+      "metrics_delta": {
+        "altura_http_upstream_in_flight_rejected": 1
+      },
+      "retry_after_header_matches": true,
+      "retry_after_headers": [
+        "1"
+      ],
+      "second_status": 503
+    },
+    "upstream_pool": {
+      "accepted_upstream_connections": 2,
+      "statuses": [
+        204,
+        204
+      ]
+    },
+    "upstream_response_guard": {
+      "hop_by_hop_headers_stripped": true,
+      "hop_by_hop_response": {
+        "body_bytes": 2,
+        "closed": true,
+        "elapsed_seconds": 0.001,
+        "error": null,
+        "headers": {
+          "connection": "close",
+          "content-length": "2",
+          "date": "Mon, 22 Jun 2026 12:49:09 GMT"
+        },
+        "status": 200
+      },
+      "metrics_delta": {
+        "altura_http_upstream_body_rejected": 1,
+        "altura_http_upstream_body_timeouts": 1
+      },
+      "oversized_response": {
+        "body_bytes": 0,
+        "closed": true,
+        "elapsed_seconds": 0.001,
+        "error": null,
+        "headers": {},
+        "status": null
+      },
+      "stalled_response": {
+        "body_bytes": 0,
+        "closed": true,
+        "elapsed_seconds": 0.103,
+        "error": null,
+        "headers": {
+          "connection": "close",
+          "content-length": "4",
+          "date": "Mon, 22 Jun 2026 12:49:09 GMT"
+        },
+        "status": 200
+      }
+    },
+    "upstream_timeout_ceiling_startup": {
+      "configured_field": "http.upstream_timeout_ms",
+      "configured_value": 60001,
+      "exit_code": 1,
+      "maximum_ms": 60000,
+      "startup_rejected": true,
+      "stderr_tail": [
+        "Error: \"http.upstream_timeout_ms must be no higher than 60000\""
+      ],
+      "upstream_timeout_rejected": true
+    },
+    "upstream_timeout_response": {
+      "configured_upstream_connect_timeout_ms": 1000,
+      "configured_upstream_timeout_ms": 100,
+      "generated_504_closes_connection": true,
+      "generated_504_not_stored": true,
+      "http_upstream_errors_delta": 0,
+      "http_upstream_timeouts_delta": 1,
+      "timeout_response": {
+        "body_bytes": 16,
+        "closed": true,
+        "elapsed_seconds": 0.101,
+        "error": null,
+        "headers": {
+          "cache-control": "no-store",
+          "connection": "close",
+          "content-length": "16",
+          "date": "Mon, 22 Jun 2026 12:48:53 GMT"
+        },
+        "status": 504
+      },
+      "upstream_timeout_response_observed": true
+    },
+    "upstream_trailer_policy": {
+      "body_seen": true,
+      "configured_forward_response_trailers": false,
+      "configured_upstream_max_trailer_bytes": 64,
+      "configured_upstream_max_trailers": 4,
+      "http_upstream_trailers_dropped_delta": 1,
+      "http_upstream_trailers_rejected_delta": 0,
+      "raw_response_bytes": 118,
+      "status": 200,
+      "trailer_seen": false,
+      "upstream_trailer_policy_observed": true
+    },
+    "uri_guard": {
+      "cache_control_headers": [
+        "no-store",
+        "no-store",
+        "no-store",
+        "no-store"
+      ],
+      "configured": {
+        "max_path_segments": 3,
+        "max_query_bytes": 16,
+        "max_query_pairs": 2,
+        "max_uri_bytes": 64
+      },
+      "connection_headers": [
+        "close",
+        "close",
+        "close",
+        "close"
+      ],
+      "generated_414_closes_connection": true,
+      "generated_414_not_stored": true,
+      "metrics_delta": {
+        "altura_http_initial_request_target_rejected": 4,
+        "altura_http_uri_rejected": 4
+      },
+      "probes": {
+        "long_query": {
+          "body_bytes": 23,
+          "cache_control": "no-store",
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "status": 414,
+          "target_bytes": 38
+        },
+        "long_uri": {
+          "body_bytes": 21,
+          "cache_control": "no-store",
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "status": 414,
+          "target_bytes": 86
+        },
+        "many_path_segments": {
+          "body_bytes": 23,
+          "cache_control": "no-store",
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "status": 414,
+          "target_bytes": 8
+        },
+        "many_query_pairs": {
+          "body_bytes": 26,
+          "cache_control": "no-store",
+          "connection": "close",
+          "connection_close": true,
+          "elapsed_seconds": 0.0,
+          "error": null,
+          "status": 414,
+          "target_bytes": 15
+        }
+      },
+      "raw_initial_request_target_guard_observed": true
+    },
+    "zero_capacity_startup": {
+      "http_connection_cap": {
+        "configured_field": "http.limits.max_connections",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.limits.max_connections must be greater than zero\""
+        ]
+      },
+      "http_connection_cap_rejected": true,
+      "http_forwarded_cap": {
+        "configured_field": "http.client_ip.max_forwarded_for_hops",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.client_ip.max_forwarded_for_hops must be greater than zero\""
+        ]
+      },
+      "http_forwarded_cap_rejected": true,
+      "http_metadata_cap": {
+        "configured_field": "http.max_header_bytes",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.max_header_bytes must be greater than zero\""
+        ]
+      },
+      "http_metadata_cap_rejected": true,
+      "http_upstream_connect_timeout": {
+        "configured_field": "http.upstream_connect_timeout_ms",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"http.upstream_connect_timeout_ms must be greater than zero\""
+        ]
+      },
+      "http_upstream_connect_timeout_rejected": true,
+      "tcp_connection_cap": {
+        "configured_field": "tcp[0].limits.max_connections",
+        "exit_code": 1,
+        "startup_rejected": true,
+        "stderr_tail": [
+          "Error: \"tcp[0].limits.max_connections must be greater than zero\""
+        ]
+      },
+      "tcp_connection_cap_rejected": true
+    }
+  },
+  "health": {
+    "duration_seconds": 2.007,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 9.51,
+      "p50": 8.934,
+      "p95": 17.24,
+      "p99": 21.567
+    },
+    "requests": 13213,
+    "requests_per_second": 6582.23,
+    "statuses": {
+      "200": 13213
+    },
+    "url": "http://127.0.0.1:51723/__altura/health",
+    "workers": 64
+  },
+  "proxy": {
+    "duration_seconds": 2.007,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 9.678,
+      "p50": 9.102,
+      "p95": 17.66,
+      "p99": 22.277
+    },
+    "requests": 12919,
+    "requests_per_second": 6435.93,
+    "statuses": {
+      "204": 12919
+    },
+    "url": "http://127.0.0.1:51723/",
+    "workers": 64
+  },
+  "tcp": {
+    "connections": 16,
+    "duration_seconds": 2.002,
+    "error_types": {},
+    "errors": 0,
+    "latency_ms": {
+      "avg": 0.569,
+      "p50": 0.525,
+      "p95": 1.094,
+      "p99": 1.424
+    },
+    "messages": 55966,
+    "messages_per_second": 27954.64,
+    "workers": 16
+  }
+}

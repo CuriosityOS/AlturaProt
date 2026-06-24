@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust components
+        run: rustup component add rustfmt clippy
+
+      - name: Check Rust formatting
+        run: cargo fmt --check
+
+      - name: Lint Rust
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Test Rust
+        run: cargo test -- --nocapture
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Audit Rust dependencies
+        run: cargo audit
+
+      - name: Install edge smoke dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nftables iproute2 util-linux
+
+      - name: Check Python tools
+        run: |
+          python3 -m py_compile \
+            tools/assert_defense_bench.py \
+            tools/assert_local_bench.py \
+            tools/bench_provenance.py \
+            tools/codex_analyzer.py \
+            tools/run_edge_namespace_smoke.py \
+            tools/run_defense_bench.py \
+            tools/run_local_bench.py \
+            tools/test_ai_tools.py \
+            tools/validate_edge_templates.py
+          PYTHONPATH=tools python3 tools/test_ai_tools.py
+          python3 tools/validate_edge_templates.py --config configs/example.json
+          python3 tools/assert_defense_bench.py \
+            --audit-tracked-artifacts benchmark_results \
+            --artifact-manifest benchmark_results/defense_artifacts_manifest.json
+
+      - name: Run isolated edge namespace smoke
+        run: |
+          sudo git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          sudo python3 tools/run_edge_namespace_smoke.py \
+            --require \
+            --require-provenance \
+            --require-packet-probe > edge-namespace-smoke.json
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Run local guardrail benchmark
+        run: |
+          python3 tools/run_local_bench.py \
+            --binary target/release/altura-prot \
+            --duration 1 \
+            --workers 8 \
+            --tcp-workers 4 > local-bench.json
+          python3 tools/assert_local_bench.py \
+            local-bench.json \
+            --require-provenance \
+            --min-duration 1 \
+            --min-workers 8 \
+            --min-tcp-workers 4 \
+            --expect-binary target/release/altura-prot
+
+      - name: Run deterministic defense benchmark
+        run: |
+          python3 tools/run_defense_bench.py \
+            --preset all \
+            --no-codex \
+            --duration 1 \
+            --workers 8 \
+            --analyzer-wait 8 \
+            --json-only > defense-bench.json
+          expected_scenarios=basic,cachebuster,rotating-path,uuid-path,mixed-user-agent,smart-api-mix,xff-single,xff-rotating,xff-polymorphic,catalog-mimic-xff,dictionary-slug-xff,hex-slug-xff,v2-polymorphic-xff,method-spray-xff,accept-spray-xff,legit-interleave-xff,slow-xff-polymorphic,mozilla-polymorphic-xff
+          expected_common_layers=direct_upstream,proxy_open,rate_limit,path_shape_rate_limit,static_filter,learned_filter_strict
+          expected_observed_learning_scenarios=smart-api-mix,xff-single,xff-rotating,xff-polymorphic,catalog-mimic-xff,dictionary-slug-xff,hex-slug-xff,v2-polymorphic-xff,method-spray-xff,accept-spray-xff,legit-interleave-xff,slow-xff-polymorphic,mozilla-polymorphic-xff
+          expected_static_only_scenarios=
+          python3 tools/assert_defense_bench.py \
+            defense-bench.json \
+            --expect-scenarios 18 \
+            --require-provenance \
+            --expect-provider deterministic \
+            --expect-preset all \
+            --expect-scenario-set "$expected_scenarios" \
+            --expect-common-layer-set "$expected_common_layers" \
+            --expect-observed-learning-scenarios "$expected_observed_learning_scenarios" \
+            --expect-static-only-scenarios "$expected_static_only_scenarios" \
+            --min-duration 1 \
+            --min-workers 8 \
+            --min-analyzer-wait 8 \
+            --expect-per-ip-rps 80 \
+            --expect-path-shape-rps 80 \
+            --expect-signature-threshold 60 \
+            --require-direct-baseline \
+            --require-layer-traffic \
+            --require-open-proxy-negative-control \
+            --require-score-consistency \
+            --require-measured-benign
+
+      - name: Upload benchmark reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: altura-prot-ci-benchmark-reports
+          if-no-files-found: warn
+          path: |
+            edge-namespace-smoke.json
+            local-bench.json
+            defense-bench.json

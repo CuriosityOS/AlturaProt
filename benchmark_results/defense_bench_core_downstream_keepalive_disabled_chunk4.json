@@ -1,0 +1,3758 @@
+{
+  "duration_seconds": 2.0,
+  "per_ip_rps": 80,
+  "preset": "custom",
+  "provider": "deterministic",
+  "safety": "loopback-only; spoof cases use X-Forwarded-For headers from trusted localhost, not packet spoofing",
+  "scenarios": {
+    "catalog-mimic-xff": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 6,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 2.762,
+          "p95": 7.508,
+          "p99": 10.557
+        },
+        "limited_percent": 0.0,
+        "requests": 17599,
+        "requests_per_second": 8774.41,
+        "statuses": {
+          "204": 17599
+        }
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "no attack events found; preserved 0 learned filters",
+          "wrote 4 filters to /tmp/tmpoq0s_34f/filters-38913.json via deterministic",
+          "wrote 4 filters to /tmp/tmpoq0s_34f/filters-38913.json via deterministic",
+          "wrote 4 filters to /tmp/tmpoq0s_34f/filters-38913.json via deterministic",
+          "wrote 4 filters to /tmp/tmpoq0s_34f/filters-38913.json via deterministic",
+          "wrote 4 filters to /tmp/tmpoq0s_34f/filters-38913.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.69,
+            "p95": 0.739,
+            "p99": 0.759
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.25,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 94.66,
+          "blocked_percent": 5.34,
+          "errors": 0,
+          "first_block_seconds": 1.903,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.329,
+            "p95": 9.559,
+            "p99": 11.567
+          },
+          "limited_percent": 0.0,
+          "requests": 11418,
+          "requests_per_second": 5696.2,
+          "statuses": {
+            "204": 10808,
+            "403": 610
+          }
+        },
+        "events": {
+          "count": 22,
+          "first_detection_seconds": 0.038,
+          "reasons": {
+            "filter_block": 14,
+            "observed": 8
+          },
+          "signature_bases": {
+            "468be90e5bccfe55": "GET|/api/catalog/:num|page,sort|python|*/*",
+            "5eb798107da66b93": "GET|/api/catalog/:num|page,sort|node|*/*",
+            "88914be7dea91355": "GET|/api/catalog/:num|page,sort|curl|*/*",
+            "fd80e711c8b8dfbb": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-88914be7dea91355",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "88914be7dea91355",
+            "signature_basis": "GET|/api/catalog/:num|page,sort|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-468be90e5bccfe55",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "468be90e5bccfe55",
+            "signature_basis": "GET|/api/catalog/:num|page,sort|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-fd80e711c8b8dfbb",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "fd80e711c8b8dfbb",
+            "signature_basis": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5eb798107da66b93",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5eb798107da66b93",
+            "signature_basis": "GET|/api/catalog/:num|page,sort|node|*/*"
+          }
+        ],
+        "filter_write_seconds": 2.005,
+        "filters_learned": 4,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "88914be7dea91355"
+            },
+            "enabled": true,
+            "id": "codex-learned-88914be7dea91355",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "468be90e5bccfe55"
+            },
+            "enabled": true,
+            "id": "codex-learned-468be90e5bccfe55",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "fd80e711c8b8dfbb"
+            },
+            "enabled": true,
+            "id": "codex-learned-fd80e711c8b8dfbb",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5eb798107da66b93"
+            },
+            "enabled": true,
+            "id": "codex-learned-5eb798107da66b93",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.002,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.976,
+            "p95": 9.452,
+            "p99": 11.901
+          },
+          "limited_percent": 0.0,
+          "requests": 12053,
+          "requests_per_second": 6012.69,
+          "statuses": {
+            "403": 12053
+          }
+        },
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 100.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 0 filters to /tmp/tmpoq0s_34f/filters-34079.json via deterministic",
+          "wrote 0 filters to /tmp/tmpoq0s_34f/filters-34079.json via deterministic",
+          "wrote 0 filters to /tmp/tmpoq0s_34f/filters-34079.json via deterministic",
+          "wrote 0 filters to /tmp/tmpoq0s_34f/filters-34079.json via deterministic",
+          "wrote 0 filters to /tmp/tmpoq0s_34f/filters-34079.json via deterministic",
+          "wrote 0 filters to /tmp/tmpoq0s_34f/filters-34079.json via deterministic",
+          "wrote 0 filters to /tmp/tmpoq0s_34f/filters-34079.json via deterministic",
+          "wrote 0 filters to /tmp/tmpoq0s_34f/filters-34079.json via deterministic"
+        ],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.499,
+            "p95": 9.806,
+            "p99": 11.972
+          },
+          "limited_percent": 0.0,
+          "requests": 11080,
+          "requests_per_second": 5526.73,
+          "statuses": {
+            "204": 11080
+          }
+        },
+        "events": {
+          "count": 16,
+          "first_detection_seconds": 0.042,
+          "reasons": {
+            "observed": 16
+          },
+          "signature_bases": {
+            "468be90e5bccfe55": "GET|/api/catalog/:num|page,sort|python|*/*",
+            "5eb798107da66b93": "GET|/api/catalog/:num|page,sort|node|*/*",
+            "88914be7dea91355": "GET|/api/catalog/:num|page,sort|curl|*/*",
+            "fd80e711c8b8dfbb": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.495,
+            "p95": 9.818,
+            "p99": 12.119
+          },
+          "limited_percent": 0.0,
+          "requests": 11065,
+          "requests_per_second": 5521.08,
+          "statuses": {
+            "204": 11065
+          }
+        },
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.44,
+            "p95": 9.706,
+            "p99": 11.772
+          },
+          "limited_percent": 0.0,
+          "requests": 11170,
+          "requests_per_second": 5571.87,
+          "statuses": {
+            "204": 11170
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.487,
+            "p95": 9.756,
+            "p99": 11.99
+          },
+          "limited_percent": 0.0,
+          "requests": 11082,
+          "requests_per_second": 5529.76,
+          "statuses": {
+            "204": 11082
+          }
+        },
+        "events": {
+          "count": 8,
+          "first_detection_seconds": 0.042,
+          "reasons": {
+            "observed": 8
+          },
+          "signature_bases": {
+            "468be90e5bccfe55": "GET|/api/catalog/:num|page,sort|python|*/*",
+            "5eb798107da66b93": "GET|/api/catalog/:num|page,sort|node|*/*",
+            "88914be7dea91355": "GET|/api/catalog/:num|page,sort|curl|*/*",
+            "fd80e711c8b8dfbb": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.066,
+            "p95": 9.576,
+            "p99": 12.072
+          },
+          "limited_percent": 0.0,
+          "requests": 11863,
+          "requests_per_second": 5917.77,
+          "statuses": {
+            "403": 11863
+          }
+        },
+        "events": {
+          "count": 11,
+          "first_detection_seconds": 0.02,
+          "reasons": {
+            "filter_block": 11
+          },
+          "signature_bases": {
+            "468be90e5bccfe55": "GET|/api/catalog/:num|page,sort|python|*/*",
+            "5eb798107da66b93": "GET|/api/catalog/:num|page,sort|node|*/*",
+            "88914be7dea91355": "GET|/api/catalog/:num|page,sort|curl|*/*",
+            "fd80e711c8b8dfbb": "GET|/api/catalog/:num|page,sort|mozilla|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with benign catalog-shaped paths to evade :token filters",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      }
+    },
+    "dictionary-slug-xff": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 4,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 2.915,
+          "p95": 7.901,
+          "p99": 10.963
+        },
+        "limited_percent": 0.0,
+        "requests": 17175,
+        "requests_per_second": 8564.81,
+        "statuses": {
+          "204": 17175
+        }
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "no attack events found; preserved 0 learned filters",
+          "wrote 64 filters to /tmp/tmpoq0s_34f/filters-57415.json via deterministic",
+          "wrote 64 filters to /tmp/tmpoq0s_34f/filters-57415.json via deterministic",
+          "wrote 64 filters to /tmp/tmpoq0s_34f/filters-57415.json via deterministic",
+          "wrote 64 filters to /tmp/tmpoq0s_34f/filters-57415.json via deterministic",
+          "wrote 64 filters to /tmp/tmpoq0s_34f/filters-57415.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.702,
+            "p95": 0.714,
+            "p99": 0.731
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.24,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 94.53,
+          "blocked_percent": 5.47,
+          "errors": 0,
+          "first_block_seconds": 1.903,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.456,
+            "p95": 9.856,
+            "p99": 12.024
+          },
+          "limited_percent": 0.0,
+          "requests": 11100,
+          "requests_per_second": 5537.03,
+          "statuses": {
+            "204": 10493,
+            "403": 607
+          }
+        },
+        "events": {
+          "count": 603,
+          "first_detection_seconds": 0.118,
+          "reasons": {
+            "filter_block": 177,
+            "global_observed": 322,
+            "observed": 104
+          },
+          "signature_bases": {
+            "05edcc0a8ba8fe5d": "GET|/api/onboarding/:num|ref|python|*/*",
+            "15d87e626a424589": "GET|/api/catalog/:num|ref|python|*/*",
+            "1956b97183df0312": "GET|/api/dashboard/:num|ref|python|*/*",
+            "26b5cfb8c813fdac": "GET|/api/fulfillment/:num|ref|python|*/*",
+            "26ffb02c81516713": "GET|/api/transactions/:num|ref|node|*/*",
+            "28483db475a31031": "GET|/api/catalog/:num|ref|curl|*/*",
+            "29b849684d1280de": "GET|/api/inventory/:num|ref|curl|*/*",
+            "2b1edcedaeaf49ef": "GET|/api/organization/:num|ref|python|*/*",
+            "2c818910d42b1541": "GET|/api/subscription/:num|ref|python|*/*",
+            "2cc0aaf7ccbafb74": "GET|/api/configuration/:num|ref|curl|*/*",
+            "348c26c553e62aac": "GET|/api/warehouses/:num|ref|mozilla|*/*",
+            "3b2fb828b26b0924": "GET|/api/warehouses/:num|ref|python|*/*",
+            "4080a53d09e00ff5": "GET|/api/organization/:num|ref|node|*/*",
+            "4291478901eed817": "GET|/api/marketplace/:num|ref|mozilla|*/*",
+            "42b8fddce033dca0": "GET|/api/authentication/:num|ref|curl|*/*",
+            "4798e5ec71bbda89": "GET|/api/marketplace/:num|ref|curl|*/*",
+            "4edc93e1d5d04a96": "GET|/api/fulfillment/:num|ref|node|*/*",
+            "50d96403e2540ed5": "GET|/api/transactions/:num|ref|curl|*/*",
+            "518e705ebf2834b2": "GET|/api/inventory/:num|ref|python|*/*",
+            "52a1cddb638012ce": "GET|/api/authentication/:num|ref|node|*/*",
+            "54bf36407ba10b2e": "GET|/api/warehouses/:num|ref|node|*/*",
+            "55ff88d92c952300": "GET|/api/warehouses/:num|ref|curl|*/*",
+            "5db0b2e84767678d": "GET|/api/onboarding/:num|ref|curl|*/*",
+            "5dfe13934125c9a4": "GET|/api/dashboard/:num|ref|node|*/*",
+            "674fcc227aaf6d36": "GET|/api/notifications/:num|ref|mozilla|*/*",
+            "6fa2916f36809b58": "GET|/api/configuration/:num|ref|mozilla|*/*",
+            "72d7dd2760f6a152": "GET|/api/configuration/:num|ref|node|*/*",
+            "7a539da85f28ac56": "GET|/api/dashboard/:num|ref|mozilla|*/*",
+            "7f1ea4c9bbb8ea0f": "GET|/api/catalog/:num|ref|node|*/*",
+            "8a65a4218631c5d5": "GET|/api/transactions/:num|ref|python|*/*",
+            "8bd9a47a04bd07f2": "GET|/api/notifications/:num|ref|python|*/*",
+            "8f1612775ff49173": "GET|/api/onboarding/:num|ref|mozilla|*/*",
+            "90e1d9017b3d6444": "GET|/api/inventory/:num|ref|node|*/*",
+            "91edb59b81de1dcc": "GET|/api/authentication/:num|ref|mozilla|*/*",
+            "9e61d97f39016d3e": "GET|/api/dashboard/:num|ref|curl|*/*",
+            "a01a11e6e64bdec4": "GET|/api/authentication/:num|ref|python|*/*",
+            "a107b6663fa72f1e": "GET|/api/notifications/:num|ref|curl|*/*",
+            "a4906ad825e18571": "GET|/api/marketplace/:num|ref|python|*/*",
+            "ad4148a2d1f7de3b": "GET|/api/transactions/:num|ref|mozilla|*/*",
+            "ad728561fcc53ea1": "GET|/api/organization/:num|ref|mozilla|*/*",
+            "af221f071b801bc7": "GET|/api/subscription/:num|ref|mozilla|*/*",
+            "b3dc9e495edb0af9": "GET|/api/subscription/:num|ref|curl|*/*",
+            "b714707cbd3c7584": "GET|/api/notifications/:num|ref|node|*/*",
+            "bb77c06570f22397": "GET|/api/organization/:num|ref|curl|*/*",
+            "c90d0849785eb9e0": "GET|/api/configuration/:num|ref|python|*/*",
+            "cd47f0f557ddbf18": "GET|/api/fulfillment/:num|ref|curl|*/*",
+            "d3b29427f1d83ae4": "GET|/api/fulfillment/:num|ref|mozilla|*/*",
+            "dbf1003a8e249aff": "GET|/api/catalog/:num|ref|mozilla|*/*",
+            "e2b13b867ba49f1b": "GET|/api/onboarding/:num|ref|node|*/*",
+            "ef5256476caab4f6": "GET|/api/inventory/:num|ref|mozilla|*/*",
+            "f935ce646d584337": "GET|/api/marketplace/:num|ref|node|*/*",
+            "fbfdbb9c2d071267": "GET|/api/subscription/:num|ref|node|*/*"
+          },
+          "unique_signatures": 52
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-inventory-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-transactions-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-subscription-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-onboarding-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-warehouses-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-fulfillment-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-configuration-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-authentication-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-notifications-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-marketplace-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-dashboard-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-organization-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-ef5256476caab4f6",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "ef5256476caab4f6",
+            "signature_basis": "GET|/api/inventory/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-8a65a4218631c5d5",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "8a65a4218631c5d5",
+            "signature_basis": "GET|/api/transactions/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-2c818910d42b1541",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "2c818910d42b1541",
+            "signature_basis": "GET|/api/subscription/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-54bf36407ba10b2e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "54bf36407ba10b2e",
+            "signature_basis": "GET|/api/warehouses/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-9e61d97f39016d3e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "9e61d97f39016d3e",
+            "signature_basis": "GET|/api/dashboard/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-a01a11e6e64bdec4",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "a01a11e6e64bdec4",
+            "signature_basis": "GET|/api/authentication/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-4080a53d09e00ff5",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4080a53d09e00ff5",
+            "signature_basis": "GET|/api/organization/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-a107b6663fa72f1e",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "a107b6663fa72f1e",
+            "signature_basis": "GET|/api/notifications/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-05edcc0a8ba8fe5d",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "05edcc0a8ba8fe5d",
+            "signature_basis": "GET|/api/onboarding/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-2cc0aaf7ccbafb74",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "2cc0aaf7ccbafb74",
+            "signature_basis": "GET|/api/configuration/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-91edb59b81de1dcc",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "91edb59b81de1dcc",
+            "signature_basis": "GET|/api/authentication/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-b714707cbd3c7584",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "b714707cbd3c7584",
+            "signature_basis": "GET|/api/notifications/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5db0b2e84767678d",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5db0b2e84767678d",
+            "signature_basis": "GET|/api/onboarding/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-4edc93e1d5d04a96",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4edc93e1d5d04a96",
+            "signature_basis": "GET|/api/fulfillment/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-f935ce646d584337",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "f935ce646d584337",
+            "signature_basis": "GET|/api/marketplace/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-fbfdbb9c2d071267",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "fbfdbb9c2d071267",
+            "signature_basis": "GET|/api/subscription/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-8f1612775ff49173",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "8f1612775ff49173",
+            "signature_basis": "GET|/api/onboarding/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-6fa2916f36809b58",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "6fa2916f36809b58",
+            "signature_basis": "GET|/api/configuration/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-cd47f0f557ddbf18",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "cd47f0f557ddbf18",
+            "signature_basis": "GET|/api/fulfillment/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-3b2fb828b26b0924",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "3b2fb828b26b0924",
+            "signature_basis": "GET|/api/warehouses/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-4798e5ec71bbda89",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4798e5ec71bbda89",
+            "signature_basis": "GET|/api/marketplace/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-348c26c553e62aac",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "348c26c553e62aac",
+            "signature_basis": "GET|/api/warehouses/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-26ffb02c81516713",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "26ffb02c81516713",
+            "signature_basis": "GET|/api/transactions/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-26b5cfb8c813fdac",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "26b5cfb8c813fdac",
+            "signature_basis": "GET|/api/fulfillment/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-29b849684d1280de",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "29b849684d1280de",
+            "signature_basis": "GET|/api/inventory/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-72d7dd2760f6a152",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "72d7dd2760f6a152",
+            "signature_basis": "GET|/api/configuration/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-2b1edcedaeaf49ef",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "2b1edcedaeaf49ef",
+            "signature_basis": "GET|/api/organization/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-8bd9a47a04bd07f2",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "8bd9a47a04bd07f2",
+            "signature_basis": "GET|/api/notifications/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-50d96403e2540ed5",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "50d96403e2540ed5",
+            "signature_basis": "GET|/api/transactions/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-a4906ad825e18571",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "a4906ad825e18571",
+            "signature_basis": "GET|/api/marketplace/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-42b8fddce033dca0",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "42b8fddce033dca0",
+            "signature_basis": "GET|/api/authentication/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-af221f071b801bc7",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "af221f071b801bc7",
+            "signature_basis": "GET|/api/subscription/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-c90d0849785eb9e0",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "c90d0849785eb9e0",
+            "signature_basis": "GET|/api/configuration/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-7a539da85f28ac56",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "7a539da85f28ac56",
+            "signature_basis": "GET|/api/dashboard/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-d3b29427f1d83ae4",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "d3b29427f1d83ae4",
+            "signature_basis": "GET|/api/fulfillment/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-b3dc9e495edb0af9",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "b3dc9e495edb0af9",
+            "signature_basis": "GET|/api/subscription/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-4291478901eed817",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "4291478901eed817",
+            "signature_basis": "GET|/api/marketplace/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-90e1d9017b3d6444",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "90e1d9017b3d6444",
+            "signature_basis": "GET|/api/inventory/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-5dfe13934125c9a4",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "5dfe13934125c9a4",
+            "signature_basis": "GET|/api/dashboard/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-bb77c06570f22397",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "bb77c06570f22397",
+            "signature_basis": "GET|/api/organization/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-7f1ea4c9bbb8ea0f",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "7f1ea4c9bbb8ea0f",
+            "signature_basis": "GET|/api/catalog/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-674fcc227aaf6d36",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "674fcc227aaf6d36",
+            "signature_basis": "GET|/api/notifications/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-1956b97183df0312",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "1956b97183df0312",
+            "signature_basis": "GET|/api/dashboard/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-15d87e626a424589",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "15d87e626a424589",
+            "signature_basis": "GET|/api/catalog/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-28483db475a31031",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "28483db475a31031",
+            "signature_basis": "GET|/api/catalog/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-e2b13b867ba49f1b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "e2b13b867ba49f1b",
+            "signature_basis": "GET|/api/onboarding/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-dbf1003a8e249aff",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "dbf1003a8e249aff",
+            "signature_basis": "GET|/api/catalog/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-55ff88d92c952300",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "55ff88d92c952300",
+            "signature_basis": "GET|/api/warehouses/:num|ref|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-52a1cddb638012ce",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "52a1cddb638012ce",
+            "signature_basis": "GET|/api/authentication/:num|ref|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-ad728561fcc53ea1",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "ad728561fcc53ea1",
+            "signature_basis": "GET|/api/organization/:num|ref|mozilla|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-518e705ebf2834b2",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "518e705ebf2834b2",
+            "signature_basis": "GET|/api/inventory/:num|ref|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-ad4148a2d1f7de3b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "ad4148a2d1f7de3b",
+            "signature_basis": "GET|/api/transactions/:num|ref|mozilla|*/*"
+          }
+        ],
+        "filter_write_seconds": 2.005,
+        "filters_learned": 64,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/inventory/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-inventory-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/transactions/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-transactions-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/subscription/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-subscription-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/onboarding/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-onboarding-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/warehouses/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-warehouses-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/fulfillment/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-fulfillment-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/configuration/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-configuration-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/authentication/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-authentication-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/notifications/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-notifications-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/marketplace/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-marketplace-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/dashboard/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-dashboard-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/organization/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-organization-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "ef5256476caab4f6"
+            },
+            "enabled": true,
+            "id": "codex-learned-ef5256476caab4f6",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "8a65a4218631c5d5"
+            },
+            "enabled": true,
+            "id": "codex-learned-8a65a4218631c5d5",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "2c818910d42b1541"
+            },
+            "enabled": true,
+            "id": "codex-learned-2c818910d42b1541",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "54bf36407ba10b2e"
+            },
+            "enabled": true,
+            "id": "codex-learned-54bf36407ba10b2e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "9e61d97f39016d3e"
+            },
+            "enabled": true,
+            "id": "codex-learned-9e61d97f39016d3e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "a01a11e6e64bdec4"
+            },
+            "enabled": true,
+            "id": "codex-learned-a01a11e6e64bdec4",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4080a53d09e00ff5"
+            },
+            "enabled": true,
+            "id": "codex-learned-4080a53d09e00ff5",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "a107b6663fa72f1e"
+            },
+            "enabled": true,
+            "id": "codex-learned-a107b6663fa72f1e",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "05edcc0a8ba8fe5d"
+            },
+            "enabled": true,
+            "id": "codex-learned-05edcc0a8ba8fe5d",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "2cc0aaf7ccbafb74"
+            },
+            "enabled": true,
+            "id": "codex-learned-2cc0aaf7ccbafb74",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "91edb59b81de1dcc"
+            },
+            "enabled": true,
+            "id": "codex-learned-91edb59b81de1dcc",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "b714707cbd3c7584"
+            },
+            "enabled": true,
+            "id": "codex-learned-b714707cbd3c7584",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5db0b2e84767678d"
+            },
+            "enabled": true,
+            "id": "codex-learned-5db0b2e84767678d",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4edc93e1d5d04a96"
+            },
+            "enabled": true,
+            "id": "codex-learned-4edc93e1d5d04a96",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "f935ce646d584337"
+            },
+            "enabled": true,
+            "id": "codex-learned-f935ce646d584337",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "fbfdbb9c2d071267"
+            },
+            "enabled": true,
+            "id": "codex-learned-fbfdbb9c2d071267",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "8f1612775ff49173"
+            },
+            "enabled": true,
+            "id": "codex-learned-8f1612775ff49173",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "6fa2916f36809b58"
+            },
+            "enabled": true,
+            "id": "codex-learned-6fa2916f36809b58",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "cd47f0f557ddbf18"
+            },
+            "enabled": true,
+            "id": "codex-learned-cd47f0f557ddbf18",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "3b2fb828b26b0924"
+            },
+            "enabled": true,
+            "id": "codex-learned-3b2fb828b26b0924",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4798e5ec71bbda89"
+            },
+            "enabled": true,
+            "id": "codex-learned-4798e5ec71bbda89",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "348c26c553e62aac"
+            },
+            "enabled": true,
+            "id": "codex-learned-348c26c553e62aac",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "26ffb02c81516713"
+            },
+            "enabled": true,
+            "id": "codex-learned-26ffb02c81516713",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "26b5cfb8c813fdac"
+            },
+            "enabled": true,
+            "id": "codex-learned-26b5cfb8c813fdac",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "29b849684d1280de"
+            },
+            "enabled": true,
+            "id": "codex-learned-29b849684d1280de",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "72d7dd2760f6a152"
+            },
+            "enabled": true,
+            "id": "codex-learned-72d7dd2760f6a152",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "2b1edcedaeaf49ef"
+            },
+            "enabled": true,
+            "id": "codex-learned-2b1edcedaeaf49ef",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "8bd9a47a04bd07f2"
+            },
+            "enabled": true,
+            "id": "codex-learned-8bd9a47a04bd07f2",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "50d96403e2540ed5"
+            },
+            "enabled": true,
+            "id": "codex-learned-50d96403e2540ed5",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "a4906ad825e18571"
+            },
+            "enabled": true,
+            "id": "codex-learned-a4906ad825e18571",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "42b8fddce033dca0"
+            },
+            "enabled": true,
+            "id": "codex-learned-42b8fddce033dca0",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "af221f071b801bc7"
+            },
+            "enabled": true,
+            "id": "codex-learned-af221f071b801bc7",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "c90d0849785eb9e0"
+            },
+            "enabled": true,
+            "id": "codex-learned-c90d0849785eb9e0",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "7a539da85f28ac56"
+            },
+            "enabled": true,
+            "id": "codex-learned-7a539da85f28ac56",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "d3b29427f1d83ae4"
+            },
+            "enabled": true,
+            "id": "codex-learned-d3b29427f1d83ae4",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "b3dc9e495edb0af9"
+            },
+            "enabled": true,
+            "id": "codex-learned-b3dc9e495edb0af9",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "4291478901eed817"
+            },
+            "enabled": true,
+            "id": "codex-learned-4291478901eed817",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "90e1d9017b3d6444"
+            },
+            "enabled": true,
+            "id": "codex-learned-90e1d9017b3d6444",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "5dfe13934125c9a4"
+            },
+            "enabled": true,
+            "id": "codex-learned-5dfe13934125c9a4",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "bb77c06570f22397"
+            },
+            "enabled": true,
+            "id": "codex-learned-bb77c06570f22397",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "7f1ea4c9bbb8ea0f"
+            },
+            "enabled": true,
+            "id": "codex-learned-7f1ea4c9bbb8ea0f",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "674fcc227aaf6d36"
+            },
+            "enabled": true,
+            "id": "codex-learned-674fcc227aaf6d36",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "1956b97183df0312"
+            },
+            "enabled": true,
+            "id": "codex-learned-1956b97183df0312",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "15d87e626a424589"
+            },
+            "enabled": true,
+            "id": "codex-learned-15d87e626a424589",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "28483db475a31031"
+            },
+            "enabled": true,
+            "id": "codex-learned-28483db475a31031",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "e2b13b867ba49f1b"
+            },
+            "enabled": true,
+            "id": "codex-learned-e2b13b867ba49f1b",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "dbf1003a8e249aff"
+            },
+            "enabled": true,
+            "id": "codex-learned-dbf1003a8e249aff",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "55ff88d92c952300"
+            },
+            "enabled": true,
+            "id": "codex-learned-55ff88d92c952300",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "52a1cddb638012ce"
+            },
+            "enabled": true,
+            "id": "codex-learned-52a1cddb638012ce",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "ad728561fcc53ea1"
+            },
+            "enabled": true,
+            "id": "codex-learned-ad728561fcc53ea1",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "518e705ebf2834b2"
+            },
+            "enabled": true,
+            "id": "codex-learned-518e705ebf2834b2",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "ad4148a2d1f7de3b"
+            },
+            "enabled": true,
+            "id": "codex-learned-ad4148a2d1f7de3b",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.064,
+            "p95": 9.508,
+            "p99": 12.05
+          },
+          "limited_percent": 0.0,
+          "requests": 11848,
+          "requests_per_second": 5910.9,
+          "statuses": {
+            "403": 11848
+          }
+        },
+        "scenario_description": "Rotating XFF with dictionary API slugs that avoid :token normalization",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 100.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "no attack events found; preserved 0 learned filters",
+          "wrote 12 filters to /tmp/tmpoq0s_34f/filters-37513.json via deterministic",
+          "wrote 44 filters to /tmp/tmpoq0s_34f/filters-37513.json via deterministic",
+          "wrote 44 filters to /tmp/tmpoq0s_34f/filters-37513.json via deterministic",
+          "wrote 60 filters to /tmp/tmpoq0s_34f/filters-37513.json via deterministic",
+          "wrote 60 filters to /tmp/tmpoq0s_34f/filters-37513.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.693,
+            "p95": 0.754,
+            "p99": 0.755
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.23,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 97.82,
+          "blocked_percent": 2.18,
+          "errors": 0,
+          "first_block_seconds": 1.911,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.44,
+            "p95": 9.699,
+            "p99": 12.006
+          },
+          "limited_percent": 0.0,
+          "requests": 11205,
+          "requests_per_second": 5589.32,
+          "statuses": {
+            "204": 10961,
+            "403": 244
+          }
+        },
+        "events": {
+          "count": 610,
+          "first_detection_seconds": 0.117,
+          "reasons": {
+            "filter_block": 159,
+            "global_observed": 329,
+            "observed": 122
+          },
+          "signature_bases": {
+            "05edcc0a8ba8fe5d": "GET|/api/onboarding/:num|ref|python|*/*",
+            "15d87e626a424589": "GET|/api/catalog/:num|ref|python|*/*",
+            "1956b97183df0312": "GET|/api/dashboard/:num|ref|python|*/*",
+            "26b5cfb8c813fdac": "GET|/api/fulfillment/:num|ref|python|*/*",
+            "26ffb02c81516713": "GET|/api/transactions/:num|ref|node|*/*",
+            "28483db475a31031": "GET|/api/catalog/:num|ref|curl|*/*",
+            "29b849684d1280de": "GET|/api/inventory/:num|ref|curl|*/*",
+            "2b1edcedaeaf49ef": "GET|/api/organization/:num|ref|python|*/*",
+            "2c818910d42b1541": "GET|/api/subscription/:num|ref|python|*/*",
+            "2cc0aaf7ccbafb74": "GET|/api/configuration/:num|ref|curl|*/*",
+            "348c26c553e62aac": "GET|/api/warehouses/:num|ref|mozilla|*/*",
+            "3b2fb828b26b0924": "GET|/api/warehouses/:num|ref|python|*/*",
+            "4080a53d09e00ff5": "GET|/api/organization/:num|ref|node|*/*",
+            "4291478901eed817": "GET|/api/marketplace/:num|ref|mozilla|*/*",
+            "42b8fddce033dca0": "GET|/api/authentication/:num|ref|curl|*/*",
+            "4798e5ec71bbda89": "GET|/api/marketplace/:num|ref|curl|*/*",
+            "4edc93e1d5d04a96": "GET|/api/fulfillment/:num|ref|node|*/*",
+            "50d96403e2540ed5": "GET|/api/transactions/:num|ref|curl|*/*",
+            "518e705ebf2834b2": "GET|/api/inventory/:num|ref|python|*/*",
+            "52a1cddb638012ce": "GET|/api/authentication/:num|ref|node|*/*",
+            "54bf36407ba10b2e": "GET|/api/warehouses/:num|ref|node|*/*",
+            "55ff88d92c952300": "GET|/api/warehouses/:num|ref|curl|*/*",
+            "5db0b2e84767678d": "GET|/api/onboarding/:num|ref|curl|*/*",
+            "5dfe13934125c9a4": "GET|/api/dashboard/:num|ref|node|*/*",
+            "674fcc227aaf6d36": "GET|/api/notifications/:num|ref|mozilla|*/*",
+            "6fa2916f36809b58": "GET|/api/configuration/:num|ref|mozilla|*/*",
+            "72d7dd2760f6a152": "GET|/api/configuration/:num|ref|node|*/*",
+            "7a539da85f28ac56": "GET|/api/dashboard/:num|ref|mozilla|*/*",
+            "7f1ea4c9bbb8ea0f": "GET|/api/catalog/:num|ref|node|*/*",
+            "8a65a4218631c5d5": "GET|/api/transactions/:num|ref|python|*/*",
+            "8bd9a47a04bd07f2": "GET|/api/notifications/:num|ref|python|*/*",
+            "8f1612775ff49173": "GET|/api/onboarding/:num|ref|mozilla|*/*",
+            "90e1d9017b3d6444": "GET|/api/inventory/:num|ref|node|*/*",
+            "91edb59b81de1dcc": "GET|/api/authentication/:num|ref|mozilla|*/*",
+            "9e61d97f39016d3e": "GET|/api/dashboard/:num|ref|curl|*/*",
+            "a01a11e6e64bdec4": "GET|/api/authentication/:num|ref|python|*/*",
+            "a107b6663fa72f1e": "GET|/api/notifications/:num|ref|curl|*/*",
+            "a4906ad825e18571": "GET|/api/marketplace/:num|ref|python|*/*",
+            "ad4148a2d1f7de3b": "GET|/api/transactions/:num|ref|mozilla|*/*",
+            "ad728561fcc53ea1": "GET|/api/organization/:num|ref|mozilla|*/*",
+            "af221f071b801bc7": "GET|/api/subscription/:num|ref|mozilla|*/*",
+            "b3dc9e495edb0af9": "GET|/api/subscription/:num|ref|curl|*/*",
+            "b714707cbd3c7584": "GET|/api/notifications/:num|ref|node|*/*",
+            "bb77c06570f22397": "GET|/api/organization/:num|ref|curl|*/*",
+            "c90d0849785eb9e0": "GET|/api/configuration/:num|ref|python|*/*",
+            "cd47f0f557ddbf18": "GET|/api/fulfillment/:num|ref|curl|*/*",
+            "d3b29427f1d83ae4": "GET|/api/fulfillment/:num|ref|mozilla|*/*",
+            "dbf1003a8e249aff": "GET|/api/catalog/:num|ref|mozilla|*/*",
+            "e2b13b867ba49f1b": "GET|/api/onboarding/:num|ref|node|*/*",
+            "ef5256476caab4f6": "GET|/api/inventory/:num|ref|mozilla|*/*",
+            "f935ce646d584337": "GET|/api/marketplace/:num|ref|node|*/*",
+            "fbfdbb9c2d071267": "GET|/api/subscription/:num|ref|node|*/*"
+          },
+          "unique_signatures": 52
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-inventory-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-onboarding-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-transactions-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-warehouses-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-configuration-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-fulfillment-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-notifications-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-subscription-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-dashboard-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-authentication-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-marketplace-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-organization-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          }
+        ],
+        "filter_write_seconds": 2.005,
+        "filters_learned": 12,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/inventory/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-inventory-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/onboarding/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-onboarding-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/transactions/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-transactions-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/warehouses/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-warehouses-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/configuration/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-configuration-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/fulfillment/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-fulfillment-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/notifications/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-notifications-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/subscription/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-subscription-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/dashboard/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-dashboard-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/authentication/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-authentication-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/marketplace/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-marketplace-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/organization/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-organization-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 9.93,
+          "blocked_percent": 90.07,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.931,
+            "p95": 9.296,
+            "p99": 11.763
+          },
+          "limited_percent": 0.0,
+          "requests": 12180,
+          "requests_per_second": 6077.21,
+          "statuses": {
+            "204": 1210,
+            "403": 10970
+          }
+        },
+        "scenario_description": "Rotating XFF with dictionary API slugs that avoid :token normalization",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 90.07,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.489,
+            "p95": 9.815,
+            "p99": 11.972
+          },
+          "limited_percent": 0.0,
+          "requests": 11091,
+          "requests_per_second": 5533.43,
+          "statuses": {
+            "204": 11091
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with dictionary API slugs that avoid :token normalization",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.503,
+            "p95": 9.805,
+            "p99": 12.062
+          },
+          "limited_percent": 0.0,
+          "requests": 11060,
+          "requests_per_second": 5516.8,
+          "statuses": {
+            "204": 11060
+          }
+        },
+        "events": {
+          "count": 259,
+          "first_detection_seconds": 0.121,
+          "reasons": {
+            "global_observed": 155,
+            "observed": 104
+          },
+          "signature_bases": {
+            "05edcc0a8ba8fe5d": "GET|/api/onboarding/:num|ref|python|*/*",
+            "15d87e626a424589": "GET|/api/catalog/:num|ref|python|*/*",
+            "1956b97183df0312": "GET|/api/dashboard/:num|ref|python|*/*",
+            "26b5cfb8c813fdac": "GET|/api/fulfillment/:num|ref|python|*/*",
+            "26ffb02c81516713": "GET|/api/transactions/:num|ref|node|*/*",
+            "28483db475a31031": "GET|/api/catalog/:num|ref|curl|*/*",
+            "29b849684d1280de": "GET|/api/inventory/:num|ref|curl|*/*",
+            "2b1edcedaeaf49ef": "GET|/api/organization/:num|ref|python|*/*",
+            "2c818910d42b1541": "GET|/api/subscription/:num|ref|python|*/*",
+            "2cc0aaf7ccbafb74": "GET|/api/configuration/:num|ref|curl|*/*",
+            "348c26c553e62aac": "GET|/api/warehouses/:num|ref|mozilla|*/*",
+            "3b2fb828b26b0924": "GET|/api/warehouses/:num|ref|python|*/*",
+            "4080a53d09e00ff5": "GET|/api/organization/:num|ref|node|*/*",
+            "4291478901eed817": "GET|/api/marketplace/:num|ref|mozilla|*/*",
+            "42b8fddce033dca0": "GET|/api/authentication/:num|ref|curl|*/*",
+            "4798e5ec71bbda89": "GET|/api/marketplace/:num|ref|curl|*/*",
+            "4edc93e1d5d04a96": "GET|/api/fulfillment/:num|ref|node|*/*",
+            "50d96403e2540ed5": "GET|/api/transactions/:num|ref|curl|*/*",
+            "518e705ebf2834b2": "GET|/api/inventory/:num|ref|python|*/*",
+            "52a1cddb638012ce": "GET|/api/authentication/:num|ref|node|*/*",
+            "54bf36407ba10b2e": "GET|/api/warehouses/:num|ref|node|*/*",
+            "55ff88d92c952300": "GET|/api/warehouses/:num|ref|curl|*/*",
+            "5db0b2e84767678d": "GET|/api/onboarding/:num|ref|curl|*/*",
+            "5dfe13934125c9a4": "GET|/api/dashboard/:num|ref|node|*/*",
+            "674fcc227aaf6d36": "GET|/api/notifications/:num|ref|mozilla|*/*",
+            "6fa2916f36809b58": "GET|/api/configuration/:num|ref|mozilla|*/*",
+            "72d7dd2760f6a152": "GET|/api/configuration/:num|ref|node|*/*",
+            "7a539da85f28ac56": "GET|/api/dashboard/:num|ref|mozilla|*/*",
+            "7f1ea4c9bbb8ea0f": "GET|/api/catalog/:num|ref|node|*/*",
+            "8a65a4218631c5d5": "GET|/api/transactions/:num|ref|python|*/*",
+            "8bd9a47a04bd07f2": "GET|/api/notifications/:num|ref|python|*/*",
+            "8f1612775ff49173": "GET|/api/onboarding/:num|ref|mozilla|*/*",
+            "90e1d9017b3d6444": "GET|/api/inventory/:num|ref|node|*/*",
+            "91edb59b81de1dcc": "GET|/api/authentication/:num|ref|mozilla|*/*",
+            "9e61d97f39016d3e": "GET|/api/dashboard/:num|ref|curl|*/*",
+            "a01a11e6e64bdec4": "GET|/api/authentication/:num|ref|python|*/*",
+            "a107b6663fa72f1e": "GET|/api/notifications/:num|ref|curl|*/*",
+            "a4906ad825e18571": "GET|/api/marketplace/:num|ref|python|*/*",
+            "ad4148a2d1f7de3b": "GET|/api/transactions/:num|ref|mozilla|*/*",
+            "ad728561fcc53ea1": "GET|/api/organization/:num|ref|mozilla|*/*",
+            "af221f071b801bc7": "GET|/api/subscription/:num|ref|mozilla|*/*",
+            "b3dc9e495edb0af9": "GET|/api/subscription/:num|ref|curl|*/*",
+            "b714707cbd3c7584": "GET|/api/notifications/:num|ref|node|*/*",
+            "bb77c06570f22397": "GET|/api/organization/:num|ref|curl|*/*",
+            "c90d0849785eb9e0": "GET|/api/configuration/:num|ref|python|*/*",
+            "cd47f0f557ddbf18": "GET|/api/fulfillment/:num|ref|curl|*/*",
+            "d3b29427f1d83ae4": "GET|/api/fulfillment/:num|ref|mozilla|*/*",
+            "dbf1003a8e249aff": "GET|/api/catalog/:num|ref|mozilla|*/*",
+            "e2b13b867ba49f1b": "GET|/api/onboarding/:num|ref|node|*/*",
+            "ef5256476caab4f6": "GET|/api/inventory/:num|ref|mozilla|*/*",
+            "f935ce646d584337": "GET|/api/marketplace/:num|ref|node|*/*",
+            "fbfdbb9c2d071267": "GET|/api/subscription/:num|ref|node|*/*"
+          },
+          "unique_signatures": 52
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with dictionary API slugs that avoid :token normalization",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 4.97,
+            "p95": 9.331,
+            "p99": 11.763
+          },
+          "limited_percent": 0.0,
+          "requests": 12122,
+          "requests_per_second": 6048.31,
+          "statuses": {
+            "403": 12122
+          }
+        },
+        "events": {
+          "count": 299,
+          "first_detection_seconds": 0.109,
+          "reasons": {
+            "filter_block": 126,
+            "global_observed": 173
+          },
+          "signature_bases": {
+            "05edcc0a8ba8fe5d": "GET|/api/onboarding/:num|ref|python|*/*",
+            "15d87e626a424589": "GET|/api/catalog/:num|ref|python|*/*",
+            "1956b97183df0312": "GET|/api/dashboard/:num|ref|python|*/*",
+            "26b5cfb8c813fdac": "GET|/api/fulfillment/:num|ref|python|*/*",
+            "26ffb02c81516713": "GET|/api/transactions/:num|ref|node|*/*",
+            "28483db475a31031": "GET|/api/catalog/:num|ref|curl|*/*",
+            "29b849684d1280de": "GET|/api/inventory/:num|ref|curl|*/*",
+            "2b1edcedaeaf49ef": "GET|/api/organization/:num|ref|python|*/*",
+            "2c818910d42b1541": "GET|/api/subscription/:num|ref|python|*/*",
+            "2cc0aaf7ccbafb74": "GET|/api/configuration/:num|ref|curl|*/*",
+            "348c26c553e62aac": "GET|/api/warehouses/:num|ref|mozilla|*/*",
+            "3b2fb828b26b0924": "GET|/api/warehouses/:num|ref|python|*/*",
+            "4080a53d09e00ff5": "GET|/api/organization/:num|ref|node|*/*",
+            "4291478901eed817": "GET|/api/marketplace/:num|ref|mozilla|*/*",
+            "42b8fddce033dca0": "GET|/api/authentication/:num|ref|curl|*/*",
+            "4798e5ec71bbda89": "GET|/api/marketplace/:num|ref|curl|*/*",
+            "4edc93e1d5d04a96": "GET|/api/fulfillment/:num|ref|node|*/*",
+            "50d96403e2540ed5": "GET|/api/transactions/:num|ref|curl|*/*",
+            "518e705ebf2834b2": "GET|/api/inventory/:num|ref|python|*/*",
+            "52a1cddb638012ce": "GET|/api/authentication/:num|ref|node|*/*",
+            "54bf36407ba10b2e": "GET|/api/warehouses/:num|ref|node|*/*",
+            "55ff88d92c952300": "GET|/api/warehouses/:num|ref|curl|*/*",
+            "5db0b2e84767678d": "GET|/api/onboarding/:num|ref|curl|*/*",
+            "5dfe13934125c9a4": "GET|/api/dashboard/:num|ref|node|*/*",
+            "674fcc227aaf6d36": "GET|/api/notifications/:num|ref|mozilla|*/*",
+            "6fa2916f36809b58": "GET|/api/configuration/:num|ref|mozilla|*/*",
+            "72d7dd2760f6a152": "GET|/api/configuration/:num|ref|node|*/*",
+            "7a539da85f28ac56": "GET|/api/dashboard/:num|ref|mozilla|*/*",
+            "7f1ea4c9bbb8ea0f": "GET|/api/catalog/:num|ref|node|*/*",
+            "8a65a4218631c5d5": "GET|/api/transactions/:num|ref|python|*/*",
+            "8bd9a47a04bd07f2": "GET|/api/notifications/:num|ref|python|*/*",
+            "8f1612775ff49173": "GET|/api/onboarding/:num|ref|mozilla|*/*",
+            "90e1d9017b3d6444": "GET|/api/inventory/:num|ref|node|*/*",
+            "91edb59b81de1dcc": "GET|/api/authentication/:num|ref|mozilla|*/*",
+            "9e61d97f39016d3e": "GET|/api/dashboard/:num|ref|curl|*/*",
+            "a01a11e6e64bdec4": "GET|/api/authentication/:num|ref|python|*/*",
+            "a107b6663fa72f1e": "GET|/api/notifications/:num|ref|curl|*/*",
+            "a4906ad825e18571": "GET|/api/marketplace/:num|ref|python|*/*",
+            "ad4148a2d1f7de3b": "GET|/api/transactions/:num|ref|mozilla|*/*",
+            "ad728561fcc53ea1": "GET|/api/organization/:num|ref|mozilla|*/*",
+            "af221f071b801bc7": "GET|/api/subscription/:num|ref|mozilla|*/*",
+            "b3dc9e495edb0af9": "GET|/api/subscription/:num|ref|curl|*/*",
+            "b714707cbd3c7584": "GET|/api/notifications/:num|ref|node|*/*",
+            "bb77c06570f22397": "GET|/api/organization/:num|ref|curl|*/*",
+            "c90d0849785eb9e0": "GET|/api/configuration/:num|ref|python|*/*",
+            "cd47f0f557ddbf18": "GET|/api/fulfillment/:num|ref|curl|*/*",
+            "d3b29427f1d83ae4": "GET|/api/fulfillment/:num|ref|mozilla|*/*",
+            "dbf1003a8e249aff": "GET|/api/catalog/:num|ref|mozilla|*/*",
+            "e2b13b867ba49f1b": "GET|/api/onboarding/:num|ref|node|*/*",
+            "ef5256476caab4f6": "GET|/api/inventory/:num|ref|mozilla|*/*",
+            "f935ce646d584337": "GET|/api/marketplace/:num|ref|node|*/*",
+            "fbfdbb9c2d071267": "GET|/api/subscription/:num|ref|node|*/*"
+          },
+          "unique_signatures": 52
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with dictionary API slugs that avoid :token normalization",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      }
+    },
+    "hex-slug-xff": {
+      "direct_upstream": {
+        "allowed_percent": 100.0,
+        "blocked_percent": 0.0,
+        "errors": 6,
+        "first_block_seconds": null,
+        "first_limit_seconds": null,
+        "latency_ms": {
+          "p50": 2.89,
+          "p95": 7.931,
+          "p99": 11.187
+        },
+        "limited_percent": 0.0,
+        "requests": 16641,
+        "requests_per_second": 8298.1,
+        "statuses": {
+          "204": 16641
+        }
+      },
+      "learned_filter_observed": {
+        "analyzer_log_tail": [
+          "wrote 3 filters to /tmp/tmpoq0s_34f/filters-52519.json via deterministic",
+          "wrote 5 filters to /tmp/tmpoq0s_34f/filters-52519.json via deterministic",
+          "wrote 5 filters to /tmp/tmpoq0s_34f/filters-52519.json via deterministic",
+          "wrote 5 filters to /tmp/tmpoq0s_34f/filters-52519.json via deterministic",
+          "wrote 5 filters to /tmp/tmpoq0s_34f/filters-52519.json via deterministic",
+          "wrote 5 filters to /tmp/tmpoq0s_34f/filters-52519.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.63,
+            "p95": 0.706,
+            "p99": 0.731
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.28,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 46.45,
+          "blocked_percent": 53.55,
+          "errors": 0,
+          "first_block_seconds": 0.903,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.282,
+            "p95": 9.768,
+            "p99": 12.135
+          },
+          "limited_percent": 0.0,
+          "requests": 11386,
+          "requests_per_second": 5680.1,
+          "statuses": {
+            "204": 5289,
+            "403": 6097
+          }
+        },
+        "events": {
+          "count": 280,
+          "first_detection_seconds": 0.014,
+          "reasons": {
+            "filter_block": 19,
+            "global_observed": 256,
+            "observed": 5
+          },
+          "signature_bases": {
+            "0a5b5b63bb6def53": "GET|/api/:hex/:num|view|node|*/*",
+            "18a95d817e980a7b": "GET|/api/:hex/:num|view|mozilla|*/*",
+            "8551e4bdcd063415": "GET|/api/:hex/:num|view|curl|*/*",
+            "e2ffd849e2207315": "GET|/api/:hex/:num|view|python|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-:hex-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-8551e4bdcd063415",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "8551e4bdcd063415",
+            "signature_basis": "GET|/api/:hex/:num|view|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-e2ffd849e2207315",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "e2ffd849e2207315",
+            "signature_basis": "GET|/api/:hex/:num|view|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-0a5b5b63bb6def53",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "0a5b5b63bb6def53",
+            "signature_basis": "GET|/api/:hex/:num|view|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-18a95d817e980a7b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "18a95d817e980a7b",
+            "signature_basis": "GET|/api/:hex/:num|view|mozilla|*/*"
+          }
+        ],
+        "filter_write_seconds": 2.005,
+        "filters_learned": 5,
+        "layer": "learned-observed",
+        "learn_observed": true,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/:hex/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-:hex-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "8551e4bdcd063415"
+            },
+            "enabled": true,
+            "id": "codex-learned-8551e4bdcd063415",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "e2ffd849e2207315"
+            },
+            "enabled": true,
+            "id": "codex-learned-e2ffd849e2207315",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "0a5b5b63bb6def53"
+            },
+            "enabled": true,
+            "id": "codex-learned-0a5b5b63bb6def53",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "18a95d817e980a7b"
+            },
+            "enabled": true,
+            "id": "codex-learned-18a95d817e980a7b",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.002,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.109,
+            "p95": 9.733,
+            "p99": 11.968
+          },
+          "limited_percent": 0.0,
+          "requests": 11675,
+          "requests_per_second": 5825.19,
+          "statuses": {
+            "403": 11675
+          }
+        },
+        "scenario_description": "Rotating XFF with long hex path segments mapped to :hex instead of :token",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 100.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "learned_filter_strict": {
+        "analyzer_log_tail": [
+          "wrote 1 filters to /tmp/tmpoq0s_34f/filters-50241.json via deterministic",
+          "wrote 5 filters to /tmp/tmpoq0s_34f/filters-50241.json via deterministic",
+          "wrote 5 filters to /tmp/tmpoq0s_34f/filters-50241.json via deterministic",
+          "wrote 5 filters to /tmp/tmpoq0s_34f/filters-50241.json via deterministic",
+          "wrote 5 filters to /tmp/tmpoq0s_34f/filters-50241.json via deterministic",
+          "wrote 5 filters to /tmp/tmpoq0s_34f/filters-50241.json via deterministic"
+        ],
+        "bypass_probe": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 0.646,
+            "p95": 0.723,
+            "p99": 0.78
+          },
+          "limited_percent": 0.0,
+          "requests": 25,
+          "requests_per_second": 32.26,
+          "statuses": {
+            "204": 25
+          }
+        },
+        "collect": {
+          "allowed_percent": 48.81,
+          "blocked_percent": 51.19,
+          "errors": 0,
+          "first_block_seconds": 1.012,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.434,
+            "p95": 9.94,
+            "p99": 12.365
+          },
+          "limited_percent": 0.0,
+          "requests": 11199,
+          "requests_per_second": 5589.46,
+          "statuses": {
+            "204": 5466,
+            "403": 5733
+          }
+        },
+        "events": {
+          "count": 277,
+          "first_detection_seconds": 0.013,
+          "reasons": {
+            "filter_block": 16,
+            "global_observed": 256,
+            "observed": 5
+          },
+          "signature_bases": {
+            "0a5b5b63bb6def53": "GET|/api/:hex/:num|view|node|*/*",
+            "18a95d817e980a7b": "GET|/api/:hex/:num|view|mozilla|*/*",
+            "8551e4bdcd063415": "GET|/api/:hex/:num|view|curl|*/*",
+            "e2ffd849e2207315": "GET|/api/:hex/:num|view|python|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "path_shape"
+            ],
+            "id": "codex-learned-shape--api-:hex-:num",
+            "kind": "path_shape",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": null,
+            "signature_basis": null
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-0a5b5b63bb6def53",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "0a5b5b63bb6def53",
+            "signature_basis": "GET|/api/:hex/:num|view|node|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-8551e4bdcd063415",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "8551e4bdcd063415",
+            "signature_basis": "GET|/api/:hex/:num|view|curl|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-e2ffd849e2207315",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "e2ffd849e2207315",
+            "signature_basis": "GET|/api/:hex/:num|view|python|*/*"
+          },
+          {
+            "adaptive": true,
+            "condition_keys": [
+              "signature"
+            ],
+            "id": "codex-learned-18a95d817e980a7b",
+            "kind": "normalized_signature",
+            "not_ip_based": true,
+            "precision": "pattern",
+            "signature": "18a95d817e980a7b",
+            "signature_basis": "GET|/api/:hex/:num|view|mozilla|*/*"
+          }
+        ],
+        "filter_write_seconds": 2.004,
+        "filters_learned": 5,
+        "layer": "learned-strict",
+        "learn_observed": false,
+        "learned_filters": [
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "path_shape": "/api/:hex/:num"
+            },
+            "enabled": true,
+            "id": "codex-learned-shape--api-:hex-:num",
+            "priority": 90,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "0a5b5b63bb6def53"
+            },
+            "enabled": true,
+            "id": "codex-learned-0a5b5b63bb6def53",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "8551e4bdcd063415"
+            },
+            "enabled": true,
+            "id": "codex-learned-8551e4bdcd063415",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "e2ffd849e2207315"
+            },
+            "enabled": true,
+            "id": "codex-learned-e2ffd849e2207315",
+            "priority": 100,
+            "ttl_seconds": 20
+          },
+          {
+            "action": {
+              "body": "blocked by adaptive filter\n",
+              "kind": "block",
+              "status": 403
+            },
+            "adaptive": true,
+            "condition": {
+              "signature": "18a95d817e980a7b"
+            },
+            "enabled": true,
+            "id": "codex-learned-18a95d817e980a7b",
+            "priority": 100,
+            "ttl_seconds": 20
+          }
+        ],
+        "replay": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.138,
+            "p95": 9.755,
+            "p99": 12.008
+          },
+          "limited_percent": 0.0,
+          "requests": 11606,
+          "requests_per_second": 5790.38,
+          "statuses": {
+            "403": 11606
+          }
+        },
+        "scenario_description": "Rotating XFF with long hex path segments mapped to :hex instead of :token",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 100.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": 100.0,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": true,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "proxy_open": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.566,
+            "p95": 10.113,
+            "p99": 12.524
+          },
+          "limited_percent": 0.0,
+          "requests": 10839,
+          "requests_per_second": 5407.94,
+          "statuses": {
+            "204": 10839
+          }
+        },
+        "events": {
+          "count": 0,
+          "first_detection_seconds": null,
+          "reasons": {},
+          "signature_bases": {},
+          "unique_signatures": 0
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "proxy-open",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with long hex path segments mapped to :hex instead of :token",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "rate_limit": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 100.0,
+          "blocked_percent": 0.0,
+          "errors": 0,
+          "first_block_seconds": null,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.553,
+            "p95": 9.8,
+            "p99": 11.932
+          },
+          "limited_percent": 0.0,
+          "requests": 10995,
+          "requests_per_second": 5484.96,
+          "statuses": {
+            "204": 10995
+          }
+        },
+        "events": {
+          "count": 136,
+          "first_detection_seconds": 0.014,
+          "reasons": {
+            "global_observed": 128,
+            "observed": 8
+          },
+          "signature_bases": {
+            "0a5b5b63bb6def53": "GET|/api/:hex/:num|view|node|*/*",
+            "18a95d817e980a7b": "GET|/api/:hex/:num|view|mozilla|*/*",
+            "8551e4bdcd063415": "GET|/api/:hex/:num|view|curl|*/*",
+            "e2ffd849e2207315": "GET|/api/:hex/:num|view|python|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "rate-limit",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with long hex path segments mapped to :hex instead of :token",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      },
+      "static_filter": {
+        "analyzer_log_tail": [],
+        "bypass_probe": null,
+        "collect": {
+          "allowed_percent": 0.0,
+          "blocked_percent": 100.0,
+          "errors": 0,
+          "first_block_seconds": 0.001,
+          "first_limit_seconds": null,
+          "latency_ms": {
+            "p50": 5.138,
+            "p95": 9.88,
+            "p99": 12.341
+          },
+          "limited_percent": 0.0,
+          "requests": 11641,
+          "requests_per_second": 5809.17,
+          "statuses": {
+            "403": 11641
+          }
+        },
+        "events": {
+          "count": 138,
+          "first_detection_seconds": 0.012,
+          "reasons": {
+            "filter_block": 10,
+            "global_observed": 128
+          },
+          "signature_bases": {
+            "0a5b5b63bb6def53": "GET|/api/:hex/:num|view|node|*/*",
+            "18a95d817e980a7b": "GET|/api/:hex/:num|view|mozilla|*/*",
+            "8551e4bdcd063415": "GET|/api/:hex/:num|view|curl|*/*",
+            "e2ffd849e2207315": "GET|/api/:hex/:num|view|python|*/*"
+          },
+          "unique_signatures": 4
+        },
+        "filter_interpretation": [],
+        "filter_write_seconds": null,
+        "filters_learned": 0,
+        "layer": "static-filter",
+        "learn_observed": false,
+        "learned_filters": [],
+        "replay": null,
+        "scenario_description": "Rotating XFF with long hex path segments mapped to :hex instead of :token",
+        "target_score": {
+          "attacker_block_target_percent": 90.0,
+          "attacker_blocked_percent": 0.0,
+          "benign_allow_target_percent": 95.0,
+          "benign_allowed_percent": null,
+          "bypass_errors": 0,
+          "meets_attacker_block_target": false,
+          "meets_benign_allow_target": true,
+          "replay_errors": 0
+        },
+        "trusted_xff": true
+      }
+    }
+  },
+  "signature_threshold_per_second": 60,
+  "workdir": "/tmp/tmpoq0s_34f",
+  "workers": 32
+}
