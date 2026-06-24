@@ -14,7 +14,9 @@ SERVICE_GROUP="altura-prot"
 SYSTEMD_UNIT="altura-prot.service"
 START_SERVICE=0
 USER_INSTALL=0
+FROM_SOURCE=0
 WORK_DIR=""
+BINARY=""
 
 cleanup() {
   [[ -n "${WORK_DIR}" && -d "${WORK_DIR}" ]] && rm -rf "${WORK_DIR}"
@@ -25,9 +27,11 @@ usage() {
   cat <<'EOF'
 AlturaProt installer
 
-One command installs everything: it fetches the source if needed, installs a
-Rust toolchain if cargo is missing, builds the release binary, writes config,
-and (system mode) creates the service user and systemd unit.
+One command installs everything: it downloads a prebuilt binary for your
+platform (or builds from source if none is published / when run from a
+checkout), writes config, and (system mode) creates the service user and
+systemd unit. Building from source auto-installs a Rust toolchain if cargo
+is missing.
 
 Usage:
   # one-line system install, then enable + start the service
@@ -43,6 +47,7 @@ Options:
   --prefix PATH     Install binaries to PATH (default: /usr/local)
   --user            Install for the current user (~/.local/bin, ~/.config/altura-prot)
   --start           Enable and start the systemd service after install (system mode only)
+  --from-source     Build from source even when a prebuilt binary is available
   -h, --help        Show this help
 
 Examples:
@@ -63,10 +68,71 @@ need_cmd() {
   }
 }
 
+# Lazily create one temp dir (auto-removed on exit) shared by downloads/clones.
+ensure_work_dir() {
+  [[ -n "${WORK_DIR}" ]] || WORK_DIR="$(mktemp -d)"
+}
+
 # True when REPO_ROOT is an AlturaProt source checkout we can build from.
 in_checkout() {
   [[ -f "${REPO_ROOT}/Cargo.toml" ]] &&
     grep -q 'name = "altura-prot"' "${REPO_ROOT}/Cargo.toml" 2>/dev/null
+}
+
+# Map the host to a prebuilt-release target triple, or empty if unsupported.
+detect_target() {
+  [[ "$(uname -s)" == "Linux" ]] || return 0
+  case "$(uname -m)" in
+    x86_64 | amd64) echo "x86_64-unknown-linux-musl" ;;
+    aarch64 | arm64) echo "aarch64-unknown-linux-musl" ;;
+    *) : ;;
+  esac
+}
+
+verify_sha256() {
+  # $1 = checksum file ("<hash>  <name>"); verified from its own directory.
+  if command -v sha256sum >/dev/null 2>&1; then
+    (cd "$(dirname "$1")" && sha256sum -c "$(basename "$1")" >/dev/null 2>&1)
+  elif command -v shasum >/dev/null 2>&1; then
+    (cd "$(dirname "$1")" && shasum -a 256 -c "$(basename "$1")" >/dev/null 2>&1)
+  else
+    return 1
+  fi
+}
+
+# Try to download + verify a prebuilt binary for this host. Sets BINARY on success.
+try_prebuilt() {
+  [[ "${FROM_SOURCE}" -eq 1 ]] && return 1
+  local triple asset url dl
+  triple="$(detect_target)"
+  [[ -n "${triple}" ]] || return 1
+  command -v curl >/dev/null 2>&1 || return 1
+  command -v tar >/dev/null 2>&1 || return 1
+
+  asset="altura-prot-${triple}.tar.gz"
+  url="${REPO_URL%/}/releases/latest/download/${asset}"
+  ensure_work_dir
+  dl="${WORK_DIR}/prebuilt"
+  mkdir -p "${dl}"
+
+  log "fetching prebuilt binary (${triple})"
+  if ! curl -fsSL "${url}" -o "${dl}/${asset}" 2>/dev/null; then
+    log "no prebuilt binary published yet; building from source"
+    return 1
+  fi
+  if curl -fsSL "${url}.sha256" -o "${dl}/${asset}.sha256" 2>/dev/null; then
+    if ! verify_sha256 "${dl}/${asset}.sha256"; then
+      echo "checksum verification failed for ${asset}; building from source" >&2
+      return 1
+    fi
+  else
+    log "checksum unavailable; skipping verification"
+  fi
+  tar -xzf "${dl}/${asset}" -C "${dl}" || return 1
+  BINARY="${dl}/altura-prot"
+  [[ -f "${BINARY}" ]] || BINARY="$(find "${dl}" -type f -name altura-prot | head -n1)"
+  [[ -n "${BINARY}" && -f "${BINARY}" ]] || return 1
+  chmod +x "${BINARY}"
 }
 
 # When piped from curl there is no checkout, so clone the source to a temp dir.
@@ -75,12 +141,20 @@ ensure_checkout() {
     return
   fi
   need_cmd git
+  ensure_work_dir
   log "fetching AlturaProt source (${REPO_BRANCH})"
-  WORK_DIR="$(mktemp -d)"
   if ! git clone --depth 1 --branch "${REPO_BRANCH}" "${REPO_URL}" "${WORK_DIR}/AlturaProt" >/dev/null 2>&1; then
     git clone --depth 1 "${REPO_URL}" "${WORK_DIR}/AlturaProt"
   fi
   REPO_ROOT="${WORK_DIR}/AlturaProt"
+}
+
+# Build the binary from source (clone first if needed). Sets BINARY.
+build_from_source() {
+  ensure_checkout
+  ensure_cargo
+  build_release
+  BINARY="${REPO_ROOT}/target/release/altura-prot"
 }
 
 # Install a Rust toolchain via rustup if cargo is not already available.
@@ -129,6 +203,10 @@ parse_args() {
         START_SERVICE=1
         shift
         ;;
+      --from-source)
+        FROM_SOURCE=1
+        shift
+        ;;
       -h|--help)
         usage
         exit 0
@@ -155,7 +233,7 @@ install_user_mode() {
   local user_config="${HOME}/.config/altura-prot/config.json"
 
   mkdir -p "${user_bin}"
-  install -m 0755 "${REPO_ROOT}/target/release/altura-prot" "${user_bin}/altura-prot"
+  install -m 0755 "${BINARY}" "${user_bin}/altura-prot"
   ln -sf "${user_bin}/altura-prot" "${user_bin}/AlturaProt"
 
   export PATH="${user_bin}:${PATH}"
@@ -185,6 +263,23 @@ Next steps:
 EOF
 }
 
+# Install the systemd unit, sourced from the checkout or fetched from the repo,
+# with ExecStart rewritten to the chosen prefix and config path.
+install_systemd_unit() {
+  ensure_work_dir
+  local src="${REPO_ROOT}/ops/systemd/${SYSTEMD_UNIT}"
+  if [[ ! -f "${src}" ]]; then
+    src="${WORK_DIR}/${SYSTEMD_UNIT}.src"
+    local raw="${REPO_URL/github.com/raw.githubusercontent.com}/${REPO_BRANCH}/ops/systemd/${SYSTEMD_UNIT}"
+    log "fetching systemd unit"
+    curl -fsSL "${raw}" -o "${src}"
+  fi
+  local unit="${WORK_DIR}/${SYSTEMD_UNIT}"
+  sed "s|^ExecStart=.*|ExecStart=${BIN_DIR}/altura-prot run --config ${CONFIG_DIR}/config.json|" \
+    "${src}" >"${unit}"
+  run_root install -m 0644 "${unit}" "/etc/systemd/system/${SYSTEMD_UNIT}"
+}
+
 install_system_mode() {
   log "creating service group and user"
   if ! getent group "${SERVICE_GROUP}" >/dev/null 2>&1; then
@@ -197,7 +292,7 @@ install_system_mode() {
 
   log "installing binary to ${BIN_DIR}"
   run_root install -d "${BIN_DIR}"
-  run_root install -m 0755 "${REPO_ROOT}/target/release/altura-prot" "${BIN_DIR}/altura-prot"
+  run_root install -m 0755 "${BINARY}" "${BIN_DIR}/altura-prot"
   run_root ln -sf "${BIN_DIR}/altura-prot" "${BIN_DIR}/AlturaProt"
 
   log "creating state and log directories"
@@ -216,7 +311,7 @@ install_system_mode() {
   fi
 
   log "installing systemd unit"
-  run_root install -m 0644 "${REPO_ROOT}/ops/systemd/${SYSTEMD_UNIT}" "/etc/systemd/system/${SYSTEMD_UNIT}"
+  install_systemd_unit
   run_root systemctl daemon-reload
 
   if [[ "${START_SERVICE}" -eq 1 ]]; then
@@ -256,9 +351,14 @@ main() {
   fi
 
   need_cmd install
-  ensure_checkout
-  ensure_cargo
-  build_release
+
+  # Build the local tree when run from a checkout; otherwise prefer a published
+  # prebuilt binary and fall back to fetching + building the source.
+  if [[ "${FROM_SOURCE}" -ne 1 ]] && in_checkout; then
+    build_from_source
+  elif ! try_prebuilt; then
+    build_from_source
+  fi
 
   if [[ "${USER_INSTALL}" -eq 1 ]]; then
     install_user_mode

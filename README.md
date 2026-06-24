@@ -24,9 +24,10 @@ AlturaProt is a Rust Layer 7 reverse proxy prototype for defensive HTTP and raw 
 
 ## Install
 
-One command installs everything — it fetches the source, installs a Rust
-toolchain if `cargo` is missing, builds the release binary, writes config, and
-(system mode) creates the service user and systemd unit:
+One command installs everything — it downloads a prebuilt binary for your
+platform (or builds from source if none is published / when run from a
+checkout), writes config, and (system mode) creates the service user and
+systemd unit:
 
 ```bash
 # system install, then enable + start the service

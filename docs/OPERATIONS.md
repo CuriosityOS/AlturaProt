@@ -2,9 +2,13 @@
 
 ## Install and CLI
 
-`install.sh` is a one-command installer. Piped from curl it fetches the source,
-installs a Rust toolchain via rustup if `cargo` is missing, builds the release
-binary, and installs it; run from a checkout it skips the clone:
+`install.sh` is a one-command installer. Piped from curl it downloads a prebuilt
+binary for the host (Linux `x86_64`/`aarch64`, static musl) and verifies its
+SHA-256; if no release is published it falls back to fetching the source and
+building it (auto-installing a Rust toolchain via rustup when `cargo` is
+missing). Run from a checkout it builds the local tree. `--from-source` forces a
+source build. Prebuilt binaries are published by `.github/workflows/release.yml`
+on `v*` tags:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh | sudo bash -s -- --start
