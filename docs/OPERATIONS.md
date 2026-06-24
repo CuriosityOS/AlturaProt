@@ -1,5 +1,42 @@
 # Operations
 
+## Install and CLI
+
+`install.sh` is a one-command installer. Piped from curl it fetches the source,
+installs a Rust toolchain via rustup if `cargo` is missing, builds the release
+binary, and installs it; run from a checkout it skips the clone:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh | sudo bash -s -- --start
+```
+
+System mode (default, needs root) installs to `/usr/local/bin`, creates the
+`altura-prot` service user/group, writes config to `/etc/altura-prot`, and
+installs the systemd unit; `--start` also enables and starts the service.
+`--user` installs to `~/.local/bin` and `~/.config/altura-prot`. `--prefix PATH`
+overrides the binary install root. The source repo and branch can be overridden
+with the `ALTURA_PROT_REPO_URL` and `ALTURA_PROT_REPO_BRANCH` environment
+variables.
+
+The `altura-prot` binary is also a management CLI:
+
+```bash
+altura-prot init [--system]                        # create config dir + default config
+altura-prot validate                               # validate the active config file
+altura-prot config show                            # print the resolved config as JSON
+altura-prot config get http.limits.per_ip_rps      # read one value by dot path
+altura-prot config set http.admin_token <secret>   # set one value (validated before write)
+altura-prot run [--config PATH]                    # start the proxy
+altura-prot status                                  # systemd or process status
+```
+
+`config set` is atomic and validated: it writes a temp file, runs full config
+validation, and renames into place only on success, so a rejected value never
+replaces a working config. The active config path resolves from `--config`,
+then `$ALTURA_PROT_CONFIG`, `/etc/altura-prot/config.json`,
+`~/.config/altura-prot/config.json`, and finally `configs/example.json`. The
+legacy `altura-prot --config PATH` form (no subcommand) still runs the proxy.
+
 ## Local Test
 
 Start an upstream:

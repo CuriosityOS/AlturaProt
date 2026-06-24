@@ -99,9 +99,8 @@ pub async fn run(config_path: impl AsRef<Path>) -> Result<(), BoxError> {
         startup_checks.push((name, startup_rx));
         let stats = Arc::clone(&stats);
         let shutdown = shutdown_rx.clone();
-        listener_tasks.spawn(async move {
-            run_tcp_proxy(tcp_cfg, stats, Some(startup_tx), shutdown).await
-        });
+        listener_tasks
+            .spawn(async move { run_tcp_proxy(tcp_cfg, stats, Some(startup_tx), shutdown).await });
     }
 
     if startup_checks.is_empty() {
@@ -177,9 +176,7 @@ async fn wait_for_listener_startup(
     match tokio::time::timeout(Duration::from_secs(5), rx).await {
         Ok(Ok(Ok(()))) => Ok(()),
         Ok(Ok(Err(err))) => Err(format!("{name} startup failed: {err}").into()),
-        Ok(Err(_)) => {
-            Err(format!("{name} startup task exited before reporting readiness").into())
-        }
+        Ok(Err(_)) => Err(format!("{name} startup task exited before reporting readiness").into()),
         Err(_) => Err(format!("{name} startup timed out").into()),
     }
 }

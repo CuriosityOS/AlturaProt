@@ -22,6 +22,58 @@ AlturaProt is a Rust Layer 7 reverse proxy prototype for defensive HTTP and raw 
   ICMPv4/ICMPv6 control traffic.
 - Local-only benchmark/flood script that refuses non-loopback targets by default.
 
+## Install
+
+One command installs everything — it fetches the source, installs a Rust
+toolchain if `cargo` is missing, builds the release binary, writes config, and
+(system mode) creates the service user and systemd unit:
+
+```bash
+# system install, then enable + start the service
+curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh | sudo bash -s -- --start
+
+# user install (no root)
+curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh | bash -s -- --user
+```
+
+Or from a checkout:
+
+```bash
+git clone https://github.com/CuriosityOS/AlturaProt
+cd AlturaProt
+sudo ./install.sh --start    # system mode: /usr/local/bin, /etc/altura-prot, systemd unit
+./install.sh --user          # user mode: ~/.local/bin, ~/.config/altura-prot
+```
+
+System mode creates the `altura-prot` service user/group and installs config under
+`/etc/altura-prot`. No `admin_token` is set by default, so the token-protected
+metrics endpoint stays closed until you set one. After installing, point it at
+your origin and set a token:
+
+```bash
+sudo altura-prot config set http.upstream http://127.0.0.1:9000
+sudo altura-prot config set http.admin_token <secret>
+sudo systemctl restart altura-prot   # if installed with --start
+```
+
+## CLI
+
+```bash
+altura-prot init                                   # create config dir + default config (--system for /etc)
+altura-prot validate                               # validate the active config file
+altura-prot config show                            # print the resolved config as JSON
+altura-prot config get http.limits.per_ip_rps      # read one value by dot path
+altura-prot config set http.admin_token <secret>   # set one value (validated before write)
+altura-prot run                                     # start the proxy
+altura-prot status                                  # systemd or process status
+```
+
+`config set` writes to a temp file, validates it, and only then renames it into
+place, so a rejected value never replaces a working config. The active config
+path is resolved from `--config`, then `$ALTURA_PROT_CONFIG`,
+`/etc/altura-prot/config.json`, `~/.config/altura-prot/config.json`, and finally
+`configs/example.json`.
+
 ## Quick Start
 
 ```bash

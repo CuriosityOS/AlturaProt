@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+REPO_URL="${ALTURA_PROT_REPO_URL:-https://github.com/CuriosityOS/AlturaProt}"
+REPO_BRANCH="${ALTURA_PROT_REPO_BRANCH:-main}"
 PREFIX="${PREFIX:-/usr/local}"
 BIN_DIR="${PREFIX}/bin"
 CONFIG_DIR="/etc/altura-prot"
@@ -12,14 +14,30 @@ SERVICE_GROUP="altura-prot"
 SYSTEMD_UNIT="altura-prot.service"
 START_SERVICE=0
 USER_INSTALL=0
+WORK_DIR=""
+
+cleanup() {
+  [[ -n "${WORK_DIR}" && -d "${WORK_DIR}" ]] && rm -rf "${WORK_DIR}"
+}
+trap cleanup EXIT
 
 usage() {
   cat <<'EOF'
 AlturaProt installer
 
+One command installs everything: it fetches the source if needed, installs a
+Rust toolchain if cargo is missing, builds the release binary, writes config,
+and (system mode) creates the service user and systemd unit.
+
 Usage:
-  curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh | bash
-  ./install.sh [options]
+  # one-line system install, then enable + start the service
+  curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh | sudo bash -s -- --start
+
+  # one-line user install (no root)
+  curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh | bash -s -- --user
+
+  # from a checkout
+  sudo ./install.sh [options]
 
 Options:
   --prefix PATH     Install binaries to PATH (default: /usr/local)
@@ -43,6 +61,48 @@ need_cmd() {
     echo "missing required command: $1" >&2
     exit 1
   }
+}
+
+# True when REPO_ROOT is an AlturaProt source checkout we can build from.
+in_checkout() {
+  [[ -f "${REPO_ROOT}/Cargo.toml" ]] &&
+    grep -q 'name = "altura-prot"' "${REPO_ROOT}/Cargo.toml" 2>/dev/null
+}
+
+# When piped from curl there is no checkout, so clone the source to a temp dir.
+ensure_checkout() {
+  if in_checkout; then
+    return
+  fi
+  need_cmd git
+  log "fetching AlturaProt source (${REPO_BRANCH})"
+  WORK_DIR="$(mktemp -d)"
+  if ! git clone --depth 1 --branch "${REPO_BRANCH}" "${REPO_URL}" "${WORK_DIR}/AlturaProt" >/dev/null 2>&1; then
+    git clone --depth 1 "${REPO_URL}" "${WORK_DIR}/AlturaProt"
+  fi
+  REPO_ROOT="${WORK_DIR}/AlturaProt"
+}
+
+# Install a Rust toolchain via rustup if cargo is not already available.
+ensure_cargo() {
+  if command -v cargo >/dev/null 2>&1; then
+    return
+  fi
+  # rustup installs cargo under ~/.cargo/bin but may not be on PATH yet.
+  if [[ -f "${HOME}/.cargo/env" ]]; then
+    # shellcheck source=/dev/null
+    . "${HOME}/.cargo/env"
+  fi
+  if command -v cargo >/dev/null 2>&1; then
+    return
+  fi
+  log "installing Rust toolchain via rustup"
+  need_cmd curl
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
+    sh -s -- -y --profile minimal --no-modify-path
+  # shellcheck source=/dev/null
+  . "${HOME}/.cargo/env"
+  need_cmd cargo
 }
 
 run_root() {
@@ -126,9 +186,13 @@ EOF
 }
 
 install_system_mode() {
-  log "creating service user"
+  log "creating service group and user"
+  if ! getent group "${SERVICE_GROUP}" >/dev/null 2>&1; then
+    run_root groupadd --system "${SERVICE_GROUP}"
+  fi
   if ! id -u "${SERVICE_USER}" >/dev/null 2>&1; then
-    run_root useradd --system --home "${STATE_DIR}" --shell /usr/sbin/nologin "${SERVICE_USER}"
+    run_root useradd --system --gid "${SERVICE_GROUP}" --home "${STATE_DIR}" \
+      --shell /usr/sbin/nologin "${SERVICE_USER}"
   fi
 
   log "installing binary to ${BIN_DIR}"
@@ -184,18 +248,21 @@ EOF
 
 main() {
   parse_args "$@"
-  need_cmd cargo
-  need_cmd install
 
+  # System install needs root; fail early before fetching/building anything.
+  if [[ "${USER_INSTALL}" -ne 1 && "${EUID}" -ne 0 ]]; then
+    echo "system install requires root; re-run with 'sudo bash' or pass --user" >&2
+    exit 1
+  fi
+
+  need_cmd install
+  ensure_checkout
+  ensure_cargo
   build_release
 
   if [[ "${USER_INSTALL}" -eq 1 ]]; then
     install_user_mode
   else
-    if [[ "${EUID}" -ne 0 ]]; then
-      echo "system install requires root; re-run with sudo or use --user" >&2
-      exit 1
-    fi
     install_system_mode
   fi
 }

@@ -217,4 +217,56 @@ mod tests {
             Value::String("http://127.0.0.1:9000".to_string())
         );
     }
+
+    #[test]
+    fn get_value_rejects_empty_and_missing_paths() {
+        let value = serde_json::json!({ "http": { "listen": "127.0.0.1:8080" } });
+        assert!(get_value(&value, "").is_err());
+        assert!(get_value(&value, "http..listen").is_err());
+        assert!(get_value(&value, "http.upstream").is_err());
+    }
+
+    #[test]
+    fn set_value_rejects_non_object_path() {
+        let mut value = serde_json::json!({ "http": { "listen": "127.0.0.1:8080" } });
+        // `listen` is a scalar, so descending through it is an error.
+        assert!(set_value(&mut value, "http.listen.port", Value::from(1)).is_err());
+        assert!(set_value(&mut value, "", Value::from(1)).is_err());
+    }
+
+    #[test]
+    fn default_config_template_is_valid_and_wired_to_state_dir() {
+        let dir =
+            std::env::temp_dir().join(format!("altura-prot-store-template-{}", std::process::id()));
+        let runtime_dir = dir.join("runtime");
+        let template = default_config_template("0.0.0.0:8080", "http://127.0.0.1:9000", &dir);
+
+        assert_eq!(
+            get_value(&template, "http.listen").unwrap(),
+            &Value::from("0.0.0.0:8080")
+        );
+        assert_eq!(
+            get_value(&template, "http.upstream").unwrap(),
+            &Value::from("http://127.0.0.1:9000")
+        );
+        assert_eq!(
+            get_value(&template, "filters.runtime_file").unwrap(),
+            &Value::from(runtime_dir.join("filters.json").to_string_lossy().as_ref())
+        );
+        assert_eq!(
+            get_value(&template, "adaptive.event_log").unwrap(),
+            &Value::from(
+                runtime_dir
+                    .join("attack_events.jsonl")
+                    .to_string_lossy()
+                    .as_ref()
+            )
+        );
+
+        let cfg_path = dir.join("config.json");
+        write_json(&cfg_path, &template).unwrap();
+        validate_config_file(&cfg_path).expect("rendered template must validate");
+        assert_eq!(load_json(&cfg_path).unwrap(), template);
+        fs::remove_dir_all(&dir).ok();
+    }
 }

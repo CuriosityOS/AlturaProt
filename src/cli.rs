@@ -194,7 +194,10 @@ fn config_command(command: ConfigCommands, global_config: Option<&Path>) -> Resu
             set_value(&mut document, &key, parse_cli_value(&value))?;
             let tmp_path = path.with_extension("tmp");
             write_json(&tmp_path, &document)?;
-            validate_config_file(&tmp_path)?;
+            if let Err(err) = validate_config_file(&tmp_path) {
+                let _ = fs::remove_file(&tmp_path);
+                return Err(err);
+            }
             fs::rename(&tmp_path, &path)?;
             println!("updated {} in {}", key, path.display());
             Ok(())
@@ -263,9 +266,84 @@ pub fn parse_cli() -> Cli {
 mod tests {
     use super::*;
     use clap::CommandFactory;
+    use serde_json::Value;
+    use std::sync::atomic::{AtomicU32, Ordering};
+
+    fn unique_temp_dir(tag: &str) -> PathBuf {
+        static COUNTER: AtomicU32 = AtomicU32::new(0);
+        let n = COUNTER.fetch_add(1, Ordering::Relaxed);
+        let dir =
+            std::env::temp_dir().join(format!("altura-prot-cli-{tag}-{}-{n}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    fn write_template(dir: &Path) -> PathBuf {
+        let cfg_path = dir.join("config.json");
+        let template = default_config_template("127.0.0.1:8080", "http://127.0.0.1:9000", dir);
+        write_json(&cfg_path, &template).unwrap();
+        cfg_path
+    }
 
     #[test]
     fn cli_has_expected_commands() {
         Cli::command().debug_assert();
+    }
+
+    #[test]
+    fn config_set_then_get_round_trips() {
+        let dir = unique_temp_dir("set");
+        let cfg_path = write_template(&dir);
+
+        config_command(
+            ConfigCommands::Set {
+                key: "http.limits.per_ip_rps".to_string(),
+                value: "500".to_string(),
+                config: Some(cfg_path.clone()),
+            },
+            None,
+        )
+        .unwrap();
+
+        let document = load_json(&cfg_path).unwrap();
+        assert_eq!(
+            get_value(&document, "http.limits.per_ip_rps").unwrap(),
+            &Value::from(500)
+        );
+        assert!(!cfg_path.with_extension("tmp").exists());
+        fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn config_set_rejects_invalid_value_and_preserves_original() {
+        let dir = unique_temp_dir("reject");
+        let cfg_path = write_template(&dir);
+        let original = load_json(&cfg_path).unwrap();
+
+        // Negative rates fail config validation, so the write must be rolled back.
+        let result = config_command(
+            ConfigCommands::Set {
+                key: "http.limits.per_ip_rps".to_string(),
+                value: "-1".to_string(),
+                config: Some(cfg_path.clone()),
+            },
+            None,
+        );
+        assert!(result.is_err());
+
+        assert_eq!(load_json(&cfg_path).unwrap(), original);
+        assert!(
+            !cfg_path.with_extension("tmp").exists(),
+            "stale tmp file left after rejected set"
+        );
+        fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn validate_command_accepts_default_template() {
+        let dir = unique_temp_dir("validate");
+        let cfg_path = write_template(&dir);
+        validate_command(cfg_path).unwrap();
+        fs::remove_dir_all(&dir).ok();
     }
 }
