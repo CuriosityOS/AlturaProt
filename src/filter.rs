@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     collections::{HashMap, HashSet},
     io,
     net::IpAddr,
@@ -39,11 +40,9 @@ pub struct RequestContext<'a> {
 
 impl<'a> RequestContext<'a> {
     pub fn user_agent(&self) -> String {
-        self.headers
-            .get(http::header::USER_AGENT)
-            .and_then(|v| v.to_str().ok())
-            .unwrap_or("")
-            .to_string()
+        combined_header_value(self.headers, &http::header::USER_AGENT)
+            .unwrap_or(Cow::Borrowed(""))
+            .into_owned()
     }
 }
 
@@ -687,15 +686,11 @@ pub fn signature_basis(
     query: Option<&str>,
     headers: &HeaderMap<HeaderValue>,
 ) -> String {
-    let ua = headers
-        .get(http::header::USER_AGENT)
-        .and_then(|v| v.to_str().ok())
-        .map(user_agent_family)
+    let ua = combined_header_value(headers, &http::header::USER_AGENT)
+        .map(|value| user_agent_family(value.as_ref()))
         .unwrap_or_else(|| "empty".to_string());
-    let accept = headers
-        .get(http::header::ACCEPT)
-        .and_then(|v| v.to_str().ok())
-        .map(header_class)
+    let accept = combined_header_value(headers, &http::header::ACCEPT)
+        .map(|value| header_class(value.as_ref()))
         .unwrap_or_else(|| "empty".to_string());
     format!(
         "{}|{}|{}|{}|{}",
@@ -757,26 +752,51 @@ fn rule_matches(
         }
     }
     if let Some(needle) = &compiled.user_agent_contains {
-        let ua = ctx
-            .headers
-            .get(http::header::USER_AGENT)
-            .and_then(|v| v.to_str().ok())
-            .unwrap_or("");
-        if !ascii_contains_ignore_case(ua.as_bytes(), needle) {
+        if !header_values_contain_ignore_case(ctx.headers, &http::header::USER_AGENT, needle) {
             return false;
         }
     }
     for header in &compiled.headers {
-        let value = ctx
-            .headers
-            .get(&header.name)
-            .and_then(|v| v.to_str().ok())
-            .unwrap_or("");
-        if !ascii_contains_ignore_case(value.as_bytes(), &header.contains) {
+        if !header_values_contain_ignore_case(ctx.headers, &header.name, &header.contains) {
             return false;
         }
     }
     true
+}
+
+fn combined_header_value<'a>(
+    headers: &'a HeaderMap<HeaderValue>,
+    name: &HeaderName,
+) -> Option<Cow<'a, str>> {
+    let mut values = headers
+        .get_all(name)
+        .iter()
+        .filter_map(|value| value.to_str().ok());
+    let first = values.next()?;
+    let Some(second) = values.next() else {
+        return Some(Cow::Borrowed(first));
+    };
+    let mut combined = String::with_capacity(first.len() + second.len() + 2);
+    combined.push_str(first);
+    combined.push_str(", ");
+    combined.push_str(second);
+    for value in values {
+        combined.push_str(", ");
+        combined.push_str(value);
+    }
+    Some(Cow::Owned(combined))
+}
+
+fn header_values_contain_ignore_case(
+    headers: &HeaderMap<HeaderValue>,
+    name: &HeaderName,
+    needle: &[u8],
+) -> bool {
+    headers
+        .get_all(name)
+        .iter()
+        .filter_map(|value| value.to_str().ok())
+        .any(|value| ascii_contains_ignore_case(value.as_bytes(), needle))
 }
 
 fn ascii_contains_ignore_case(haystack: &[u8], needle: &[u8]) -> bool {
@@ -1242,6 +1262,63 @@ mod tests {
             signature: "sig".to_string(),
         };
         assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "compiled-header");
+    }
+
+    #[tokio::test]
+    async fn filter_matches_duplicate_user_agent_and_header_values() {
+        let engine = FilterEngine::new(
+            vec![FilterRule {
+                id: "duplicate-header-values".to_string(),
+                enabled: true,
+                adaptive: false,
+                priority: 1,
+                ttl_seconds: None,
+                expires_at_unix_ms: None,
+                condition: FilterCondition {
+                    user_agent_contains: Some("floodbot".to_string()),
+                    headers: vec![HeaderContains {
+                        name: "X-Altura-Signal".to_string(),
+                        contains: "burst".to_string(),
+                    }],
+                    ..Default::default()
+                },
+                action: FilterAction::default(),
+            }],
+            PathBuf::from("/tmp/altura-prot-nonexistent-duplicate-header-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let mut headers = HeaderMap::new();
+        headers.append(
+            http::header::USER_AGENT,
+            HeaderValue::from_static("legit browser"),
+        );
+        headers.append(
+            http::header::USER_AGENT,
+            HeaderValue::from_static("floodbot/1.0"),
+        );
+        headers.append(
+            HeaderName::from_static("x-altura-signal"),
+            HeaderValue::from_static("warmup"),
+        );
+        headers.append(
+            HeaderName::from_static("x-altura-signal"),
+            HeaderValue::from_static("coordinated burst"),
+        );
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+
+        assert_eq!(
+            engine.evaluate(&ctx).map(|decision| decision.rule_id),
+            Some("duplicate-header-values".to_string())
+        );
+        assert_eq!(ctx.user_agent(), "legit browser, floodbot/1.0");
     }
 
     #[tokio::test]
@@ -1784,6 +1861,32 @@ mod tests {
         let a = signature_basis("GET", "/search", Some("b=2&a=1"), &headers);
         let b = signature_basis("GET", "/search", Some("a=3&b=4"), &headers);
         assert_eq!(a, b);
+    }
+
+    #[test]
+    fn signatures_classify_combined_duplicate_header_values() {
+        let mut first_only = HeaderMap::new();
+        first_only.append(
+            http::header::USER_AGENT,
+            HeaderValue::from_static("randomized-browser"),
+        );
+        first_only.append(
+            http::header::ACCEPT,
+            HeaderValue::from_static("application/json"),
+        );
+        let mut duplicate_values = first_only.clone();
+        duplicate_values.append(
+            http::header::USER_AGENT,
+            HeaderValue::from_static("Python-Requests/2.32"),
+        );
+        duplicate_values.append(http::header::ACCEPT, HeaderValue::from_static("text/html"));
+
+        let baseline = signature_basis("GET", "/api/catalog", None, &first_only);
+        let combined = signature_basis("GET", "/api/catalog", None, &duplicate_values);
+
+        assert_ne!(baseline, combined);
+        assert!(combined.contains("|python|"));
+        assert!(combined.ends_with("|application/json"));
     }
 
     #[test]
