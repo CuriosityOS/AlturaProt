@@ -489,6 +489,28 @@ class LocalBenchAssertionTests(unittest.TestCase):
         self.assertIn("invalid_fragment_thresholds_rejected", errors[0])
         self.assertIn("expected true", errors[0])
 
+    def test_assert_local_bench_rejects_admin_rate_limit_bypass(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["admin_rate_limit"]["statuses"] = [200, 200]
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("admin_rate_limit.statuses", errors[0])
+        self.assertIn("expected [200, 429]", errors[0])
+
+    def test_assert_local_bench_rejects_admin_signature_rate_bypass(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["admin_signature_rate"][
+            "admin_health_signature_limited"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("admin_health_signature_limited", errors[0])
+        self.assertIn("expected true", errors[0])
+
     def test_assert_local_bench_rejects_post_grace_tcp_echo(self) -> None:
         report = self.valid_report()
         report["guardrails"]["tcp_min_rate"]["slow_drip"]["second_echo_bytes"] = 1

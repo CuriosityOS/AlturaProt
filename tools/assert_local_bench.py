@@ -639,6 +639,34 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "guardrails.admin_control_plane.body_bearing_metrics_with_token_closes_connection",
         "body-bearing authenticated metrics checks must close before keep-alive reuse",
     ),
+    (
+        "guardrails.admin_rate_limit.retry_after_header_matches",
+        "admin endpoint per-IP rate-limit responses must carry Retry-After",
+    ),
+    (
+        "guardrails.admin_rate_limit.cache_control_header_matches",
+        "admin endpoint per-IP rate-limit responses must be marked no-store",
+    ),
+    (
+        "guardrails.admin_signature_rate.admin_health_signature_limited",
+        "admin health requests must be covered by request-signature limiting",
+    ),
+    (
+        "guardrails.admin_signature_rate.retry_after_header_matches",
+        "admin signature-rate responses must carry Retry-After",
+    ),
+    (
+        "guardrails.admin_signature_rate.cache_control_header_matches",
+        "admin signature-rate responses must be marked no-store",
+    ),
+    (
+        "guardrails.admin_signature_rate.signature_metric_matches",
+        "admin signature-rate probe must increment the dedicated signature metric",
+    ),
+    (
+        "guardrails.admin_signature_rate.rate_limited_metric_includes_signature_limit",
+        "aggregate rate-limit metrics must include admin signature limiting",
+    ),
 )
 
 
@@ -662,6 +690,16 @@ REQUIRED_VALUE_CHECKS: tuple[tuple[str, Any, str], ...] = (
         "guardrails.tcp_min_rate.default_slow_drip.third_echo_bytes",
         0,
         "default TCP minimum-rate guard must keep the third slow-drip byte from echoing",
+    ),
+    (
+        "guardrails.admin_rate_limit.statuses",
+        [200, 429],
+        "admin health per-IP rate-limit probe must allow the first request and limit the second",
+    ),
+    (
+        "guardrails.admin_signature_rate.statuses",
+        [200, 200, 429, 429],
+        "admin health signature-rate probe must allow the burst then limit repeated signatures",
     ),
 )
 
