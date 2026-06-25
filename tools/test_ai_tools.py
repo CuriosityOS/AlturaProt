@@ -3895,23 +3895,27 @@ class AttackThresholdGateTests(unittest.TestCase):
     user-set --min-attack-events threshold; below it, the free deterministic
     generator runs and no provider call is made."""
 
-    def test_count_attack_evidence_strong_vs_observed(self) -> None:
+    def test_count_attack_evidence_counts_only_strong_denials(self) -> None:
         events = [
             {"reason": "per_ip_rate_limited"},
             {"reason": "observed"},
             {"reason": "filter_block"},
             {"reason": "observed"},
         ]
-        self.assertEqual(codex_analyzer.count_attack_evidence(events, learn_observed=False), 2)
-        # With observed learning on, all volume counts as evidence.
-        self.assertEqual(codex_analyzer.count_attack_evidence(events, learn_observed=True), 4)
+        # Only deterministic-denial events count; observed volume never does.
+        self.assertEqual(codex_analyzer.count_attack_evidence(events), 2)
 
     def _args(self, events: Path, out: Path, **flags: object) -> object:
         import sys
 
         argv = ["codexsdgate", "--once", "--events", str(events), "--filters", str(out)]
         for key, value in flags.items():
-            argv += [f"--{key.replace('_', '-')}", str(value)]
+            flag = f"--{key.replace('_', '-')}"
+            if isinstance(value, bool):
+                if value:
+                    argv.append(flag)
+            else:
+                argv += [flag, str(value)]
         with patch.object(sys, "argv", argv):
             return codex_analyzer.parse_args()
 
@@ -3961,6 +3965,17 @@ class AttackThresholdGateTests(unittest.TestCase):
             ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
             self._write_events(ev, 50, reason="observed")  # weak evidence only
             args = self._args(ev, out, min_attack_events=10, min_count=1)
+            with patch.object(codex_analyzer, "run_provider") as run_provider:
+                codex_analyzer.analyze_once(args)
+            run_provider.assert_not_called()
+
+    def test_learn_observed_does_not_let_observed_volume_fire_ai(self) -> None:
+        # Even with --learn-observed, a flood of observed-only traffic is not a
+        # real attack and must not wake the AI provider.
+        with tempfile.TemporaryDirectory() as tmp:
+            ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
+            self._write_events(ev, 50, reason="observed")
+            args = self._args(ev, out, min_attack_events=10, min_count=1, learn_observed=True)
             with patch.object(codex_analyzer, "run_provider") as run_provider:
                 codex_analyzer.analyze_once(args)
             run_provider.assert_not_called()

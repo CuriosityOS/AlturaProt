@@ -136,13 +136,17 @@ The proxy ignores unsupported behavior. Providers cannot execute commands, chang
 
 ## Cost Control: AI Trigger Threshold
 
-CodexSDGate does not spend an AI call on every poll. The provider is only invoked
-when the current batch contains at least `--min-attack-events` attack-evidence
-events (default `20`, counted over the most recent `--max-events`). Strong
-deterministic-denial reasons always count as evidence; observed-only volume
-counts only with `--learn-observed`. Below the threshold the free deterministic
-generator runs instead, so small bursts, scattered rate-limits, and ordinary
-observed traffic never trigger a provider call or consume tokens/CLI quota.
+CodexSDGate does not spend an AI call on every poll — **the AI fires only during
+real attacks**. The provider is only invoked when the current batch contains at
+least `--min-attack-events` *real attack* events (default `20`, counted over the
+most recent `--max-events`). A real attack event is a request a deterministic
+control actually denied: a rate limit, filter block, or body guard tripped.
+Observed-only volume **never** counts toward the trigger — not even with
+`--learn-observed`, which only widens what the AI may learn *once a real attack
+has already woken it*, never what wakes it. Below the threshold the free
+deterministic generator runs instead, so small bursts, scattered rate-limits, and
+ordinary (even bursty) observed traffic never trigger a provider call or consume
+tokens/CLI quota.
 
 ```bash
 # only ask the AI once a real flood is underway (>= 100 attack events in a batch)

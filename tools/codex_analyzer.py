@@ -132,14 +132,14 @@ def event_has_runtime_signature_basis(event: dict[str, Any]) -> bool:
     return isinstance(basis, str) and basis.count("|") >= 4
 
 
-def count_attack_evidence(events: list[dict[str, Any]], learn_observed: bool) -> int:
-    """Number of events that count as attack evidence for triggering AI analysis.
+def count_attack_evidence(events: list[dict[str, Any]]) -> int:
+    """Number of strong-evidence attack events: requests a deterministic control
+    actually denied (rate limits, filter blocks, body guards).
 
-    Strong deterministic-denial reasons (rate limits, filter blocks, body guards)
-    always count. Observed-only volume is weak evidence and counts only when
-    observed learning is explicitly enabled."""
-    if learn_observed:
-        return len(events)
+    This is what decides whether an attack is real enough to wake the AI provider.
+    Observed-only volume is deliberately excluded so the AI never fires on ordinary
+    bursty traffic — even under --learn-observed, which only widens what the AI may
+    learn once a real attack has already triggered it, never what triggers it."""
     return sum(1 for event in events if isinstance(event, dict) and event.get("reason") in STRONG_ATTACK_REASONS)
 
 
@@ -188,10 +188,11 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=20,
         help=(
-            "Only call the AI provider when at least this many attack-evidence events are in "
-            "the current batch (counted over --max-events). Below the threshold the free "
-            "deterministic generator runs instead, so no provider call/tokens are spent on small "
-            "bursts or noise. Set 0 to always call the provider."
+            "Only call the AI provider when at least this many real attack events (requests a "
+            "deterministic control denied: rate limits, filter blocks, body guards) are in the "
+            "current batch, counted over --max-events. Observed-only traffic never counts, so the "
+            "AI fires only during real attacks. Below the threshold the free deterministic "
+            "generator runs instead, spending no tokens. Set 0 to always call the provider."
         ),
     )
     return parser.parse_args()
@@ -898,7 +899,9 @@ def analyze_once(args: argparse.Namespace) -> None:
     cfg = provider_config(config, provider, args.model)
     used_provider = provider
     threshold = max(0, int(getattr(args, "min_attack_events", 0)))
-    evidence = count_attack_evidence(events, args.learn_observed)
+    # Gate on real attack signal only (deterministic denials); observed volume,
+    # even with --learn-observed, must never wake the AI provider.
+    evidence = count_attack_evidence(events)
     if args.no_codex:
         filters = deterministic_filters(events, args.min_count, ttl_seconds, args.learn_observed)
         used_provider = "deterministic"
