@@ -2748,7 +2748,7 @@ impl ClientIpResolver {
         if self.max_forwarded_for_bytes > 0 && value.len() > self.max_forwarded_for_bytes {
             return Err(ClientIpHeaderError::TooLong);
         }
-        parse_forwarded_ip_token(value).ok_or(ClientIpHeaderError::Invalid)
+        parse_singleton_client_ip_token(value).ok_or(ClientIpHeaderError::Invalid)
     }
 
     fn is_trusted(&self, ip: IpAddr) -> bool {
@@ -2877,6 +2877,14 @@ fn parse_forwarded_ip_token(raw: &str) -> Option<IpAddr> {
         }
     }
     token.parse::<Ipv6Addr>().map(IpAddr::V6).ok()
+}
+
+fn parse_singleton_client_ip_token(raw: &str) -> Option<IpAddr> {
+    let token = raw.trim();
+    if token.is_empty() {
+        return None;
+    }
+    token.parse().ok()
 }
 
 fn maybe_admin_response(
@@ -3500,6 +3508,27 @@ mod tests {
     }
 
     #[test]
+    fn client_ip_custom_identity_header_rejects_forwarded_for_address_variants() {
+        let resolver = ClientIpResolver::from_config(&ClientIpConfig {
+            header: "cf-connecting-ip".to_string(),
+            trusted_proxies: vec!["127.0.0.1/32".to_string()],
+            max_forwarded_for_bytes: 64,
+            ..Default::default()
+        });
+        let peer: IpAddr = "127.0.0.1".parse().unwrap();
+
+        for value in ["198.51.100.7:443", "[2001:db8::1]", "[2001:db8::1]:443"] {
+            let mut headers = HeaderMap::new();
+            headers.insert("cf-connecting-ip", HeaderValue::from_str(value).unwrap());
+            assert_eq!(
+                resolver.resolve(peer, &headers).unwrap_err(),
+                ClientIpHeaderError::Invalid,
+                "{value} must be rejected for singleton identity headers"
+            );
+        }
+    }
+
+    #[test]
     fn forwarded_headers_are_sanitized_for_untrusted_peers() {
         let stats = Stats::default();
         let mut headers = HeaderMap::new();
@@ -3726,6 +3755,21 @@ mod tests {
         assert_eq!(parse_forwarded_ip_token("198.51.100.7:"), None);
         assert_eq!(parse_forwarded_ip_token("[2001:db8::1]:notaport"), None);
         assert_eq!(parse_forwarded_ip_token("[2001:db8::1]junk"), None);
+    }
+
+    #[test]
+    fn singleton_client_ip_tokens_are_raw_ip_literals_only() {
+        assert_eq!(
+            parse_singleton_client_ip_token("198.51.100.7"),
+            Some("198.51.100.7".parse().unwrap())
+        );
+        assert_eq!(
+            parse_singleton_client_ip_token("2001:db8::1"),
+            Some("2001:db8::1".parse().unwrap())
+        );
+        assert_eq!(parse_singleton_client_ip_token("198.51.100.7:443"), None);
+        assert_eq!(parse_singleton_client_ip_token("[2001:db8::1]"), None);
+        assert_eq!(parse_singleton_client_ip_token("[2001:db8::1]:443"), None);
     }
 
     #[test]
