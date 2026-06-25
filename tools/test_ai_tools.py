@@ -219,6 +219,33 @@ class LocalBenchTests(unittest.TestCase):
 
         self.assertEqual(event, {"signature": "valid"})
 
+    def test_wait_for_jsonl_event_waits_for_matching_event(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "events.jsonl"
+            path.write_text('{"path_shape": "/api/:id"}\n', encoding="utf-8")
+
+            def append_target_event() -> None:
+                path.write_text(
+                    '{"path_shape": "/api/:id"}\n'
+                    '{"path_shape": "/api/:short-token"}\n',
+                    encoding="utf-8",
+                )
+
+            timer = threading.Timer(0.05, append_target_event)
+            timer.start()
+            try:
+                events = run_local_bench.wait_for_jsonl_event(
+                    path,
+                    lambda event: event.get("path_shape") == "/api/:short-token",
+                    1.0,
+                )
+            finally:
+                timer.cancel()
+
+        self.assertTrue(
+            any(event.get("path_shape") == "/api/:short-token" for event in events)
+        )
+
     def test_http_max_connection_duration_probe_detects_closed_connection(self) -> None:
         class CloseAfterOneHttp(socketserver.BaseRequestHandler):
             def handle(self) -> None:
@@ -404,6 +431,26 @@ class LocalBenchAssertionTests(unittest.TestCase):
 
         self.assertEqual(len(errors), 1)
         self.assertIn("short_token_sibling_churn_limited", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_failed_runtime_sigterm_probe(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["runtime_sigterm"]["sigterm_graceful"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("runtime_sigterm.sigterm_graceful", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_failed_event_log_rotation_probe(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["event_log_rotation"]["total_bytes_bounded"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("event_log_rotation.total_bytes_bounded", errors[0])
         self.assertIn("expected true", errors[0])
 
     def test_assert_local_bench_rejects_post_grace_tcp_echo(self) -> None:

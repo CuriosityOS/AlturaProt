@@ -22,7 +22,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from bench_provenance import generated_at_utc, source_tree_metadata
 
@@ -4843,6 +4843,35 @@ def first_decodable_json_line(path: Path) -> dict[str, Any]:
     return {}
 
 
+def decodable_json_lines(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    events: list[dict[str, Any]] = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line.strip():
+            continue
+        try:
+            value = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, dict):
+            events.append(value)
+    return events
+
+
+def wait_for_jsonl_event(
+    path: Path,
+    predicate: Callable[[dict[str, Any]], bool],
+    timeout_seconds: float,
+) -> list[dict[str, Any]]:
+    deadline = time.perf_counter() + timeout_seconds
+    events = decodable_json_lines(path)
+    while not any(predicate(event) for event in events) and time.perf_counter() < deadline:
+        time.sleep(0.02)
+        events = decodable_json_lines(path)
+    return events
+
+
 def event_log_files(path: Path, backup_count: int) -> list[Path]:
     return [path] + [Path(f"{path}.{idx}") for idx in range(1, backup_count + 1)]
 
@@ -8326,20 +8355,12 @@ def run_path_shape_rate_probe(binary: Path, upstream_port: int, tmp_path: Path) 
         other_shape_status = get_status(proxy_port, "GET", "/api/catalog/123")
         version_shape_status = get_status(proxy_port, "GET", "/api/v1/users")
         metrics_after = fetch_metrics(proxy_port, token="path-shape-rate-token")
-        wait_file_line_count(events_path, 1, 1.0)
-        events: list[dict[str, Any]] = []
-        if events_path.exists():
-            for line in events_path.read_text(
-                encoding="utf-8", errors="replace"
-            ).splitlines():
-                if not line.strip():
-                    continue
-                try:
-                    event = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if isinstance(event, dict):
-                    events.append(event)
+        events = wait_for_jsonl_event(
+            events_path,
+            lambda event: event.get("reason") == "path_shape_rate_limited"
+            and event.get("path_shape") == "/api/:short-token",
+            1.0,
+        )
         path_shape_event_shapes = [
             event.get("path_shape")
             for event in events

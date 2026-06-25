@@ -92,6 +92,10 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "runtime filter reload must successfully load the generated rule set",
     ),
     (
+        "guardrails.runtime_sigterm.sigterm_graceful",
+        "runtime shutdown must handle SIGTERM gracefully within the probe timeout",
+    ),
+    (
         "guardrails.rate_limit_before_filter.rate_limit_precedes_filter",
         "rate limiting must run before blocking filter activation on the hot path",
     ),
@@ -420,8 +424,44 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "event-log async queue must drop when full instead of blocking the request thread",
     ),
     (
+        "guardrails.event_log_flush.all_requests_ok",
+        "event-log flush probe traffic must complete successfully",
+    ),
+    (
+        "guardrails.event_log_flush.first_event_flushed_immediately",
+        "event logging must flush the first event immediately for early attack evidence",
+    ),
+    (
+        "guardrails.event_log_flush.burst_flush_batched",
+        "event logging must batch burst flushes instead of forcing per-event sync I/O",
+    ),
+    (
+        "guardrails.event_log_flush.interval_flush_observed",
+        "event logging must flush batched events on the configured interval",
+    ),
+    (
         "guardrails.event_log_field_bounds.all_event_fields_bounded",
         "event-log fields must remain bounded before serialization",
+    ),
+    (
+        "guardrails.event_log_rotation.all_requests_ok",
+        "event-log rotation probe traffic must complete successfully",
+    ),
+    (
+        "guardrails.event_log_rotation.backup_present",
+        "event-log rotation must create a bounded backup file after the byte cap is reached",
+    ),
+    (
+        "guardrails.event_log_rotation.active_log_present",
+        "event-log rotation must leave an active log file available for new events",
+    ),
+    (
+        "guardrails.event_log_rotation.jsonl_valid",
+        "event-log rotation must preserve valid JSONL records",
+    ),
+    (
+        "guardrails.event_log_rotation.total_bytes_bounded",
+        "event-log rotation must keep retained log bytes bounded",
     ),
     (
         "guardrails.runtime_filter_bounds.oversized_file_rejected_and_last_good_preserved",
@@ -474,6 +514,30 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.admin_control_plane.duplicate_metrics_token_rejected",
         "metrics auth must fail closed when duplicate admin token headers are present",
+    ),
+    (
+        "guardrails.admin_control_plane.admin_responses_not_stored",
+        "admin control-plane responses must be marked no-store",
+    ),
+    (
+        "guardrails.admin_control_plane.admin_responses_close_connection",
+        "admin control-plane responses must close connections by default",
+    ),
+    (
+        "guardrails.admin_control_plane.body_bearing_admin_responses_not_stored",
+        "body-bearing admin control-plane responses must be marked no-store",
+    ),
+    (
+        "guardrails.admin_control_plane.body_bearing_health_closes_connection",
+        "body-bearing health checks must close before keep-alive reuse",
+    ),
+    (
+        "guardrails.admin_control_plane.body_bearing_metrics_without_token_closes_connection",
+        "body-bearing unauthenticated metrics checks must close before keep-alive reuse",
+    ),
+    (
+        "guardrails.admin_control_plane.body_bearing_metrics_with_token_closes_connection",
+        "body-bearing authenticated metrics checks must close before keep-alive reuse",
     ),
 )
 
