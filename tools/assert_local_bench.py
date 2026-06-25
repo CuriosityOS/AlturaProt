@@ -472,6 +472,162 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "runtime filter over-capacity files must be rejected while preserving last-good rules",
     ),
     (
+        "guardrails.config_file_startup.oversized_config_rejected",
+        "oversized config files must fail startup before loading",
+    ),
+    (
+        "guardrails.config_file_startup.non_regular_config_rejected",
+        "non-regular config paths must fail startup before loading",
+    ),
+    (
+        "guardrails.negative_rate_startup.negative_http_rate_rejected",
+        "negative HTTP rate limits must fail startup",
+    ),
+    (
+        "guardrails.negative_rate_startup.negative_tcp_rate_rejected",
+        "negative TCP rate limits must fail startup",
+    ),
+    (
+        "guardrails.zero_capacity_startup.http_connection_cap_rejected",
+        "zero HTTP connection capacity must fail startup",
+    ),
+    (
+        "guardrails.zero_capacity_startup.tcp_connection_cap_rejected",
+        "zero TCP connection capacity must fail startup",
+    ),
+    (
+        "guardrails.zero_capacity_startup.http_metadata_cap_rejected",
+        "zero HTTP metadata capacity must fail startup",
+    ),
+    (
+        "guardrails.zero_capacity_startup.http_forwarded_cap_rejected",
+        "zero forwarded-header capacity must fail startup",
+    ),
+    (
+        "guardrails.zero_capacity_startup.http_upstream_connect_timeout_rejected",
+        "zero HTTP upstream connect timeout must fail startup",
+    ),
+    (
+        "guardrails.dynamic_state_ceiling_startup.all_dynamic_state_ceilings_rejected",
+        "dynamic state ceilings above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.filter_file_cap_rejected",
+        "filter file capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.filter_rule_cap_rejected",
+        "filter rule capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.adaptive_queue_cap_rejected",
+        "adaptive queue capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.adaptive_window_cap_rejected",
+        "adaptive window capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.adaptive_log_cap_rejected",
+        "adaptive log capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.adaptive_flush_interval_rejected",
+        "adaptive flush interval above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_metadata_ceiling_startup.all_http_metadata_ceilings_rejected",
+        "HTTP metadata ceilings above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_stream_timeout_ceiling_startup.request_body_idle_timeout_rejected",
+        "request-body idle timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_stream_timeout_ceiling_startup.upstream_body_idle_timeout_rejected",
+        "upstream-body idle timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_stream_timeout_ceiling_startup.downstream_write_timeout_rejected",
+        "downstream write timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_stream_timeout_ceiling_startup.request_body_min_rate_grace_rejected",
+        "request-body minimum-rate grace above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_stream_timeout_ceiling_startup.upstream_body_min_rate_grace_rejected",
+        "upstream-body minimum-rate grace above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.body_size_ceiling_startup.max_body_bytes_rejected",
+        "request body size above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.body_size_ceiling_startup.max_upstream_body_bytes_rejected",
+        "upstream body size above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.min_rate_ceiling_startup.all_min_rate_ceilings_rejected",
+        "minimum-rate ceilings above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connect_timeout_ceiling_startup.http_upstream_connect_timeout_rejected",
+        "HTTP upstream connect timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connect_timeout_ceiling_startup.tcp_connect_timeout_rejected",
+        "TCP connect timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_timeout_ceiling_startup.upstream_timeout_rejected",
+        "upstream response timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_failure_circuit_ceiling_startup.upstream_failure_threshold_rejected",
+        "upstream failure threshold above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_failure_circuit_ceiling_startup.upstream_failure_open_ms_rejected",
+        "upstream failure open interval above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_idle_pool_ceiling_startup.upstream_pool_max_idle_per_host_rejected",
+        "upstream idle pool size above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_idle_pool_ceiling_startup.upstream_pool_idle_timeout_rejected",
+        "upstream idle pool timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connection_duration_ceiling_startup.http_max_connection_duration_rejected",
+        "HTTP maximum connection duration above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connection_duration_ceiling_startup.tcp_max_connection_duration_rejected",
+        "TCP maximum connection duration above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connection_request_count_ceiling_startup.max_requests_per_connection_rejected",
+        "maximum requests per connection above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.event_log_queue_capacity_ceiling_startup.event_log_queue_capacity_rejected",
+        "event-log queue capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.event_log_backup_count_ceiling_startup.event_log_backup_count_rejected",
+        "event-log backup count above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.runtime_nofile.runtime_nofile_observed",
+        "runtime NOFILE limit must be observed in the benchmarked process",
+    ),
+    (
+        "guardrails.runtime_nofile_capacity.capacity_rejected",
+        "startup must reject configured socket capacity above runtime NOFILE capacity",
+    ),
+    (
         "guardrails.edge_template_port_coverage.systemd_unit_allowed",
         "shipped systemd unit must satisfy runtime guardrails",
     ),

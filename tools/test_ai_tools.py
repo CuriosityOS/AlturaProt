@@ -511,6 +511,43 @@ class LocalBenchAssertionTests(unittest.TestCase):
         self.assertIn("admin_health_signature_limited", errors[0])
         self.assertIn("expected true", errors[0])
 
+    def test_assert_local_bench_rejects_oversized_config_startup_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["config_file_startup"][
+            "oversized_config_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("config_file_startup.oversized_config_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_dynamic_state_ceiling_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["dynamic_state_ceiling_startup"][
+            "all_dynamic_state_ceilings_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "dynamic_state_ceiling_startup.all_dynamic_state_ceilings_rejected",
+            errors[0],
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_runtime_nofile_capacity_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["runtime_nofile_capacity"]["capacity_rejected"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("runtime_nofile_capacity.capacity_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
     def test_assert_local_bench_rejects_post_grace_tcp_echo(self) -> None:
         report = self.valid_report()
         report["guardrails"]["tcp_min_rate"]["slow_drip"]["second_echo_bytes"] = 1
