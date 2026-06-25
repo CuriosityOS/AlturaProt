@@ -67,6 +67,7 @@ const GENERATED_RETRY_AFTER_SECONDS: &str = "1";
 const GENERATED_CACHE_CONTROL: &str = "no-store";
 const UPSTREAM_CIRCUIT_SHARDS: usize = 64;
 const UPSTREAM_CIRCUIT_EVICTION_SCAN_LIMIT: usize = 32;
+const MAX_EMPTY_TRANSFER_ENCODING_ELEMENTS: usize = 8;
 
 static HTTP_ACCEPT_ERROR_LOG: LogLimiter = LogLimiter::new();
 static HTTP_CONNECTION_REJECTED_LOG: LogLimiter = LogLimiter::new();
@@ -1023,12 +1024,23 @@ fn validate_raw_transfer_encoding(
     value: &[u8],
     allow_chunked_request_bodies: bool,
 ) -> Result<(), &'static str> {
+    validate_transfer_encoding_value(value, allow_chunked_request_bodies)
+}
+
+fn validate_transfer_encoding_value(
+    value: &[u8],
+    allow_chunked_request_bodies: bool,
+) -> Result<(), &'static str> {
     let mut saw_coding = false;
-    for coding in value
-        .split(|byte| *byte == b',')
-        .map(trim_header_value)
-        .filter(|coding| !coding.is_empty())
-    {
+    let mut empty_elements = 0usize;
+    for coding in value.split(|byte| *byte == b',').map(trim_header_value) {
+        if coding.is_empty() {
+            empty_elements += 1;
+            if empty_elements > MAX_EMPTY_TRANSFER_ENCODING_ELEMENTS {
+                return Err("too many empty transfer-encoding elements");
+            }
+            continue;
+        }
         if saw_coding || !coding.eq_ignore_ascii_case(b"chunked") {
             return Err("unsupported transfer-encoding");
         }
@@ -1475,28 +1487,7 @@ fn validate_request_framing(
     if transfer_encodings.next().is_some() {
         return Err("multiple transfer-encoding headers");
     }
-    let value = transfer_encoding
-        .to_str()
-        .map_err(|_| "invalid transfer-encoding header")?;
-    let mut saw_coding = false;
-    for coding in value
-        .split(',')
-        .map(str::trim)
-        .filter(|coding| !coding.is_empty())
-    {
-        if saw_coding || !coding.eq_ignore_ascii_case("chunked") {
-            return Err("unsupported transfer-encoding");
-        }
-        saw_coding = true;
-    }
-    if !saw_coding {
-        return Err("invalid transfer-encoding header");
-    }
-    if !allow_chunked_request_bodies {
-        return Err("chunked request body not allowed");
-    }
-
-    Ok(())
+    validate_transfer_encoding_value(transfer_encoding.as_bytes(), allow_chunked_request_bodies)
 }
 
 fn validate_request_content_encoding(
@@ -3805,6 +3796,9 @@ mod tests {
         content_length_headers.insert(CONTENT_LENGTH, HeaderValue::from_static("42"));
         let mut chunked_headers = HeaderMap::new();
         chunked_headers.insert(TRANSFER_ENCODING, HeaderValue::from_static("chunked"));
+        let mut chunked_with_empty_elements = HeaderMap::new();
+        chunked_with_empty_elements
+            .insert(TRANSFER_ENCODING, HeaderValue::from_static(", chunked,"));
 
         assert_eq!(
             validate_request_framing(&content_length_headers, false),
@@ -3815,6 +3809,10 @@ mod tests {
             Err("chunked request body not allowed")
         );
         assert_eq!(validate_request_framing(&chunked_headers, true), Ok(()));
+        assert_eq!(
+            validate_request_framing(&chunked_with_empty_elements, true),
+            Ok(())
+        );
     }
 
     #[test]
@@ -3897,7 +3895,24 @@ mod tests {
 
         assert_eq!(
             validate_request_framing(&invalid, true),
-            Err("invalid transfer-encoding header")
+            Err("too many empty transfer-encoding elements")
+        );
+
+        let empty_tail_spray = format!(
+            "chunked, {}",
+            std::iter::repeat_n("", MAX_EMPTY_TRANSFER_ENCODING_ELEMENTS + 1)
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+        let mut invalid = HeaderMap::new();
+        invalid.insert(
+            TRANSFER_ENCODING,
+            HeaderValue::from_bytes(empty_tail_spray.as_bytes()).unwrap(),
+        );
+
+        assert_eq!(
+            validate_request_framing(&invalid, true),
+            Err("too many empty transfer-encoding elements")
         );
     }
 
@@ -4058,6 +4073,13 @@ mod tests {
             ),
             Ok(())
         );
+        assert_eq!(
+            validate_raw_http1_header_block(
+                b"POST /drain HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: , chunked,\r\n\r\n",
+                true
+            ),
+            Ok(())
+        );
     }
 
     #[test]
@@ -4113,7 +4135,22 @@ mod tests {
 
         assert_eq!(
             validate_raw_http1_header_block(block.as_bytes(), true),
-            Err("invalid transfer-encoding header")
+            Err("too many empty transfer-encoding elements")
+        );
+
+        let empty_tail_spray = format!(
+            "chunked, {}",
+            std::iter::repeat_n("", MAX_EMPTY_TRANSFER_ENCODING_ELEMENTS + 1)
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+        let block = format!(
+            "POST / HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: {empty_tail_spray}\r\n\r\n"
+        );
+
+        assert_eq!(
+            validate_raw_http1_header_block(block.as_bytes(), true),
+            Err("too many empty transfer-encoding elements")
         );
     }
 
