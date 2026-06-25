@@ -52,7 +52,7 @@ jobs:
             tools/test_ai_tools.py \
             tools/validate_edge_templates.py
           PYTHONPATH=tools python3 tools/test_ai_tools.py
-          python3 tools/validate_edge_templates.py --config configs/example.json
+          sudo python3 tools/validate_edge_templates.py --config configs/example.json
           python3 tools/assert_defense_bench.py \
             --audit-tracked-artifacts benchmark_results \
             --artifact-manifest benchmark_results/defense_artifacts_manifest.json
