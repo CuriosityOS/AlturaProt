@@ -1354,6 +1354,21 @@ async fn handle_http(
                     "upstream response headers too large\n",
                 ));
             }
+            if let Err(reason) = validate_upstream_response_framing(resp.headers()) {
+                Stats::inc(&state.stats.http_upstream_header_rejected);
+                state.upstream_circuit.record_failure(&path_shape);
+                Stats::inc(&state.stats.http_upstream_errors);
+                log_limited(
+                    &HTTP_UPSTREAM_ERROR_LOG,
+                    HOT_PATH_LOG_INTERVAL,
+                    |suppressed| {
+                        eprintln!("upstream response rejected: {reason}{suppressed}");
+                    },
+                );
+                return Ok(upstream_bad_gateway_response(
+                    "upstream response framing invalid\n",
+                ));
+            }
             if let Some(length) = content_length(resp.headers()) {
                 if state.cfg.max_upstream_body_bytes > 0
                     && length > state.cfg.max_upstream_body_bytes
@@ -1465,16 +1480,7 @@ fn validate_request_framing(
         return Err("multiple content-length headers");
     }
     if let Some(value) = content_length {
-        let value = value
-            .to_str()
-            .map_err(|_| "invalid content-length header")?
-            .trim();
-        if value.is_empty()
-            || value.contains(',')
-            || !value.bytes().all(|byte| byte.is_ascii_digit())
-        {
-            return Err("invalid content-length header");
-        }
+        validate_parsed_content_length(value, "invalid content-length header")?;
     }
 
     let mut transfer_encodings = headers.get_all(TRANSFER_ENCODING).iter();
@@ -1488,6 +1494,43 @@ fn validate_request_framing(
         return Err("multiple transfer-encoding headers");
     }
     validate_transfer_encoding_value(transfer_encoding.as_bytes(), allow_chunked_request_bodies)
+}
+
+fn validate_upstream_response_framing(
+    headers: &HeaderMap<HeaderValue>,
+) -> Result<(), &'static str> {
+    let mut content_lengths = headers.get_all(CONTENT_LENGTH).iter();
+    let content_length = content_lengths.next();
+    if content_lengths.next().is_some() {
+        return Err("multiple upstream content-length headers");
+    }
+    if let Some(value) = content_length {
+        validate_parsed_content_length(value, "invalid upstream content-length header")?;
+    }
+
+    let mut transfer_encodings = headers.get_all(TRANSFER_ENCODING).iter();
+    let Some(transfer_encoding) = transfer_encodings.next() else {
+        return Ok(());
+    };
+    if content_length.is_some() {
+        return Err("ambiguous upstream transfer-encoding and content-length");
+    }
+    if transfer_encodings.next().is_some() {
+        return Err("multiple upstream transfer-encoding headers");
+    }
+    validate_transfer_encoding_value(transfer_encoding.as_bytes(), true)
+        .map_err(|_| "unsupported upstream transfer-encoding")
+}
+
+fn validate_parsed_content_length(
+    value: &HeaderValue,
+    invalid_reason: &'static str,
+) -> Result<(), &'static str> {
+    let value = value.to_str().map_err(|_| invalid_reason)?.trim();
+    if value.is_empty() || value.contains(',') || !value.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err(invalid_reason);
+    }
+    Ok(())
 }
 
 fn validate_request_content_encoding(
@@ -3913,6 +3956,75 @@ mod tests {
         assert_eq!(
             validate_request_framing(&invalid, true),
             Err("too many empty transfer-encoding elements")
+        );
+    }
+
+    #[test]
+    fn upstream_response_framing_allows_single_content_length_or_chunked() {
+        let mut content_length_headers = HeaderMap::new();
+        content_length_headers.insert(CONTENT_LENGTH, HeaderValue::from_static("42"));
+        let mut chunked_headers = HeaderMap::new();
+        chunked_headers.insert(TRANSFER_ENCODING, HeaderValue::from_static("chunked"));
+
+        assert_eq!(
+            validate_upstream_response_framing(&content_length_headers),
+            Ok(())
+        );
+        assert_eq!(validate_upstream_response_framing(&chunked_headers), Ok(()));
+    }
+
+    #[test]
+    fn upstream_response_framing_rejects_invalid_content_length() {
+        let mut duplicate = HeaderMap::new();
+        duplicate.append(CONTENT_LENGTH, HeaderValue::from_static("4"));
+        duplicate.append(CONTENT_LENGTH, HeaderValue::from_static("4"));
+        let mut comma_list = HeaderMap::new();
+        comma_list.insert(CONTENT_LENGTH, HeaderValue::from_static("4, 4"));
+        let mut invalid = HeaderMap::new();
+        invalid.insert(CONTENT_LENGTH, HeaderValue::from_static("nope"));
+
+        assert_eq!(
+            validate_upstream_response_framing(&duplicate),
+            Err("multiple upstream content-length headers")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&comma_list),
+            Err("invalid upstream content-length header")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&invalid),
+            Err("invalid upstream content-length header")
+        );
+    }
+
+    #[test]
+    fn upstream_response_framing_rejects_ambiguous_or_bad_transfer_encoding() {
+        let mut te_and_cl = HeaderMap::new();
+        te_and_cl.insert(CONTENT_LENGTH, HeaderValue::from_static("4"));
+        te_and_cl.insert(TRANSFER_ENCODING, HeaderValue::from_static("chunked"));
+        let mut duplicate_te = HeaderMap::new();
+        duplicate_te.append(TRANSFER_ENCODING, HeaderValue::from_static("chunked"));
+        duplicate_te.append(TRANSFER_ENCODING, HeaderValue::from_static("chunked"));
+        let mut unsupported = HeaderMap::new();
+        unsupported.insert(TRANSFER_ENCODING, HeaderValue::from_static("gzip"));
+        let mut extra_coding = HeaderMap::new();
+        extra_coding.insert(TRANSFER_ENCODING, HeaderValue::from_static("gzip, chunked"));
+
+        assert_eq!(
+            validate_upstream_response_framing(&te_and_cl),
+            Err("ambiguous upstream transfer-encoding and content-length")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&duplicate_te),
+            Err("multiple upstream transfer-encoding headers")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&unsupported),
+            Err("unsupported upstream transfer-encoding")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&extra_coding),
+            Err("unsupported upstream transfer-encoding")
         );
     }
 
