@@ -1214,6 +1214,64 @@ class AnalyzerTests(unittest.TestCase):
                 self.assertNotIn("path_prefix", clean["condition"])
                 self.assertEqual(clean["condition"]["signature"], SIG_A)
 
+    def test_sanitize_filter_drops_empty_runtime_matchers(self) -> None:
+        clean = codex_analyzer.sanitize_filter(
+            {
+                "id": "empty-matchers",
+                "condition": {
+                    "signature": SIG_A,
+                    "path_exact": "",
+                    "path_contains": "",
+                    "path_shape": "",
+                    "query_contains": "",
+                    "user_agent_contains": "",
+                },
+            },
+            ttl_seconds=45,
+        )
+
+        self.assertEqual(clean["condition"], {"signature": SIG_A})
+
+    def test_sanitize_filter_drops_matchers_above_runtime_byte_caps(self) -> None:
+        clean = codex_analyzer.sanitize_filter(
+            {
+                "id": "oversized-matchers",
+                "condition": {
+                    "signature": SIG_A,
+                    "path_contains": "\u2603" * 200,
+                    "headers": [
+                        {"name": "x-altura-signal", "contains": "\u2603" * 100},
+                    ],
+                },
+            },
+            ttl_seconds=45,
+        )
+
+        self.assertEqual(clean["condition"], {"signature": SIG_A})
+
+    def test_sanitize_filter_drops_invalid_header_matchers(self) -> None:
+        clean = codex_analyzer.sanitize_filter(
+            {
+                "id": "bad-headers",
+                "condition": {
+                    "signature": SIG_A,
+                    "headers": [
+                        {"name": "x-altura-signal", "contains": "burst"},
+                        {"name": "bad header", "contains": "burst"},
+                        {"name": "bad:header", "contains": "burst"},
+                        {"name": "x-empty", "contains": ""},
+                        {"name": "x-non-string", "contains": 123},
+                    ],
+                },
+            },
+            ttl_seconds=45,
+        )
+
+        self.assertEqual(
+            clean["condition"]["headers"],
+            [{"name": "x-altura-signal", "contains": "burst"}],
+        )
+
     def test_sanitize_filter_normalizes_response_header_safe_id(self) -> None:
         clean = codex_analyzer.sanitize_filter(
             {

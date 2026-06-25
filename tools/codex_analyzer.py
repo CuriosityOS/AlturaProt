@@ -21,9 +21,13 @@ from typing import Any
 
 
 SAFE_ID = re.compile(r"[^a-zA-Z0-9_.:-]+")
+HTTP_TOKEN = re.compile(r"[-!#$%&'*+.^_`|~0-9A-Za-z]+\Z")
 SUPPORTED_SIGNATURE = re.compile(r"(?:[0-9a-f]{16}|[0-9a-f]{32})\Z")
 FILTER_TTL_MAX_SECONDS = 24 * 60 * 60
 FILTER_RULE_ID_MAX_BYTES = 96
+FILTER_MATCH_VALUE_MAX_BYTES = 512
+FILTER_HEADER_NAME_MAX_BYTES = 64
+FILTER_HEADER_CONTAINS_MAX_BYTES = 256
 
 DEFAULT_PROVIDER_CONFIG = {
     "selected_provider": "codex",
@@ -773,7 +777,7 @@ def sanitize_filter(item: dict[str, Any], ttl_seconds: int) -> dict[str, Any]:
         "user_agent_contains",
     ]:
         value = condition.get(key)
-        if isinstance(value, str) and len(value) <= 512:
+        if isinstance(value, str) and bounded_utf8(value, FILTER_MATCH_VALUE_MAX_BYTES):
             if key == "path_prefix" and value in {"", "/"}:
                 continue
             if key == "signature" and not is_supported_signature(value):
@@ -790,10 +794,17 @@ def sanitize_filter(item: dict[str, Any], ttl_seconds: int) -> dict[str, Any]:
         for header in headers[:8]:
             if not isinstance(header, dict):
                 continue
-            name = str(header.get("name", ""))[:64]
-            contains = str(header.get("contains", ""))[:256]
-            if name and contains:
-                clean_headers.append({"name": name, "contains": contains})
+            name = header.get("name")
+            contains = header.get("contains")
+            if (
+                isinstance(name, str)
+                and isinstance(contains, str)
+                and is_http_header_name(name)
+                and bounded_utf8(contains, FILTER_HEADER_CONTAINS_MAX_BYTES)
+            ):
+                clean_headers.append(
+                    {"name": name[:FILTER_HEADER_NAME_MAX_BYTES], "contains": contains}
+                )
         if clean_headers:
             clean_condition["headers"] = clean_headers
 
@@ -847,6 +858,14 @@ def merge_strong_coverage(
 
 def safe_id(value: str) -> str:
     return SAFE_ID.sub("-", value)[:FILTER_RULE_ID_MAX_BYTES].strip("-") or "codex-learned-filter"
+
+
+def is_http_header_name(value: str) -> bool:
+    return 0 < len(value) <= FILTER_HEADER_NAME_MAX_BYTES and bool(HTTP_TOKEN.fullmatch(value))
+
+
+def bounded_utf8(value: str, max_bytes: int) -> bool:
+    return 0 < len(value.encode("utf-8")) <= max_bytes
 
 
 def unique_filter_ids(filters: list[dict[str, Any]]) -> list[dict[str, Any]]:
