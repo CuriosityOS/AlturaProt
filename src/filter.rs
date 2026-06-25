@@ -155,16 +155,28 @@ fn validate_unique_filter_rule_ids(source: &str, rules: &[FilterRule]) -> Result
 }
 
 fn validate_filter_rule(path: &str, rule: &FilterRule) -> Result<(), BoxError> {
-    validate_non_empty_bounded_string(
-        &format!("{path}.id"),
-        &rule.id,
-        DEFAULT_FILTER_MAX_RULE_ID_BYTES,
-    )?;
+    validate_filter_rule_id(&format!("{path}.id"), &rule.id)?;
     if let Some(ttl_seconds) = rule.ttl_seconds {
         validate_filter_ttl(&format!("{path}.ttl_seconds"), ttl_seconds)?;
     }
     validate_filter_condition(path, &rule.condition)?;
     validate_filter_action(path, &rule.action)?;
+    Ok(())
+}
+
+fn validate_filter_rule_id(path: &str, value: &str) -> Result<(), BoxError> {
+    validate_non_empty_bounded_string(path, value, DEFAULT_FILTER_MAX_RULE_ID_BYTES)?;
+    if value
+        .bytes()
+        .any(|byte| !byte.is_ascii_graphic() || byte == b',')
+    {
+        return Err(format!(
+            "{path} must contain only visible ASCII identifier bytes without commas"
+        )
+        .into());
+    }
+    HeaderValue::from_str(value)
+        .map_err(|err| format!("{path} must be safe to emit in x-altura-filter: {err}"))?;
     Ok(())
 }
 
@@ -1215,6 +1227,20 @@ mod tests {
     }
 
     #[test]
+    fn filter_rule_validation_rejects_ids_that_are_unsafe_response_headers() {
+        for id in ["bad\nid", "bad\rid", "bad\u{7f}id", "bad-☃", "bad,id"] {
+            let rule = path_rule(id, "/blocked");
+
+            let err = validate_filter_rules("filters.static_rules", &[rule], 4)
+                .unwrap_err()
+                .to_string();
+
+            assert!(err.contains("filters.static_rules[0].id"), "{err}");
+            assert!(err.contains("visible ASCII identifier"), "{err}");
+        }
+    }
+
+    #[test]
     fn filter_rule_validation_rejects_root_path_prefix() {
         let mut rule = path_rule("catchall-prefix", "/blocked");
         rule.condition.path_exact = None;
@@ -1869,6 +1895,40 @@ mod tests {
         let err = engine.reload().await.unwrap_err().to_string();
 
         assert!(err.contains("action.status"), "{err}");
+        assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "good");
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[tokio::test]
+    async fn runtime_filter_reload_rejects_unsafe_rule_ids_and_preserves_last_good_rules() {
+        let path = temp_runtime_filter_path("unsafe-id-runtime-filters");
+        std::fs::write(&path, runtime_filter_json(&[path_rule("good", "/blocked")])).unwrap();
+        let engine = FilterEngine::new_with_limits(
+            Vec::new(),
+            path.clone(),
+            Duration::from_secs(30),
+            4096,
+            4,
+        )
+        .await;
+
+        let headers = HeaderMap::new();
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/blocked",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "good");
+
+        std::fs::write(&path, runtime_filter_json(&[path_rule("bad\nid", "/bad")])).unwrap();
+
+        let err = engine.reload().await.unwrap_err().to_string();
+
+        assert!(err.contains("[0].id"), "{err}");
+        assert!(err.contains("visible ASCII identifier"), "{err}");
         assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "good");
         let _ = std::fs::remove_file(path);
     }
