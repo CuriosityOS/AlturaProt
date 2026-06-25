@@ -1,5 +1,122 @@
 # Operations
 
+## Install and CLI
+
+`install.sh` is a one-command installer. Piped from curl it downloads a prebuilt
+binary for the host (Linux `x86_64`/`aarch64`, static musl) and verifies its
+SHA-256; if no release is published it falls back to fetching the source and
+building it (auto-installing a Rust toolchain via rustup when `cargo` is
+missing). Run from a checkout it builds the local tree. `--from-source` forces a
+source build. Prebuilt binaries are published by `.github/workflows/release.yml`
+on `v*` tags:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh | sudo bash -s -- --start
+```
+
+System mode (default, needs root) installs to `/usr/local/bin`, creates the
+`altura-prot` service user/group, writes config to `/etc/altura-prot`, and
+installs the systemd unit; `--start` also enables and starts the service.
+`--user` installs to `~/.local/bin` and `~/.config/altura-prot`. `--prefix PATH`
+overrides the binary install root. The source repo and branch can be overridden
+with the `ALTURA_PROT_REPO_URL` and `ALTURA_PROT_REPO_BRANCH` environment
+variables.
+
+### AI Power Detection step
+
+After installing the binary, the installer runs an optional **AI Power
+Detection** step. On a terminal (including `curl | bash`, which reads prompts
+from `/dev/tty`) it asks whether to wire an AI provider for adaptive filter
+generation and offers three choices:
+
+1. **None** (default) — deterministic mitigation only.
+2. **Subscription CLI** — wrap an agent CLI you already logged into (Claude,
+   Codex, OpenCode, Cursor, Grok), the same approach as T3 Code. The installer
+   marks which CLIs are on `PATH` and prints the vendor login command.
+3. **API key** — OpenAI, Anthropic, Gemini, or OpenRouter; the key is stored in
+   a `0600` secrets file owned by the service user.
+
+When a provider is chosen the installer also copies the Python analyzer tools
+(`codex_analyzer.py`, `ai_provider_cli.py`, `codexsdgate.py`) next to the
+deployment (`/var/lib/altura-prot/tools` in system mode,
+`~/.local/share/altura-prot/tools` for `--user`) and writes
+`providers.json`/`secrets.json`. The proxy never calls AI on the request path;
+this only configures the out-of-band CodexSDGate loop, which you can change
+later with `ai_provider_cli.py`.
+
+The step is skipped automatically when there is no terminal (e.g. CI) or with
+`--non-interactive`, so agent/automation one-liners never hang. To configure it
+non-interactively, pass `--ai PROVIDER` (one of `auto`, `none`, `codex`,
+`claude`, `opencode`, `cursor`, `grok`, `openai`, `anthropic`, `gemini`,
+`openrouter`) plus optional `--ai-model MODEL` and `--ai-key KEY`. With
+`--ai auto` the installer selects the first installed agent CLI, else the first
+provider whose API-key env var is set. For an explicit API-key provider, the key
+is taken from the standard env var (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+`GEMINI_API_KEY`, `OPENROUTER_API_KEY`) when `--ai-key` is omitted:
+
+```bash
+# agent-friendly: install and wire whatever AI is already available
+curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh \
+  | bash -s -- --user --ai auto --non-interactive
+
+# user install that wires Gemini in one shot (key from $GEMINI_API_KEY)
+GEMINI_API_KEY=sk-... curl -fsSL .../install.sh \
+  | bash -s -- --user --ai gemini --non-interactive
+
+# system install that selects the already-logged-in Claude CLI
+sudo ./install.sh --start --ai claude --non-interactive
+```
+
+There is no capability difference between a subscription CLI and an API key:
+both drive the same analyzer pipeline and produce the same adaptive filters.
+
+### Analyzer timer (optional, system mode)
+
+By default you run the analyzer yourself (the installer prints the command). To
+have it run automatically, install the systemd timer with `--ai-timer` (or answer
+yes to the interactive prompt). It installs `altura-prot-analyzer.service`
+(a `oneshot` that runs `codexsdgate.py --once` as the `altura-prot` user) and
+`altura-prot-analyzer.timer`, and enables the timer:
+
+```bash
+sudo ./install.sh --start --ai auto --ai-timer --ai-interval 120 --ai-threshold 20
+systemctl status altura-prot-analyzer.timer
+journalctl -u altura-prot-analyzer.service     # see each run
+```
+
+The timer polls every `--ai-interval` seconds (default 120), but because the
+analyzer is threshold-gated the AI provider is only actually called when a batch
+crosses `--ai-threshold` real attack events (default 20) — so frequent polling is
+cheap and the AI only engages during real attacks. The analyzer unit deliberately
+omits `MemoryDenyWriteExecute` (unlike the proxy unit) because the Node/V8-based
+agent CLIs need W^X JIT pages.
+
+For an **API-key** provider this works out of the box (the key is read from the
+service user's `secrets.json`). For a **subscription CLI** provider the timer runs
+as the `altura-prot` user, which must be logged into that CLI; until it is, the
+analyzer falls back to the deterministic generator. The installer prints the exact
+`sudo -u altura-prot … login` command. User-mode installs do not get a timer — run
+the analyzer via cron or `systemd --user`.
+
+The `altura-prot` binary is also a management CLI:
+
+```bash
+altura-prot init [--system]                        # create config dir + default config
+altura-prot validate                               # validate the active config file
+altura-prot config show                            # print the resolved config as JSON
+altura-prot config get http.limits.per_ip_rps      # read one value by dot path
+altura-prot config set http.admin_token <secret>   # set one value (validated before write)
+altura-prot run [--config PATH]                    # start the proxy
+altura-prot status                                  # systemd or process status
+```
+
+`config set` is atomic and validated: it writes a temp file, runs full config
+validation, and renames into place only on success, so a rejected value never
+replaces a working config. The active config path resolves from `--config`,
+then `$ALTURA_PROT_CONFIG`, `/etc/altura-prot/config.json`,
+`~/.config/altura-prot/config.json`, and finally `configs/example.json`. The
+legacy `altura-prot --config PATH` form (no subcommand) still runs the proxy.
+
 ## Local Test
 
 Start an upstream:

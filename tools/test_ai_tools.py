@@ -3695,5 +3695,374 @@ WantedBy=multi-user.target
 """
 
 
+class _FakeProc:
+    def __init__(self, returncode: int = 0, stdout: str = "", stderr: str = "") -> None:
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+
+class CliAgentProviderTests(unittest.TestCase):
+    def test_cli_agent_argv_claude_uses_stdin_and_json(self) -> None:
+        argv, use_stdin = codex_analyzer.cli_agent_argv("claude", "claude", "claude-opus-4-8", "PROMPT")
+        self.assertTrue(use_stdin)
+        self.assertEqual(argv, ["claude", "-p", "--output-format", "json", "--model", "claude-opus-4-8"])
+        # No model -> no --model flag, prompt still via stdin (not argv).
+        argv, use_stdin = codex_analyzer.cli_agent_argv("claude", "claude", "", "PROMPT")
+        self.assertEqual(argv, ["claude", "-p", "--output-format", "json"])
+        self.assertNotIn("PROMPT", argv)
+
+    def test_cli_agent_argv_others_pass_prompt_as_argv(self) -> None:
+        for provider, command, expect_head in (
+            ("opencode", "opencode", ["opencode", "run", "--model", "m"]),
+            ("cursor", "cursor-agent", ["cursor-agent", "-p", "--output-format", "text", "--model", "m"]),
+        ):
+            argv, use_stdin = codex_analyzer.cli_agent_argv(provider, command, "m", "PROMPT")
+            self.assertFalse(use_stdin)
+            self.assertEqual(argv[: len(expect_head)], expect_head)
+            self.assertEqual(argv[-1], "PROMPT")
+        argv, use_stdin = codex_analyzer.cli_agent_argv("grok", "grok", "grok-4", "PROMPT")
+        self.assertFalse(use_stdin)
+        self.assertEqual(argv, ["grok", "-p", "PROMPT", "--model", "grok-4"])
+
+    def test_cli_agent_response_text_unwraps_claude_envelope(self) -> None:
+        self.assertEqual(
+            codex_analyzer.cli_agent_response_text("claude", '{"type":"result","result":"{\\"filters\\":[]}"}'),
+            '{"filters":[]}',
+        )
+        # Non-JSON stdout is returned verbatim for downstream extract_json.
+        self.assertEqual(codex_analyzer.cli_agent_response_text("claude", "raw text"), "raw text")
+        self.assertEqual(codex_analyzer.cli_agent_response_text("grok", "  hi  "), "hi")
+
+    def test_response_text_from_gemini_joins_parts_and_raises_on_garbage(self) -> None:
+        data = {"candidates": [{"content": {"parts": [{"text": '{"filters":'}, {"text": "[]}"}]}}]}
+        self.assertEqual(codex_analyzer.response_text_from_gemini(data), '{"filters":[]}')
+        with self.assertRaises(RuntimeError):
+            codex_analyzer.response_text_from_gemini({"candidates": []})
+
+    def test_provider_config_exposes_new_providers(self) -> None:
+        cfg = codex_analyzer.load_provider_config(Path("/tmp/nonexistent-altura-provider-config.json"))
+        claude = codex_analyzer.provider_config(cfg, "claude")
+        self.assertEqual(claude["kind"], "cli_agent")
+        self.assertEqual(claude["command"], "claude")
+        self.assertEqual(claude["login_cmd"], "claude auth login")
+        gemini = codex_analyzer.provider_config(cfg, "gemini")
+        self.assertEqual(gemini["api_key_env"], "GEMINI_API_KEY")
+        self.assertIn("generativelanguage", gemini["base_url"])
+
+    def test_run_provider_dispatches_cli_agent_and_sanitizes(self) -> None:
+        prompt = codex_analyzer.build_prompt([], min_count=1, ttl_seconds=30)
+        cfg = codex_analyzer.provider_config(
+            codex_analyzer.load_provider_config(Path("/tmp/nonexistent.json")), "claude"
+        )
+        out = '{"type":"result","result":"{\\"filters\\":[{\\"condition\\":{\\"signature\\":\\"sig-x\\"},\\"action\\":{\\"kind\\":\\"block\\",\\"status\\":403,\\"body\\":\\"x\\"}}]}"}'
+        with patch("subprocess.run", return_value=_FakeProc(0, out)) as run:
+            filters = codex_analyzer.run_provider("claude", prompt, cfg, ttl_seconds=30)
+        # claude is fed on stdin, not argv.
+        self.assertIsNotNone(run.call_args.kwargs.get("input"))
+        self.assertEqual(len(filters), 1)
+        self.assertEqual(filters[0]["condition"]["signature"], "sig-x")
+        self.assertEqual(filters[0]["action"]["status"], 403)
+
+    def test_cli_agent_nonzero_exit_raises(self) -> None:
+        prompt = codex_analyzer.build_prompt([], min_count=1, ttl_seconds=30)
+        cfg = codex_analyzer.provider_config(
+            codex_analyzer.load_provider_config(Path("/tmp/nonexistent.json")), "grok"
+        )
+        with patch("subprocess.run", return_value=_FakeProc(1, "", "not logged in")):
+            with self.assertRaises(RuntimeError):
+                codex_analyzer.run_provider("grok", prompt, cfg, ttl_seconds=30)
+
+    def test_run_provider_dispatches_gemini(self) -> None:
+        prompt = codex_analyzer.build_prompt([], min_count=1, ttl_seconds=30)
+        cfg = codex_analyzer.provider_config(
+            codex_analyzer.load_provider_config(Path("/tmp/nonexistent.json")), "gemini"
+        )
+        gemini_data = {
+            "candidates": [
+                {
+                    "content": {
+                        "parts": [
+                            {
+                                "text": '{"filters":[{"condition":{"signature":"g"},"action":{"kind":"block","status":403,"body":"x"}}]}'
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}, clear=False):
+            with patch.object(codex_analyzer, "post_json", return_value=gemini_data) as post:
+                filters = codex_analyzer.run_provider("gemini", prompt, cfg, ttl_seconds=30)
+        url = post.call_args.args[0]
+        self.assertIn(":generateContent", url)
+        self.assertEqual(post.call_args.args[1]["x-goog-api-key"], "test-key")
+        self.assertEqual(len(filters), 1)
+        self.assertEqual(filters[0]["condition"]["signature"], "g")
+
+    def test_detect_cli_agent_reports_missing_binary(self) -> None:
+        info = codex_analyzer.detect_cli_agent(
+            "claude", {"command": "altura-no-such-binary-xyz", "login_cmd": "x login"}
+        )
+        self.assertFalse(info["installed"])
+        self.assertEqual(info["version"], "")
+        self.assertEqual(info["login_cmd"], "x login")
+
+
+class AiProviderCliTests(unittest.TestCase):
+    def _ns(self, **overrides: object) -> object:
+        import argparse
+
+        base = {
+            "provider": "gemini",
+            "model": None,
+            "cli_command": None,
+            "base_url": None,
+            "api_key_env": None,
+            "api_key": None,
+            "select": True,
+        }
+        base.update(overrides)
+        return argparse.Namespace(**base)
+
+    def test_set_api_provider_writes_config_secret_and_selects(self) -> None:
+        import ai_provider_cli
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg_path = Path(tmp) / "providers.json"
+            sec_path = Path(tmp) / "secrets.json"
+            env = {
+                "ALTURA_PROT_PROVIDER_CONFIG": str(cfg_path),
+                "ALTURA_PROT_PROVIDER_SECRETS": str(sec_path),
+            }
+            with patch.dict(os.environ, env, clear=False):
+                ai_provider_cli.set_provider(
+                    self._ns(provider="gemini", model="gemini-2.5-pro", api_key="sk-secret")
+                )
+            config = json.loads(cfg_path.read_text())
+            self.assertEqual(config["selected_provider"], "gemini")
+            self.assertEqual(config["providers"]["gemini"]["model"], "gemini-2.5-pro")
+            secrets = json.loads(sec_path.read_text())
+            self.assertEqual(secrets["gemini"]["api_key"], "sk-secret")
+            self.assertEqual(sec_path.stat().st_mode & 0o777, 0o600)
+
+    def test_set_cli_agent_records_model_without_secret(self) -> None:
+        import ai_provider_cli
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg_path = Path(tmp) / "providers.json"
+            sec_path = Path(tmp) / "secrets.json"
+            env = {
+                "ALTURA_PROT_PROVIDER_CONFIG": str(cfg_path),
+                "ALTURA_PROT_PROVIDER_SECRETS": str(sec_path),
+            }
+            with patch.dict(os.environ, env, clear=False):
+                ai_provider_cli.set_provider(
+                    self._ns(provider="claude", model="claude-opus-4-8", api_key=None)
+                )
+            config = json.loads(cfg_path.read_text())
+            self.assertEqual(config["selected_provider"], "claude")
+            self.assertEqual(config["providers"]["claude"]["model"], "claude-opus-4-8")
+            self.assertFalse(sec_path.exists())
+
+    def test_set_no_select_keeps_previous_selection(self) -> None:
+        import ai_provider_cli
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg_path = Path(tmp) / "providers.json"
+            sec_path = Path(tmp) / "secrets.json"
+            env = {
+                "ALTURA_PROT_PROVIDER_CONFIG": str(cfg_path),
+                "ALTURA_PROT_PROVIDER_SECRETS": str(sec_path),
+            }
+            with patch.dict(os.environ, env, clear=False):
+                ai_provider_cli.set_provider(self._ns(provider="openai", model="m1", select=True))
+                ai_provider_cli.set_provider(self._ns(provider="anthropic", model="m2", select=False))
+            config = json.loads(cfg_path.read_text())
+            self.assertEqual(config["selected_provider"], "openai")
+            self.assertEqual(config["providers"]["anthropic"]["model"], "m2")
+
+    def test_provider_families_are_disjoint_and_complete(self) -> None:
+        import ai_provider_cli
+
+        self.assertEqual(set(ai_provider_cli.CLI_AGENTS) & set(ai_provider_cli.API_PROVIDERS), set())
+        for provider in ai_provider_cli.PROVIDERS:
+            self.assertIn(provider, codex_analyzer.DEFAULT_PROVIDER_CONFIG["providers"])
+
+
+class AttackThresholdGateTests(unittest.TestCase):
+    """The AI provider must only be called once attack volume crosses the
+    user-set --min-attack-events threshold; below it, the free deterministic
+    generator runs and no provider call is made."""
+
+    def test_count_attack_evidence_counts_only_strong_denials(self) -> None:
+        events = [
+            {"reason": "per_ip_rate_limited"},
+            {"reason": "observed"},
+            {"reason": "filter_block"},
+            {"reason": "observed"},
+        ]
+        # Only deterministic-denial events count; observed volume never does.
+        self.assertEqual(codex_analyzer.count_attack_evidence(events), 2)
+
+    def _args(self, events: Path, out: Path, **flags: object) -> object:
+        import sys
+
+        argv = ["codexsdgate", "--once", "--events", str(events), "--filters", str(out)]
+        for key, value in flags.items():
+            flag = f"--{key.replace('_', '-')}"
+            if isinstance(value, bool):
+                if value:
+                    argv.append(flag)
+            else:
+                argv += [flag, str(value)]
+        with patch.object(sys, "argv", argv):
+            return codex_analyzer.parse_args()
+
+    def _write_events(self, path: Path, count: int, reason: str = "per_ip_rate_limited") -> None:
+        line = json.dumps(
+            {
+                "signature": "GET|/api/x|curl|*/*",
+                "path": "/api/x",
+                "path_shape": "/api/x",
+                "method": "GET",
+                "user_agent": "curl",
+                "reason": reason,
+            }
+        )
+        path.write_text("\n".join([line] * count) + "\n", encoding="utf-8")
+
+    def test_below_threshold_skips_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
+            self._write_events(ev, 3)
+            args = self._args(ev, out, min_attack_events=10, min_count=1)
+            with patch.object(codex_analyzer, "run_provider") as run_provider:
+                codex_analyzer.analyze_once(args)
+            run_provider.assert_not_called()
+            self.assertTrue(out.exists())
+
+    def test_at_threshold_calls_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
+            self._write_events(ev, 12)
+            args = self._args(ev, out, min_attack_events=10, min_count=1)
+            with patch.object(codex_analyzer, "run_provider", return_value=[]) as run_provider:
+                codex_analyzer.analyze_once(args)
+            run_provider.assert_called_once()
+
+    def test_threshold_zero_always_calls_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
+            self._write_events(ev, 1)
+            args = self._args(ev, out, min_attack_events=0, min_count=1)
+            with patch.object(codex_analyzer, "run_provider", return_value=[]) as run_provider:
+                codex_analyzer.analyze_once(args)
+            run_provider.assert_called_once()
+
+    def test_observed_only_traffic_stays_below_strong_threshold(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
+            self._write_events(ev, 50, reason="observed")  # weak evidence only
+            args = self._args(ev, out, min_attack_events=10, min_count=1)
+            with patch.object(codex_analyzer, "run_provider") as run_provider:
+                codex_analyzer.analyze_once(args)
+            run_provider.assert_not_called()
+
+    def test_learn_observed_does_not_let_observed_volume_fire_ai(self) -> None:
+        # Even with --learn-observed, a flood of observed-only traffic is not a
+        # real attack and must not wake the AI provider.
+        with tempfile.TemporaryDirectory() as tmp:
+            ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
+            self._write_events(ev, 50, reason="observed")
+            args = self._args(ev, out, min_attack_events=10, min_count=1, learn_observed=True)
+            with patch.object(codex_analyzer, "run_provider") as run_provider:
+                codex_analyzer.analyze_once(args)
+            run_provider.assert_not_called()
+
+
+class AnalyzerTimerUnitTests(unittest.TestCase):
+    def test_analyzer_service_runs_threshold_gated_oneshot(self) -> None:
+        text = Path("ops/systemd/altura-prot-analyzer.service").read_text(encoding="utf-8")
+        self.assertIn("Type=oneshot", text)
+        self.assertIn("User=altura-prot", text)
+        self.assertIn("@PYTHON@", text)
+        self.assertIn("--min-attack-events @MIN_ATTACK_EVENTS@", text)
+        self.assertIn("codexsdgate.py", text)
+        self.assertIn("--provider auto", text)
+        self.assertIn("ReadWritePaths=/var/lib/altura-prot", text)
+        self.assertIn("NoNewPrivileges=true", text)
+        # AI providers need network egress.
+        self.assertIn("AF_INET", text)
+        # Must NOT lock W^X: Node/V8-based agent CLIs need writable+exec JIT pages.
+        self.assertNotIn("MemoryDenyWriteExecute=", text)
+
+    def test_analyzer_timer_is_periodic_and_persistent(self) -> None:
+        text = Path("ops/systemd/altura-prot-analyzer.timer").read_text(encoding="utf-8")
+        self.assertIn("OnUnitActiveSec=@INTERVAL@", text)
+        self.assertIn("Persistent=true", text)
+        self.assertIn("WantedBy=timers.target", text)
+
+    def test_installer_wires_the_analyzer_timer(self) -> None:
+        install = Path("install.sh").read_text(encoding="utf-8")
+        self.assertIn("install_ai_timer", install)
+        self.assertIn("--ai-timer", install)
+        self.assertIn("--ai-interval", install)
+        self.assertIn("--ai-threshold", install)
+        self.assertIn("altura-prot-analyzer.timer", install)
+        # Substitutes the template placeholders.
+        self.assertIn("@MIN_ATTACK_EVENTS@", install)
+        self.assertIn("@INTERVAL@", install)
+
+
+class InstallerAiAutodetectTests(unittest.TestCase):
+    """Exercise install.sh's agent-friendly `--ai auto` resolver in isolation by
+    sourcing its shell functions under a controlled PATH/env."""
+
+    def _run_autodetect(self, bin_files: dict[str, str], env_overrides: dict[str, str]) -> str:
+        import shutil
+        import stat
+
+        dirname_bin = shutil.which("dirname")
+        bash_bin = shutil.which("bash") or "/bin/bash"
+        self.assertIsNotNone(dirname_bin, "dirname required for the test harness")
+        install = Path("install.sh").read_text(encoding="utf-8")
+        body = "\n".join(line for line in install.splitlines() if line.strip() != 'main "$@"')
+        harness = body + '\nprintf "RESULT=%s\\n" "$(ai_autodetect)"\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            bindir = Path(tmp) / "bin"
+            bindir.mkdir()
+            os.symlink(dirname_bin, bindir / "dirname")  # only external cmd the script sources
+            for name, content in bin_files.items():
+                fake = bindir / name
+                fake.write_text(content, encoding="utf-8")
+                fake.chmod(fake.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+            script = Path(tmp) / "harness.sh"
+            script.write_text(harness, encoding="utf-8")
+            env = {"PATH": str(bindir), "HOME": tmp}
+            env.update(env_overrides)
+            proc = subprocess.run([bash_bin, str(script)], env=env, capture_output=True, text=True, timeout=30)
+        for line in proc.stdout.splitlines():
+            if line.startswith("RESULT="):
+                return line.split("=", 1)[1]
+        self.fail(f"no RESULT line; stdout={proc.stdout!r} stderr={proc.stderr!r}")
+
+    def test_auto_prefers_installed_agent_cli(self) -> None:
+        # codex is highest preference, so a present codex wins regardless of env.
+        result = self._run_autodetect(
+            {"codex": "#!/bin/sh\necho fake\n"},
+            {"GEMINI_API_KEY": "should-be-ignored"},
+        )
+        self.assertEqual(result, "codex")
+
+    def test_auto_falls_back_to_env_api_key(self) -> None:
+        result = self._run_autodetect({}, {"GEMINI_API_KEY": "x"})
+        self.assertEqual(result, "gemini")
+
+    def test_auto_returns_none_without_cli_or_key(self) -> None:
+        result = self._run_autodetect({}, {})
+        self.assertEqual(result, "none")
+
+
 if __name__ == "__main__":
     unittest.main()

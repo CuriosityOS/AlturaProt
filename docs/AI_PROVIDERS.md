@@ -2,18 +2,67 @@
 
 CodexSDGate is the control-plane analyzer. It reads `runtime/attack_events.jsonl` and writes `runtime/filters.json`.
 
+There are two provider families:
+
+- **Subscription "agent CLI" providers** (`codex`, `claude`, `opencode`, `cursor`,
+  `grok`): AlturaProt shells out to the official CLI you already logged into,
+  the same way [T3 Code](https://github.com/pingdotgg/t3code) does. No API key is
+  stored and there is no custom OAuth — authentication is whatever the vendor CLI
+  manages. `codex` is the one exception that goes through the `openai-codex` SDK
+  rather than a wrapped subprocess.
+- **API-key providers** (`openai`, `anthropic`, `gemini`, `openrouter`): a model
+  plus an API key (env var or `0600` secrets file) called over HTTPS.
+
+**Feature parity.** Both families are first-class and interchangeable. Whichever
+you pick, CodexSDGate builds the same prompt, enforces the same sanitized filter
+schema, runs the same strong-coverage merge and deterministic fallback, and
+preserves learned filters the same way. You can override the model for any
+provider, switch providers at any time with `ai_provider_cli.py select`, and
+nothing about the analyzer's capabilities depends on whether you authenticated
+through a subscription CLI or an API key. Provider-specific knobs that only exist
+upstream (for example Codex `reasoning_effort`/`service_tier`) are the only
+difference, and they have no analyzer-side equivalent that a CLI agent loses.
+
+The installer's interactive **AI Power Detection** step configures either family
+for you; see [Operations](OPERATIONS.md). For agents and CI, `install.sh --ai
+auto --non-interactive` auto-selects an installed CLI or an env-keyed API
+provider with zero prompts. You can also do it by hand:
+
 ## Configure Providers
 
 ```bash
-python3 tools/ai_provider_cli.py init
-python3 tools/ai_provider_cli.py status
-python3 tools/ai_provider_cli.py login codex
-python3 tools/ai_provider_cli.py select codex
+python3 tools/ai_provider_cli.py init       # write default providers.json
+python3 tools/ai_provider_cli.py detect     # which agent CLIs are installed
+python3 tools/ai_provider_cli.py status     # selected provider + redacted state
+python3 tools/ai_provider_cli.py login claude   # interactive, any provider
+python3 tools/ai_provider_cli.py select gemini  # change the active provider
+# non-interactive (used by install.sh):
+python3 tools/ai_provider_cli.py set gemini --model gemini-2.5-pro --api-key sk-...
+python3 tools/ai_provider_cli.py set claude --model claude-opus-4-8
 ```
 
 Config is stored in `~/.config/altura-prot/providers.json`. Optional local secrets are stored in `~/.config/altura-prot/secrets.json` with mode `0600`. For public or server deployments, environment variables are preferred.
 
 ## Providers
+
+Subscription CLIs (`claude`, `opencode`, `cursor`, `grok`) — wrap an agent CLI you
+already authenticated with its own login; nothing is stored beyond the optional
+model override:
+
+```bash
+# install + log in with the vendor CLI (examples)
+claude auth login          # https://docs.claude.com/claude-code
+opencode auth login        # https://opencode.ai
+cursor-agent login         # https://cursor.com/cli
+grok login                 # https://github.com/superagent-ai/grok-cli
+
+python3 tools/ai_provider_cli.py set claude --model claude-opus-4-8
+python3 tools/codexsdgate.py --provider claude --once
+```
+
+A blank model lets the CLI pick its default. AlturaProt invokes the CLI
+non-interactively for each analysis pass; if the CLI is not logged in, the run
+fails and CodexSDGate falls back to the deterministic generator.
 
 Codex SDK:
 
@@ -40,6 +89,18 @@ export ANTHROPIC_API_KEY=...
 python3 tools/ai_provider_cli.py login anthropic
 python3 tools/codexsdgate.py --provider anthropic --once
 ```
+
+Gemini API:
+
+```bash
+export GEMINI_API_KEY=...
+python3 tools/ai_provider_cli.py login gemini
+python3 tools/codexsdgate.py --provider gemini --once
+```
+
+The default Gemini provider uses `gemini-2.5-pro` and calls the
+`generativelanguage.googleapis.com` `:generateContent` endpoint with
+`responseMimeType: application/json`.
 
 OpenRouter API:
 
@@ -72,6 +133,32 @@ Providers can only suggest this sanitized filter shape:
 ```
 
 The proxy ignores unsupported behavior. Providers cannot execute commands, change networking, or install firewall rules through this filter file.
+
+## Cost Control: AI Trigger Threshold
+
+CodexSDGate does not spend an AI call on every poll — **the AI fires only during
+real attacks**. The provider is only invoked when the current batch contains at
+least `--min-attack-events` *real attack* events (default `20`, counted over the
+most recent `--max-events`). A real attack event is a request a deterministic
+control actually denied: a rate limit, filter block, or body guard tripped.
+Observed-only volume **never** counts toward the trigger — not even with
+`--learn-observed`, which only widens what the AI may learn *once a real attack
+has already woken it*, never what wakes it. Below the threshold the free
+deterministic generator runs instead, so small bursts, scattered rate-limits, and
+ordinary (even bursty) observed traffic never trigger a provider call or consume
+tokens/CLI quota.
+
+```bash
+# only ask the AI once a real flood is underway (>= 100 attack events in a batch)
+python3 tools/codexsdgate.py --provider claude --min-attack-events 100
+# disable the gate (call the provider on every populated batch)
+python3 tools/codexsdgate.py --provider claude --min-attack-events 0
+```
+
+Tune it relative to your `--interval` and `--max-events`: a larger threshold
+waits for heavier attacks before engaging the AI; `0` restores call-every-batch
+behavior. The proxy's deterministic hot-path rate limiting is always active
+regardless of this setting — the threshold only governs the out-of-band AI layer.
 
 ## False Positive Controls
 

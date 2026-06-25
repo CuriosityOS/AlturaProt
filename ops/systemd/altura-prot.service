@@ -1,6 +1,6 @@
 [Unit]
 Description=AlturaProt L7 DDoS protection proxy
-Documentation=https://github.com/altura/altura-prot
+Documentation=https://github.com/CuriosityOS/AlturaProt
 Wants=network-online.target
 After=network-online.target
 StartLimitIntervalSec=60
@@ -11,7 +11,7 @@ Type=simple
 User=altura-prot
 Group=altura-prot
 WorkingDirectory=/var/lib/altura-prot
-ExecStart=/usr/local/bin/altura-prot --config /etc/altura-prot/config.json
+ExecStart=/usr/local/bin/altura-prot run --config /etc/altura-prot/config.json
 Restart=on-failure
 RestartSec=2s
 TimeoutStopSec=15s

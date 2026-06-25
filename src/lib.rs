@@ -1,5 +1,8 @@
 pub mod adaptive;
+pub mod cli;
 pub mod config;
+pub mod config_store;
+pub mod daemon;
 pub mod filter;
 pub mod http_proxy;
 pub mod limiter;
