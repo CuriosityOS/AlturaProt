@@ -328,6 +328,10 @@ def start_analyzer(
         "1",
         "--ttl-seconds",
         "20",
+        # Drive the provider on every populated batch so scenario assertions are
+        # not gated by attack volume; production uses the default threshold.
+        "--min-attack-events",
+        "0",
     ]
     if args.no_codex:
         analyzer_cmd.append("--no-codex")

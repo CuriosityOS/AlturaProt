@@ -136,7 +136,7 @@ python3 tools/ai_provider_cli.py login codex
 python3 tools/codexsdgate.py --events runtime/attack_events.jsonl --filters runtime/filters.json --once
 ```
 
-If the selected provider is unavailable, the analyzer falls back to a deterministic signature-based rule generator. See [AI providers](docs/AI_PROVIDERS.md) for the subscription CLI family (Codex, Claude, OpenCode, Cursor, Grok) and the OpenAI, Anthropic, Gemini, and OpenRouter API setups.
+If the selected provider is unavailable, the analyzer falls back to a deterministic signature-based rule generator. To avoid spending tokens on noise, the AI provider is only called once a batch holds at least `--min-attack-events` attack-evidence events (default `20`); below that, the free deterministic generator runs instead. See [AI providers](docs/AI_PROVIDERS.md) for the subscription CLI family (Codex, Claude, OpenCode, Cursor, Grok), the OpenAI, Anthropic, Gemini, and OpenRouter API setups, and the trigger-threshold knob.
 
 ## Mitigation Model
 

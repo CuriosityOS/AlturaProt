@@ -132,6 +132,17 @@ def event_has_runtime_signature_basis(event: dict[str, Any]) -> bool:
     return isinstance(basis, str) and basis.count("|") >= 4
 
 
+def count_attack_evidence(events: list[dict[str, Any]], learn_observed: bool) -> int:
+    """Number of events that count as attack evidence for triggering AI analysis.
+
+    Strong deterministic-denial reasons (rate limits, filter blocks, body guards)
+    always count. Observed-only volume is weak evidence and counts only when
+    observed learning is explicitly enabled."""
+    if learn_observed:
+        return len(events)
+    return sum(1 for event in events if isinstance(event, dict) and event.get("reason") in STRONG_ATTACK_REASONS)
+
+
 def bounded_ttl_seconds(value: Any, fallback: int = 60) -> int:
     try:
         ttl = int(value)
@@ -171,6 +182,17 @@ def parse_args() -> argparse.Namespace:
         "--disable-strong-coverage",
         action="store_true",
         help="Do not add deterministic high-confidence signature filters when a provider omits them.",
+    )
+    parser.add_argument(
+        "--min-attack-events",
+        type=int,
+        default=20,
+        help=(
+            "Only call the AI provider when at least this many attack-evidence events are in "
+            "the current batch (counted over --max-events). Below the threshold the free "
+            "deterministic generator runs instead, so no provider call/tokens are spent on small "
+            "bursts or noise. Set 0 to always call the provider."
+        ),
     )
     return parser.parse_args()
 
@@ -875,9 +897,20 @@ def analyze_once(args: argparse.Namespace) -> None:
     provider = resolve_provider(args, config)
     cfg = provider_config(config, provider, args.model)
     used_provider = provider
+    threshold = max(0, int(getattr(args, "min_attack_events", 0)))
+    evidence = count_attack_evidence(events, args.learn_observed)
     if args.no_codex:
         filters = deterministic_filters(events, args.min_count, ttl_seconds, args.learn_observed)
         used_provider = "deterministic"
+    elif threshold and evidence < threshold:
+        # Attack too small to justify an AI call; learn locally for free instead.
+        filters = deterministic_filters(events, args.min_count, ttl_seconds, args.learn_observed)
+        used_provider = f"deterministic (below AI threshold {threshold})"
+        print(
+            f"attack below AI threshold ({evidence} < {threshold} attack-evidence events); "
+            "using deterministic generator, no provider call",
+            flush=True,
+        )
     else:
         try:
             filters = run_provider(provider, prompt, cfg, ttl_seconds)

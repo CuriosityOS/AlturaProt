@@ -134,6 +134,28 @@ Providers can only suggest this sanitized filter shape:
 
 The proxy ignores unsupported behavior. Providers cannot execute commands, change networking, or install firewall rules through this filter file.
 
+## Cost Control: AI Trigger Threshold
+
+CodexSDGate does not spend an AI call on every poll. The provider is only invoked
+when the current batch contains at least `--min-attack-events` attack-evidence
+events (default `20`, counted over the most recent `--max-events`). Strong
+deterministic-denial reasons always count as evidence; observed-only volume
+counts only with `--learn-observed`. Below the threshold the free deterministic
+generator runs instead, so small bursts, scattered rate-limits, and ordinary
+observed traffic never trigger a provider call or consume tokens/CLI quota.
+
+```bash
+# only ask the AI once a real flood is underway (>= 100 attack events in a batch)
+python3 tools/codexsdgate.py --provider claude --min-attack-events 100
+# disable the gate (call the provider on every populated batch)
+python3 tools/codexsdgate.py --provider claude --min-attack-events 0
+```
+
+Tune it relative to your `--interval` and `--max-events`: a larger threshold
+waits for heavier attacks before engaging the AI; `0` restores call-every-batch
+behavior. The proxy's deterministic hot-path rate limiting is always active
+regardless of this setting — the threshold only governs the out-of-band AI layer.
+
 ## False Positive Controls
 
 CodexSDGate defaults to high-confidence learning. Deterministic fallback rules are created from strong evidence such as `per_ip_rate_limited`, `global_rate_limited`, `signature_rate_limited`, `path_shape_rate_limited`, `trusted_proxy_rate_limited`, `rate_limited`, or `filter_block` events. Observed-only high volume is treated as weak evidence because legitimate traffic can also be bursty.

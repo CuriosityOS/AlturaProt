@@ -3890,6 +3890,82 @@ class AiProviderCliTests(unittest.TestCase):
             self.assertIn(provider, codex_analyzer.DEFAULT_PROVIDER_CONFIG["providers"])
 
 
+class AttackThresholdGateTests(unittest.TestCase):
+    """The AI provider must only be called once attack volume crosses the
+    user-set --min-attack-events threshold; below it, the free deterministic
+    generator runs and no provider call is made."""
+
+    def test_count_attack_evidence_strong_vs_observed(self) -> None:
+        events = [
+            {"reason": "per_ip_rate_limited"},
+            {"reason": "observed"},
+            {"reason": "filter_block"},
+            {"reason": "observed"},
+        ]
+        self.assertEqual(codex_analyzer.count_attack_evidence(events, learn_observed=False), 2)
+        # With observed learning on, all volume counts as evidence.
+        self.assertEqual(codex_analyzer.count_attack_evidence(events, learn_observed=True), 4)
+
+    def _args(self, events: Path, out: Path, **flags: object) -> object:
+        import sys
+
+        argv = ["codexsdgate", "--once", "--events", str(events), "--filters", str(out)]
+        for key, value in flags.items():
+            argv += [f"--{key.replace('_', '-')}", str(value)]
+        with patch.object(sys, "argv", argv):
+            return codex_analyzer.parse_args()
+
+    def _write_events(self, path: Path, count: int, reason: str = "per_ip_rate_limited") -> None:
+        line = json.dumps(
+            {
+                "signature": "GET|/api/x|curl|*/*",
+                "path": "/api/x",
+                "path_shape": "/api/x",
+                "method": "GET",
+                "user_agent": "curl",
+                "reason": reason,
+            }
+        )
+        path.write_text("\n".join([line] * count) + "\n", encoding="utf-8")
+
+    def test_below_threshold_skips_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
+            self._write_events(ev, 3)
+            args = self._args(ev, out, min_attack_events=10, min_count=1)
+            with patch.object(codex_analyzer, "run_provider") as run_provider:
+                codex_analyzer.analyze_once(args)
+            run_provider.assert_not_called()
+            self.assertTrue(out.exists())
+
+    def test_at_threshold_calls_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
+            self._write_events(ev, 12)
+            args = self._args(ev, out, min_attack_events=10, min_count=1)
+            with patch.object(codex_analyzer, "run_provider", return_value=[]) as run_provider:
+                codex_analyzer.analyze_once(args)
+            run_provider.assert_called_once()
+
+    def test_threshold_zero_always_calls_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
+            self._write_events(ev, 1)
+            args = self._args(ev, out, min_attack_events=0, min_count=1)
+            with patch.object(codex_analyzer, "run_provider", return_value=[]) as run_provider:
+                codex_analyzer.analyze_once(args)
+            run_provider.assert_called_once()
+
+    def test_observed_only_traffic_stays_below_strong_threshold(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ev, out = Path(tmp) / "ev.jsonl", Path(tmp) / "out.json"
+            self._write_events(ev, 50, reason="observed")  # weak evidence only
+            args = self._args(ev, out, min_attack_events=10, min_count=1)
+            with patch.object(codex_analyzer, "run_provider") as run_provider:
+                codex_analyzer.analyze_once(args)
+            run_provider.assert_not_called()
+
+
 class InstallerAiAutodetectTests(unittest.TestCase):
     """Exercise install.sh's agent-friendly `--ai auto` resolver in isolation by
     sourcing its shell functions under a controlled PATH/env."""

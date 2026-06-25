@@ -650,7 +650,12 @@ AI Power Detection configured: ${choice}
 
 Run the analyzer (writes runtime/filters.json from attack telemetry):
   PYTHONPATH=${TOOLS_DIR} python3 ${TOOLS_DIR}/codexsdgate.py \\
-    --events runtime/attack_events.jsonl --filters runtime/filters.json --once
+    --events runtime/attack_events.jsonl --filters runtime/filters.json \\
+    --min-attack-events 20 --once
+
+  # --min-attack-events N gates the AI: it only runs once a batch has >= N
+  # attack-evidence events (default 20). Raise it to spend tokens only on
+  # bigger floods; set 0 to call the provider on every populated batch.
 EOF
   if ! is_api_provider "${choice}" && [[ "${choice}" != "codex" ]]; then
     echo "If the '${choice}' CLI is not logged in yet, run its login command (shown above) first."
