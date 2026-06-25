@@ -3981,6 +3981,40 @@ class AttackThresholdGateTests(unittest.TestCase):
             run_provider.assert_not_called()
 
 
+class AnalyzerTimerUnitTests(unittest.TestCase):
+    def test_analyzer_service_runs_threshold_gated_oneshot(self) -> None:
+        text = Path("ops/systemd/altura-prot-analyzer.service").read_text(encoding="utf-8")
+        self.assertIn("Type=oneshot", text)
+        self.assertIn("User=altura-prot", text)
+        self.assertIn("@PYTHON@", text)
+        self.assertIn("--min-attack-events @MIN_ATTACK_EVENTS@", text)
+        self.assertIn("codexsdgate.py", text)
+        self.assertIn("--provider auto", text)
+        self.assertIn("ReadWritePaths=/var/lib/altura-prot", text)
+        self.assertIn("NoNewPrivileges=true", text)
+        # AI providers need network egress.
+        self.assertIn("AF_INET", text)
+        # Must NOT lock W^X: Node/V8-based agent CLIs need writable+exec JIT pages.
+        self.assertNotIn("MemoryDenyWriteExecute=", text)
+
+    def test_analyzer_timer_is_periodic_and_persistent(self) -> None:
+        text = Path("ops/systemd/altura-prot-analyzer.timer").read_text(encoding="utf-8")
+        self.assertIn("OnUnitActiveSec=@INTERVAL@", text)
+        self.assertIn("Persistent=true", text)
+        self.assertIn("WantedBy=timers.target", text)
+
+    def test_installer_wires_the_analyzer_timer(self) -> None:
+        install = Path("install.sh").read_text(encoding="utf-8")
+        self.assertIn("install_ai_timer", install)
+        self.assertIn("--ai-timer", install)
+        self.assertIn("--ai-interval", install)
+        self.assertIn("--ai-threshold", install)
+        self.assertIn("altura-prot-analyzer.timer", install)
+        # Substitutes the template placeholders.
+        self.assertIn("@MIN_ATTACK_EVENTS@", install)
+        self.assertIn("@INTERVAL@", install)
+
+
 class InstallerAiAutodetectTests(unittest.TestCase):
     """Exercise install.sh's agent-friendly `--ai auto` resolver in isolation by
     sourcing its shell functions under a controlled PATH/env."""

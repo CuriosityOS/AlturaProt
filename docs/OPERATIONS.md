@@ -70,6 +70,34 @@ sudo ./install.sh --start --ai claude --non-interactive
 There is no capability difference between a subscription CLI and an API key:
 both drive the same analyzer pipeline and produce the same adaptive filters.
 
+### Analyzer timer (optional, system mode)
+
+By default you run the analyzer yourself (the installer prints the command). To
+have it run automatically, install the systemd timer with `--ai-timer` (or answer
+yes to the interactive prompt). It installs `altura-prot-analyzer.service`
+(a `oneshot` that runs `codexsdgate.py --once` as the `altura-prot` user) and
+`altura-prot-analyzer.timer`, and enables the timer:
+
+```bash
+sudo ./install.sh --start --ai auto --ai-timer --ai-interval 120 --ai-threshold 20
+systemctl status altura-prot-analyzer.timer
+journalctl -u altura-prot-analyzer.service     # see each run
+```
+
+The timer polls every `--ai-interval` seconds (default 120), but because the
+analyzer is threshold-gated the AI provider is only actually called when a batch
+crosses `--ai-threshold` real attack events (default 20) — so frequent polling is
+cheap and the AI only engages during real attacks. The analyzer unit deliberately
+omits `MemoryDenyWriteExecute` (unlike the proxy unit) because the Node/V8-based
+agent CLIs need W^X JIT pages.
+
+For an **API-key** provider this works out of the box (the key is read from the
+service user's `secrets.json`). For a **subscription CLI** provider the timer runs
+as the `altura-prot` user, which must be logged into that CLI; until it is, the
+analyzer falls back to the deterministic generator. The installer prints the exact
+`sudo -u altura-prot … login` command. User-mode installs do not get a timer — run
+the analyzer via cron or `systemd --user`.
+
 The `altura-prot` binary is also a management CLI:
 
 ```bash

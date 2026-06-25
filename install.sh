@@ -24,6 +24,10 @@ INTERACTIVE=0
 AI_CHOICE=""
 AI_MODEL=""
 AI_KEY=""
+# Optional systemd timer that runs the analyzer on a schedule (system mode).
+AI_TIMER=-1            # -1 = ask interactively, 0 = no, 1 = yes
+AI_INTERVAL=120        # analyzer poll interval (seconds)
+AI_THRESHOLD=20        # --min-attack-events the timer passes to the analyzer
 
 cleanup() {
   # Must end on a zero status: as the EXIT trap, a non-zero final command here
@@ -75,6 +79,12 @@ Options:
                       the provider's standard env var (e.g. OPENAI_API_KEY,
                       ANTHROPIC_API_KEY, GEMINI_API_KEY, OPENROUTER_API_KEY) is
                       used when present.
+  --ai-timer          Install + enable a systemd timer that runs the analyzer on
+                      a schedule (system mode only). Threshold-gated, so the AI
+                      only fires during real attacks.
+  --no-ai-timer       Do not install the analyzer timer (skip the prompt).
+  --ai-interval SECS  Analyzer poll interval for the timer (default 120).
+  --ai-threshold N    --min-attack-events the timer passes the analyzer (default 20).
   --non-interactive   Never prompt; skip the AI step unless --ai is given.
   -h, --help          Show this help
 
@@ -255,6 +265,22 @@ parse_args() {
         AI_KEY="$2"
         shift 2
         ;;
+      --ai-timer)
+        AI_TIMER=1
+        shift
+        ;;
+      --no-ai-timer)
+        AI_TIMER=0
+        shift
+        ;;
+      --ai-interval)
+        AI_INTERVAL="$2"
+        shift 2
+        ;;
+      --ai-threshold)
+        AI_THRESHOLD="$2"
+        shift 2
+        ;;
       --non-interactive)
         NONINTERACTIVE=1
         shift
@@ -315,21 +341,69 @@ Next steps:
 EOF
 }
 
+# Resolve a systemd unit template from the checkout, else fetch it from the repo.
+# Echoes a readable path to the template.
+materialize_unit_src() {
+  local name="$1" src="${REPO_ROOT}/ops/systemd/$1"
+  if [[ -f "${src}" ]]; then
+    echo "${src}"
+    return
+  fi
+  ensure_work_dir
+  local out="${WORK_DIR}/${name}.src"
+  local raw="${REPO_URL/github.com/raw.githubusercontent.com}/${REPO_BRANCH}/ops/systemd/${name}"
+  curl -fsSL "${raw}" -o "${out}"
+  echo "${out}"
+}
+
 # Install the systemd unit, sourced from the checkout or fetched from the repo,
 # with ExecStart rewritten to the chosen prefix and config path.
 install_systemd_unit() {
   ensure_work_dir
-  local src="${REPO_ROOT}/ops/systemd/${SYSTEMD_UNIT}"
-  if [[ ! -f "${src}" ]]; then
-    src="${WORK_DIR}/${SYSTEMD_UNIT}.src"
-    local raw="${REPO_URL/github.com/raw.githubusercontent.com}/${REPO_BRANCH}/ops/systemd/${SYSTEMD_UNIT}"
-    log "fetching systemd unit"
-    curl -fsSL "${raw}" -o "${src}"
-  fi
+  local src
+  src="$(materialize_unit_src "${SYSTEMD_UNIT}")"
   local unit="${WORK_DIR}/${SYSTEMD_UNIT}"
   sed "s|^ExecStart=.*|ExecStart=${BIN_DIR}/altura-prot run --config ${CONFIG_DIR}/config.json|" \
     "${src}" >"${unit}"
   run_root install -m 0644 "${unit}" "/etc/systemd/system/${SYSTEMD_UNIT}"
+}
+
+# Install + enable the analyzer service/timer (system mode only). The timer polls
+# cheaply; the analyzer's --min-attack-events gate means the AI only fires during
+# real attacks. Returns without effect for user installs or when systemctl is absent.
+install_ai_timer() {
+  local provider="${1:-}"
+  if [[ "${USER_INSTALL}" -eq 1 ]]; then
+    log "analyzer timer is system-mode only; for a user install run codexsdgate.py via cron or 'systemd --user'."
+    return 0
+  fi
+  if ! command -v systemctl >/dev/null 2>&1; then
+    log "systemctl not found; skipping analyzer timer."
+    return 0
+  fi
+  local py
+  py="$(command -v python3)"
+  ensure_work_dir
+  local svc_src tmr_src
+  svc_src="$(materialize_unit_src altura-prot-analyzer.service)"
+  tmr_src="$(materialize_unit_src altura-prot-analyzer.timer)"
+  local svc="${WORK_DIR}/altura-prot-analyzer.service"
+  local tmr="${WORK_DIR}/altura-prot-analyzer.timer"
+  sed -e "s|@PYTHON@|${py}|g" -e "s|@MIN_ATTACK_EVENTS@|${AI_THRESHOLD}|g" "${svc_src}" >"${svc}"
+  sed -e "s|@INTERVAL@|${AI_INTERVAL}|g" "${tmr_src}" >"${tmr}"
+  run_root install -m 0644 "${svc}" "/etc/systemd/system/altura-prot-analyzer.service"
+  run_root install -m 0644 "${tmr}" "/etc/systemd/system/altura-prot-analyzer.timer"
+  run_root systemctl daemon-reload
+  run_root systemctl enable --now altura-prot-analyzer.timer
+  log "analyzer timer enabled: every ${AI_INTERVAL}s, AI fires at >= ${AI_THRESHOLD} attack events"
+  if [[ "${provider}" != "codex" ]] && ! is_api_provider "${provider}"; then
+    cat <<EOF
+note: the timer runs as the '${SERVICE_USER}' user, which must be logged into the
+'${provider}' CLI for AI analysis. Until then the analyzer uses the deterministic
+generator. Log that user in, e.g.:
+  sudo -u ${SERVICE_USER} -H env HOME=${STATE_DIR} ${provider} login
+EOF
+  fi
 }
 
 install_system_mode() {
@@ -651,14 +725,30 @@ AI Power Detection configured: ${choice}
 Run the analyzer (writes runtime/filters.json from attack telemetry):
   PYTHONPATH=${TOOLS_DIR} python3 ${TOOLS_DIR}/codexsdgate.py \\
     --events runtime/attack_events.jsonl --filters runtime/filters.json \\
-    --min-attack-events 20 --once
+    --min-attack-events ${AI_THRESHOLD} --once
 
   # --min-attack-events N gates the AI: it only runs once a batch has >= N
-  # attack-evidence events (default 20). Raise it to spend tokens only on
-  # bigger floods; set 0 to call the provider on every populated batch.
+  # real attack events (default 20). Raise it to spend tokens only on bigger
+  # floods; set 0 to call the provider on every populated batch.
 EOF
   if ! is_api_provider "${choice}" && [[ "${choice}" != "codex" ]]; then
     echo "If the '${choice}' CLI is not logged in yet, run its login command (shown above) first."
+  fi
+
+  # Optionally run the analyzer automatically on a systemd timer (system mode).
+  local want_timer="${AI_TIMER}"
+  if [[ "${want_timer}" -eq -1 ]]; then
+    if [[ "${INTERACTIVE}" -eq 1 && "${USER_INSTALL}" -ne 1 ]]; then
+      case "$(ask 'Run the analyzer automatically on a systemd timer? [y/N]: ' 'N')" in
+        y | Y | yes | YES) want_timer=1 ;;
+        *) want_timer=0 ;;
+      esac
+    else
+      want_timer=0
+    fi
+  fi
+  if [[ "${want_timer}" -eq 1 ]]; then
+    install_ai_timer "${choice}"
   fi
 }
 

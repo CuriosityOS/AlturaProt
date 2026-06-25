@@ -1,0 +1,15 @@
+[Unit]
+Description=Run the AlturaProt CodexSDGate analyzer periodically
+Documentation=https://github.com/CuriosityOS/AlturaProt
+
+[Timer]
+# Poll cheaply and often: the analyzer is threshold-gated, so frequent runs do
+# not mean frequent AI calls — the provider only fires once an attack crosses
+# --min-attack-events. OnUnitActiveSec is the polling interval.
+OnBootSec=2min
+OnUnitActiveSec=@INTERVAL@
+AccuracySec=15s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

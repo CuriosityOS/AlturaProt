@@ -1,0 +1,42 @@
+[Unit]
+Description=AlturaProt CodexSDGate adaptive filter analyzer
+Documentation=https://github.com/CuriosityOS/AlturaProt
+After=altura-prot.service
+Wants=altura-prot.service
+
+[Service]
+# Oneshot: the timer invokes this on a schedule. The analyzer reads the proxy's
+# attack-event log and refreshes runtime/filters.json. It is threshold-gated, so
+# the AI provider is only actually called during real attacks; otherwise it does
+# a cheap deterministic pass. Runs as the same service user as the proxy so it
+# can read the event log and write the filter file under the state directory.
+Type=oneshot
+User=altura-prot
+Group=altura-prot
+WorkingDirectory=/var/lib/altura-prot
+Environment=HOME=/var/lib/altura-prot
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/var/lib/altura-prot/tools
+Environment=ALTURA_PROT_PROVIDER_CONFIG=/etc/altura-prot/providers.json
+Environment=ALTURA_PROT_PROVIDER_SECRETS=/etc/altura-prot/secrets.json
+ExecStart=@PYTHON@ /var/lib/altura-prot/tools/codexsdgate.py --once --provider auto --events runtime/attack_events.jsonl --filters runtime/filters.json --min-attack-events @MIN_ATTACK_EVENTS@
+TimeoutStartSec=300s
+Nice=10
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/altura-prot
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+# NOTE: deliberately NOT setting MemoryDenyWriteExecute. Unlike the proxy, this
+# unit may exec a subscription agent CLI (Claude/Codex/OpenCode/Cursor/Grok),
+# several of which are Node/V8 based and require writable+executable JIT pages.
