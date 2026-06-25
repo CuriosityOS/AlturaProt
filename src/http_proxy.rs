@@ -1440,7 +1440,7 @@ fn content_length(headers: &HeaderMap<HeaderValue>) -> Option<u64> {
     headers
         .get(CONTENT_LENGTH)
         .and_then(|value| value.to_str().ok())
-        .and_then(|value| value.parse::<u64>().ok())
+        .and_then(|value| value.trim().parse::<u64>().ok())
 }
 
 fn validate_request_framing(
@@ -3731,6 +3731,8 @@ mod tests {
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_LENGTH, HeaderValue::from_static("42"));
         assert_eq!(content_length(&headers), Some(42));
+        headers.insert(CONTENT_LENGTH, HeaderValue::from_static(" \t42\t "));
+        assert_eq!(content_length(&headers), Some(42));
         headers.insert(CONTENT_LENGTH, HeaderValue::from_static("not-a-number"));
         assert_eq!(content_length(&headers), None);
     }
@@ -4527,7 +4529,7 @@ mod tests {
             }
             let _ = stream
                 .write_all(
-                    b"HTTP/1.1 200 OK\r\nContent-Length: 128\r\nConnection: close\r\n\r\noversized",
+                    b"HTTP/1.1 200 OK\r\nContent-Length: \t128 \r\nConnection: close\r\n\r\noversized",
                 )
                 .await;
         });
@@ -4590,6 +4592,103 @@ mod tests {
         assert_eq!(stats.http_proxied.load(Ordering::Relaxed), 0);
         assert_eq!(stats.http_upstream_body_rejected.load(Ordering::Relaxed), 1);
         assert_eq!(stats.http_upstream_errors.load(Ordering::Relaxed), 1);
+
+        let _ = shutdown_tx.send(true);
+        if timeout(Duration::from_secs(1), &mut proxy_task)
+            .await
+            .is_err()
+        {
+            proxy_task.abort();
+            panic!("proxy task did not stop before test timeout");
+        }
+        upstream_task.abort();
+        let _ = std::fs::remove_file(filter_file);
+        let _ = std::fs::remove_file(event_file);
+    }
+
+    #[tokio::test]
+    async fn request_declared_oversized_body_with_ows_is_rejected_before_upstream() {
+        let upstream_listener = tokio::net::TcpListener::bind(("127.0.0.1", 0))
+            .await
+            .unwrap();
+        let upstream_addr = upstream_listener.local_addr().unwrap();
+        let upstream_hits = Arc::new(AtomicU64::new(0));
+        let upstream_hits_for_task = Arc::clone(&upstream_hits);
+        let upstream_task = tokio::spawn(async move {
+            loop {
+                let Ok((mut stream, _)) = upstream_listener.accept().await else {
+                    break;
+                };
+                upstream_hits_for_task.fetch_add(1, Ordering::Relaxed);
+                let _ = stream
+                    .write_all(
+                        b"HTTP/1.1 204 No Content\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                    )
+                    .await;
+            }
+        });
+
+        let proxy_port = unused_tcp_port();
+        let temp_suffix = format!("{}-{}", std::process::id(), upstream_addr.port());
+        let filter_file =
+            std::env::temp_dir().join(format!("altura-prot-request-size-{temp_suffix}.json"));
+        let event_file =
+            std::env::temp_dir().join(format!("altura-prot-request-size-{temp_suffix}.jsonl"));
+        std::fs::write(&filter_file, r#"{"filters":[]}"#).unwrap();
+        let engine =
+            FilterEngine::new(Vec::new(), filter_file.clone(), Duration::from_secs(60)).await;
+        let logger = Arc::new(crate::telemetry::EventLogger::new(&event_file).unwrap());
+        let detector = AdaptiveDetector::new(
+            crate::adaptive::AdaptiveDetectorConfig {
+                enabled: false,
+                threshold_per_second: 1_000_000,
+                activation_ttl: Duration::from_secs(60),
+                event_cooldown: Duration::from_secs(1),
+                max_signature_windows: 8_192,
+                max_path_shape_windows: 8_192,
+            },
+            Arc::clone(&engine),
+            Arc::clone(&logger),
+        );
+        let stats = Arc::new(Stats::default());
+        let cfg = test_http_config(&format!(
+            r#"{{
+                "listen":"127.0.0.1:{proxy_port}",
+                "upstream":"http://{upstream_addr}",
+                "max_body_bytes":16
+            }}"#
+        ));
+        let (startup_tx, startup_rx) = oneshot::channel();
+        let (shutdown_tx, shutdown_rx) = watch::channel(false);
+        let mut proxy_task = tokio::spawn(run_http_proxy(
+            cfg,
+            engine,
+            detector,
+            Arc::clone(&stats),
+            logger,
+            Some(startup_tx),
+            shutdown_rx,
+        ));
+        startup_rx.await.unwrap().unwrap();
+
+        let mut stream = TcpStream::connect(("127.0.0.1", proxy_port)).await.unwrap();
+        stream
+            .write_all(
+                b"POST /large HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: \t32 \r\nConnection: close\r\n\r\n",
+            )
+            .await
+            .unwrap();
+        let response = read_test_response(&mut stream).await;
+        assert!(
+            response.starts_with(b"HTTP/1.1 413 Payload Too Large"),
+            "unexpected response: {}",
+            String::from_utf8_lossy(&response)
+        );
+        assert!(response.ends_with(b"request body too large\n"));
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(upstream_hits.load(Ordering::Relaxed), 0);
+        assert_eq!(stats.http_body_rejected.load(Ordering::Relaxed), 1);
+        assert_eq!(stats.http_proxied.load(Ordering::Relaxed), 0);
 
         let _ = shutdown_tx.send(true);
         if timeout(Duration::from_secs(1), &mut proxy_task)
