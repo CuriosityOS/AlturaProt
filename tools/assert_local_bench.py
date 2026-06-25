@@ -176,6 +176,14 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "compressed request rejection must be marked no-store",
     ),
     (
+        "guardrails.request_content_encoding.identity_request_allowed",
+        "identity-encoded request bodies must remain allowed",
+    ),
+    (
+        "guardrails.expect_guard.normal_request_allowed",
+        "normal requests without Expect headers must remain allowed",
+    ),
+    (
         "guardrails.expect_guard.expect_continue_rejected",
         "Expect: 100-continue must be rejected by default",
     ),
@@ -202,6 +210,14 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.range_guard.range_rejections_not_stored",
         "Range rejections must be marked no-store",
+    ),
+    (
+        "guardrails.range_guard.single_range_allowed",
+        "single-range requests must remain allowed",
+    ),
+    (
+        "guardrails.chunked_request_body_opt_in.chunked_request_allowed",
+        "chunked request bodies must be allowed only when explicitly configured",
     ),
     (
         "guardrails.accept_encoding.origin_accept_encoding_stripped",
@@ -268,6 +284,10 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "initial header byte overflow must generate a bounded rejection",
     ),
     (
+        "guardrails.initial_framing_precheck_response.initial_header_late_terminator_over_cap_observed",
+        "initial header byte overflow with a late terminator must generate a bounded rejection",
+    ),
+    (
         "guardrails.initial_framing_precheck_response.raw_initial_400_closes_connection",
         "raw initial framing rejection must close the downstream connection",
     ),
@@ -278,6 +298,10 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.host_guard.absolute_form_unsupported_scheme_rejected",
         "absolute-form request targets must reject non-http schemes before origin work",
+    ),
+    (
+        "guardrails.uri_guard.raw_initial_request_target_guard_observed",
+        "raw initial request-target guard must reject oversized request targets before origin work",
     ),
     (
         "guardrails.allowed_hosts_startup.blank_rejected",
@@ -370,6 +394,10 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.header_read_timeout_ceiling_startup.header_read_timeout_rejected",
         "header read timeout above the supported ceiling must fail startup",
+    ),
+    (
+        "guardrails.header_read_timeout_ceiling_startup.startup_rejected",
+        "header read-timeout ceiling probe must fail startup for unsupported values",
     ),
     (
         "guardrails.http_endpoint_startup.invalid_listen_rejected",
@@ -744,6 +772,14 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "runtime filter over-capacity files must be rejected while preserving last-good rules",
     ),
     (
+        "guardrails.runtime_filter_hot_path.normal_request_allowed",
+        "runtime filter hot-path probe must allow normal requests",
+    ),
+    (
+        "guardrails.runtime_filter_hot_path.control_request_allowed",
+        "runtime filter hot-path probe must allow control requests",
+    ),
+    (
         "guardrails.filter_rule_startup.empty_condition_rejected",
         "static filter rules with empty conditions must fail startup",
     ),
@@ -860,6 +896,22 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "minimum-rate ceilings above supported bounds must fail startup",
     ),
     (
+        "guardrails.min_rate_ceiling_startup.http_request_body_min_rate_rejected",
+        "HTTP request-body minimum-rate ceiling above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.min_rate_ceiling_startup.http_upstream_body_min_rate_rejected",
+        "HTTP upstream-body minimum-rate ceiling above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.min_rate_ceiling_startup.tcp_downstream_min_rate_rejected",
+        "TCP downstream minimum-rate ceiling above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.min_rate_ceiling_startup.tcp_upstream_min_rate_rejected",
+        "TCP upstream minimum-rate ceiling above supported bounds must fail startup",
+    ),
+    (
         "guardrails.connect_timeout_ceiling_startup.http_upstream_connect_timeout_rejected",
         "HTTP upstream connect timeout above supported bounds must fail startup",
     ),
@@ -870,6 +922,10 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.upstream_timeout_ceiling_startup.upstream_timeout_rejected",
         "upstream response timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_timeout_ceiling_startup.startup_rejected",
+        "upstream response timeout ceiling probe must fail startup for unsupported values",
     ),
     (
         "guardrails.upstream_failure_circuit_ceiling_startup.upstream_failure_threshold_rejected",
@@ -900,12 +956,24 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "maximum requests per connection above supported bounds must fail startup",
     ),
     (
+        "guardrails.connection_request_count_ceiling_startup.startup_rejected",
+        "connection request-count ceiling probe must fail startup for unsupported values",
+    ),
+    (
         "guardrails.event_log_queue_capacity_ceiling_startup.event_log_queue_capacity_rejected",
         "event-log queue capacity above supported bounds must fail startup",
     ),
     (
+        "guardrails.event_log_queue_capacity_ceiling_startup.startup_rejected",
+        "event-log queue capacity ceiling probe must fail startup for unsupported values",
+    ),
+    (
         "guardrails.event_log_backup_count_ceiling_startup.event_log_backup_count_rejected",
         "event-log backup count above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.event_log_backup_count_ceiling_startup.startup_rejected",
+        "event-log backup count ceiling probe must fail startup for unsupported values",
     ),
     (
         "guardrails.runtime_nofile.runtime_nofile_observed",
@@ -948,8 +1016,16 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "edge template validation must reject missing public listener ports",
     ),
     (
+        "guardrails.edge_template_port_coverage.loopback_missing_port_allowed",
+        "edge template validation must allow loopback-only listeners to be absent from public edge rules",
+    ),
+    (
         "guardrails.edge_template_port_coverage.weak_systemd_sandbox_rejected",
         "systemd validation must reject weak sandboxing",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_connlimit_set_size_rejected",
+        "edge template validation must reject connlimit sets without explicit size bounds",
     ),
     (
         "guardrails.edge_template_port_coverage.missing_udp_drop_rejected",

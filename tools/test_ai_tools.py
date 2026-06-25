@@ -645,6 +645,71 @@ class LocalBenchAssertionTests(unittest.TestCase):
         self.assertIn("tracked_ip_cap.first_client_initial_allowed", errors[0])
         self.assertIn("expected true", errors[0])
 
+    def test_assert_local_bench_rejects_identity_encoding_allowance_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["request_content_encoding"][
+            "identity_request_allowed"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("request_content_encoding.identity_request_allowed", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_uri_guard_observation_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["uri_guard"][
+            "raw_initial_request_target_guard_observed"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("uri_guard.raw_initial_request_target_guard_observed", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_runtime_filter_hot_path_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["runtime_filter_hot_path"][
+            "normal_request_allowed"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("runtime_filter_hot_path.normal_request_allowed", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_min_rate_ceiling_detail_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["min_rate_ceiling_startup"][
+            "tcp_upstream_min_rate_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "min_rate_ceiling_startup.tcp_upstream_min_rate_rejected", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_edge_connlimit_size_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["edge_template_port_coverage"][
+            "missing_connlimit_set_size_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "edge_template_port_coverage.missing_connlimit_set_size_rejected",
+            errors[0],
+        )
+        self.assertIn("expected true", errors[0])
+
     def test_assert_local_bench_rejects_allowed_host_startup_gap(self) -> None:
         report = self.valid_report()
         report["guardrails"]["allowed_hosts_startup"]["wildcard_rejected"] = False
