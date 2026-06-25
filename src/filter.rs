@@ -434,9 +434,15 @@ impl FilterEngine {
         loaded.sort_by(|a, b| b.priority.cmp(&a.priority).then_with(|| a.id.cmp(&b.id)));
 
         let now_ms = unix_time_ms();
+        let loaded_rule_ids = loaded
+            .iter()
+            .map(|rule| rule.id.as_str())
+            .collect::<HashSet<_>>();
         let mut activation_deadlines =
             self.lock_activation_deadlines("reload activation state preservation");
-        activation_deadlines.retain(|_, active_until_ms| *active_until_ms > now_ms);
+        activation_deadlines.retain(|rule_id, active_until_ms| {
+            *active_until_ms > now_ms && loaded_rule_ids.contains(rule_id.as_str())
+        });
         let mut runtime_rules = Vec::with_capacity(loaded.len());
         for rule in loaded {
             let active_until_ms = activation_deadlines
@@ -1502,6 +1508,45 @@ mod tests {
 
         assert!(err.contains("[0].ttl_seconds"), "{err}");
         assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "good");
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[tokio::test]
+    async fn runtime_filter_reload_prunes_activation_deadlines_for_removed_rules() {
+        let path = temp_runtime_filter_path("activation-prune-runtime-filters");
+        let mut first = path_rule("first", "/first");
+        first.adaptive = true;
+        first.ttl_seconds = Some(60);
+        first.condition.signature = Some("sig-first".to_string());
+        std::fs::write(&path, runtime_filter_json(&[first])).unwrap();
+        let engine = FilterEngine::new_with_limits(
+            Vec::new(),
+            path.clone(),
+            Duration::from_secs(60),
+            4096,
+            4,
+        )
+        .await;
+
+        assert!(engine.activate_signature("sig-first", None));
+        {
+            let activation_deadlines =
+                engine.lock_activation_deadlines("test activation deadline inserted");
+            assert!(activation_deadlines.contains_key("first"));
+        }
+
+        let mut second = path_rule("second", "/second");
+        second.adaptive = true;
+        second.ttl_seconds = Some(60);
+        second.condition.signature = Some("sig-second".to_string());
+        std::fs::write(&path, runtime_filter_json(&[second])).unwrap();
+
+        engine.reload().await.unwrap();
+
+        let activation_deadlines =
+            engine.lock_activation_deadlines("test activation deadline pruning");
+        assert!(!activation_deadlines.contains_key("first"));
+        assert!(activation_deadlines.is_empty());
         let _ = std::fs::remove_file(path);
     }
 
