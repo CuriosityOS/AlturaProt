@@ -15,7 +15,7 @@ AlturaProt is a Rust Layer 7 reverse proxy prototype for defensive HTTP and raw 
 - Static JSON filters for known bad HTTP patterns, plus bounded and validated static/runtime filter rules with compiled header/user-agent match data and snapshot-based rule evaluation on the request path.
 - Adaptive learned filters that stay dormant, activate during matching floods through rolling token-bucket counters, reclaim idle signature/path-shape windows under capacity pressure, preserve recent evidence, and stop admitting fresh detector keys when a shard is full of recent windows.
 - JSONL attack event logs for offline/nearline analysis, with bounded user-controlled fields, a bounded nonblocking queue capped at `8192` owned events, worker-side JSON serialization, bounded flush cadence, and byte/backup-count-capped rotation so event logging does not become request-path JSON formatting, backpressure, a high-rate disk flush, unbounded memory or disk growth, or excessive per-rotation filesystem work during floods.
-- Optional CodexSDGate analyzer that converts attack logs into constrained adaptive filter rules using Codex SDK, OpenAI, Anthropic, or OpenRouter.
+- Optional CodexSDGate analyzer that converts attack logs into constrained adaptive filter rules using either a subscription agent CLI you already logged into (Codex, Claude, OpenCode, Cursor, Grok — wrapped the way T3 Code does) or an API key (OpenAI, Anthropic, Gemini, OpenRouter).
 - Host-edge nftables/sysctl/systemd templates plus a validation preflight for L3/L4
   and service-manager backstops, including explicit size bounds on dynamic
   nftables SYN-rate and connection-limit sets and exemptions for essential
@@ -27,7 +27,9 @@ AlturaProt is a Rust Layer 7 reverse proxy prototype for defensive HTTP and raw 
 One command installs everything — it downloads a prebuilt binary for your
 platform (or builds from source if none is published / when run from a
 checkout), writes config, and (system mode) creates the service user and
-systemd unit:
+systemd unit. When run on a terminal it also walks an optional **AI Power
+Detection** step where you can wire an AI provider for adaptive filtering
+(skip it, pick a subscription CLI you already use, or enter an API key):
 
 ```bash
 # system install, then enable + start the service
@@ -107,7 +109,7 @@ python3 tools/ai_provider_cli.py login codex
 python3 tools/codexsdgate.py --events runtime/attack_events.jsonl --filters runtime/filters.json --once
 ```
 
-If the selected provider is unavailable, the analyzer falls back to a deterministic signature-based rule generator. See [AI providers](docs/AI_PROVIDERS.md) for OpenAI, Anthropic, and OpenRouter setup.
+If the selected provider is unavailable, the analyzer falls back to a deterministic signature-based rule generator. See [AI providers](docs/AI_PROVIDERS.md) for the subscription CLI family (Codex, Claude, OpenCode, Cursor, Grok) and the OpenAI, Anthropic, Gemini, and OpenRouter API setups.
 
 ## Mitigation Model
 

@@ -22,6 +22,43 @@ overrides the binary install root. The source repo and branch can be overridden
 with the `ALTURA_PROT_REPO_URL` and `ALTURA_PROT_REPO_BRANCH` environment
 variables.
 
+### AI Power Detection step
+
+After installing the binary, the installer runs an optional **AI Power
+Detection** step. On a terminal (including `curl | bash`, which reads prompts
+from `/dev/tty`) it asks whether to wire an AI provider for adaptive filter
+generation and offers three choices:
+
+1. **None** (default) — deterministic mitigation only.
+2. **Subscription CLI** — wrap an agent CLI you already logged into (Claude,
+   Codex, OpenCode, Cursor, Grok), the same approach as T3 Code. The installer
+   marks which CLIs are on `PATH` and prints the vendor login command.
+3. **API key** — OpenAI, Anthropic, Gemini, or OpenRouter; the key is stored in
+   a `0600` secrets file owned by the service user.
+
+When a provider is chosen the installer also copies the Python analyzer tools
+(`codex_analyzer.py`, `ai_provider_cli.py`, `codexsdgate.py`) next to the
+deployment (`/var/lib/altura-prot/tools` in system mode,
+`~/.local/share/altura-prot/tools` for `--user`) and writes
+`providers.json`/`secrets.json`. The proxy never calls AI on the request path;
+this only configures the out-of-band CodexSDGate loop, which you can change
+later with `ai_provider_cli.py`.
+
+The step is skipped automatically when there is no terminal (e.g. CI) or with
+`--non-interactive`. To configure it non-interactively, pass `--ai PROVIDER`
+(one of `none`, `codex`, `claude`, `opencode`, `cursor`, `grok`, `openai`,
+`anthropic`, `gemini`, `openrouter`) plus optional `--ai-model MODEL` and
+`--ai-key KEY`:
+
+```bash
+# user install that wires Gemini in one shot
+curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh \
+  | bash -s -- --user --ai gemini --ai-model gemini-2.5-pro --ai-key "$GEMINI_API_KEY"
+
+# system install that selects the already-logged-in Claude CLI
+sudo ./install.sh --start --ai claude --non-interactive
+```
+
 The `altura-prot` binary is also a management CLI:
 
 ```bash

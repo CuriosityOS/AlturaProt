@@ -42,14 +42,56 @@ DEFAULT_PROVIDER_CONFIG = {
             "base_url": "https://api.anthropic.com/v1",
             "anthropic_version": "2023-06-01",
         },
+        "gemini": {
+            "model": "gemini-2.5-pro",
+            "api_key_env": "GEMINI_API_KEY",
+            "base_url": "https://generativelanguage.googleapis.com/v1beta",
+        },
         "openrouter": {
             "model": "~openai/gpt-latest",
             "api_key_env": "OPENROUTER_API_KEY",
             "base_url": "https://openrouter.ai/api/v1",
             "app_title": "AlturaProt",
         },
+        # Subscription "agent CLI" providers, wrapped the same way T3 Code does:
+        # we shell out to the official CLI the user already logged into (no API key,
+        # no custom OAuth). `command` is the binary; `login_cmd` is shown when the
+        # CLI is present but not authenticated.
+        "claude": {
+            "kind": "cli_agent",
+            "command": "claude",
+            "model": "",
+            "login_cmd": "claude auth login",
+            "install_url": "https://docs.claude.com/claude-code",
+        },
+        "opencode": {
+            "kind": "cli_agent",
+            "command": "opencode",
+            "model": "",
+            "login_cmd": "opencode auth login",
+            "install_url": "https://opencode.ai",
+        },
+        "cursor": {
+            "kind": "cli_agent",
+            "command": "cursor-agent",
+            "model": "",
+            "login_cmd": "cursor-agent login",
+            "install_url": "https://cursor.com/cli",
+        },
+        "grok": {
+            "kind": "cli_agent",
+            "command": "grok",
+            "model": "",
+            "login_cmd": "grok login",
+            "install_url": "https://github.com/superagent-ai/grok-cli",
+        },
     },
 }
+
+# Providers that wrap an already-authenticated agent CLI (T3 Code style). `codex`
+# also uses a local login, but via the openai_codex SDK rather than a subprocess.
+CLI_AGENT_PROVIDERS = ("claude", "opencode", "cursor", "grok")
+ALL_PROVIDERS = tuple(DEFAULT_PROVIDER_CONFIG["providers"].keys())
 
 SYSTEM_PROMPT = """You convert defensive HTTP flood telemetry into safe AlturaProt filter rules.
 Return JSON only. Prefer narrow signature-based adaptive filters. Treat rate_limited,
@@ -113,7 +155,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-events", type=int, default=200)
     parser.add_argument("--max-filters", type=int, default=512)
     parser.add_argument("--no-codex", action="store_true")
-    parser.add_argument("--provider", choices=["auto", "codex", "openai", "anthropic", "openrouter"], default="auto")
+    parser.add_argument(
+        "--provider",
+        choices=["auto", *ALL_PROVIDERS],
+        default="auto",
+    )
     parser.add_argument("--provider-config", default=str(default_provider_config_path()))
     parser.add_argument("--model", default=None)
     parser.add_argument(
@@ -409,13 +455,130 @@ def openrouter_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl
     return [sanitize_filter(item, ttl_seconds) for item in filters if isinstance(item, dict)]
 
 
+def gemini_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_seconds: int) -> list[dict[str, Any]]:
+    api_key = provider_api_key("gemini", provider_cfg)
+    base_url = provider_cfg.get("base_url", DEFAULT_PROVIDER_CONFIG["providers"]["gemini"]["base_url"]).rstrip("/")
+    model = provider_cfg.get("model", DEFAULT_PROVIDER_CONFIG["providers"]["gemini"]["model"])
+    payload = {
+        "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+        "contents": [{"role": "user", "parts": [{"text": json.dumps(prompt, separators=(",", ":"))}]}],
+        "generationConfig": {"responseMimeType": "application/json"},
+    }
+    data = post_json(
+        f"{base_url}/models/{model}:generateContent",
+        {"x-goog-api-key": api_key, "Content-Type": "application/json"},
+        payload,
+    )
+    parsed = extract_json(response_text_from_gemini(data))
+    filters = parsed.get("filters", []) if isinstance(parsed, dict) else []
+    return [sanitize_filter(item, ttl_seconds) for item in filters if isinstance(item, dict)]
+
+
+def cli_agent_argv(provider: str, command: str, model: str, prompt_text: str) -> tuple[list[str], bool]:
+    """Build the one-shot argv for a wrapped agent CLI and whether to feed the
+    prompt on stdin. Mirrors how T3 Code invokes each CLI non-interactively."""
+    model_args = ["--model", model] if model else []
+    if provider == "claude":
+        # claude -p --output-format json, prompt on stdin (from T3 ClaudeTextGeneration).
+        return [command, "-p", "--output-format", "json", *model_args], True
+    if provider == "opencode":
+        return [command, "run", *model_args, prompt_text], False
+    if provider == "cursor":
+        return [command, "-p", "--output-format", "text", *model_args, prompt_text], False
+    if provider == "grok":
+        return [command, "-p", prompt_text, *model_args], False
+    return [command, prompt_text], False
+
+
+def cli_agent_response_text(provider: str, stdout: str) -> str:
+    """Extract the assistant text from a wrapped CLI's stdout."""
+    stdout = stdout.strip()
+    if provider == "claude":
+        try:
+            obj = json.loads(stdout)
+        except json.JSONDecodeError:
+            return stdout
+        if isinstance(obj, dict):
+            for key in ("result", "text", "content"):
+                if isinstance(obj.get(key), str):
+                    return obj[key]
+    return stdout
+
+
+def cli_agent_filters(provider: str, prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_seconds: int) -> list[dict[str, Any]]:
+    import subprocess
+
+    command = str(provider_cfg.get("command") or provider)
+    model = str(provider_cfg.get("model") or "").strip()
+    login_cmd = str(provider_cfg.get("login_cmd") or f"{command} login")
+    timeout = float(provider_cfg.get("timeout", 180))
+    prompt_text = (
+        SYSTEM_PROMPT
+        + "\n\n"
+        + json.dumps(prompt, separators=(",", ":"))
+        + '\n\nReturn only a JSON object of the form {"filters":[FilterRule, ...]}.'
+    )
+    argv, use_stdin = cli_agent_argv(provider, command, model, prompt_text)
+    try:
+        proc = subprocess.run(
+            argv,
+            input=prompt_text if use_stdin else None,
+            text=True,
+            capture_output=True,
+            timeout=timeout,
+        )
+    except FileNotFoundError as exc:
+        raise RuntimeError(f"{command} CLI not found; install it and run `{login_cmd}`") from exc
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"{command} timed out after {timeout:.0f}s") from exc
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout).strip()[:300]
+        raise RuntimeError(f"{command} exited {proc.returncode}: {detail or 'not logged in? run ' + login_cmd}")
+    parsed = extract_json(cli_agent_response_text(provider, proc.stdout))
+    filters = parsed.get("filters", []) if isinstance(parsed, dict) else []
+    return [sanitize_filter(item, ttl_seconds) for item in filters if isinstance(item, dict)]
+
+
+def detect_cli_agent(provider: str, provider_cfg: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Detect whether a wrapped agent CLI is installed (T3 Code style). Auth is
+    delegated to the vendor CLI's own login, so we report installed + version and
+    surface the login command rather than probing credentials."""
+    import shutil
+    import subprocess
+
+    provider_cfg = provider_cfg or DEFAULT_PROVIDER_CONFIG["providers"].get(provider, {})
+    command = str(provider_cfg.get("command") or provider)
+    info: dict[str, Any] = {
+        "provider": provider,
+        "command": command,
+        "installed": False,
+        "version": "",
+        "login_cmd": str(provider_cfg.get("login_cmd") or f"{command} login"),
+        "install_url": str(provider_cfg.get("install_url") or ""),
+    }
+    if shutil.which(command) is None:
+        return info
+    info["installed"] = True
+    try:
+        out = subprocess.run([command, "--version"], text=True, capture_output=True, timeout=8)
+        text = (out.stdout or out.stderr).strip()
+        info["version"] = text.splitlines()[0][:120] if text else ""
+    except Exception as exc:  # noqa: BLE001 - report any probe failure verbatim
+        info["version"] = f"version check failed: {exc}"
+    return info
+
+
 def run_provider(provider: str, prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_seconds: int) -> list[dict[str, Any]]:
     if provider == "codex":
         return codex_filters(prompt, provider_cfg, ttl_seconds)
+    if provider_cfg.get("kind") == "cli_agent" or provider in CLI_AGENT_PROVIDERS:
+        return cli_agent_filters(provider, prompt, provider_cfg, ttl_seconds)
     if provider == "openai":
         return openai_filters(prompt, provider_cfg, ttl_seconds)
     if provider == "anthropic":
         return anthropic_filters(prompt, provider_cfg, ttl_seconds)
+    if provider == "gemini":
+        return gemini_filters(prompt, provider_cfg, ttl_seconds)
     if provider == "openrouter":
         return openrouter_filters(prompt, provider_cfg, ttl_seconds)
     raise ValueError(f"unsupported provider: {provider}")
@@ -464,6 +627,17 @@ def response_text_from_chat_completion(data: dict[str, Any]) -> str:
     message = choices[0].get("message", {}) if isinstance(choices[0], dict) else {}
     content = message.get("content") if isinstance(message, dict) else ""
     return content if isinstance(content, str) else ""
+
+
+def response_text_from_gemini(data: dict[str, Any]) -> str:
+    candidates = data.get("candidates")
+    if isinstance(candidates, list) and candidates and isinstance(candidates[0], dict):
+        content = candidates[0].get("content", {})
+        parts = content.get("parts", []) if isinstance(content, dict) else []
+        texts = [part["text"] for part in parts if isinstance(part, dict) and isinstance(part.get("text"), str)]
+        if texts:
+            return "".join(texts)
+    raise RuntimeError(f"unexpected Gemini response: {json.dumps(data)[:300]}")
 
 
 def default_provider_config_path() -> Path:

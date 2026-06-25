@@ -3695,5 +3695,200 @@ WantedBy=multi-user.target
 """
 
 
+class _FakeProc:
+    def __init__(self, returncode: int = 0, stdout: str = "", stderr: str = "") -> None:
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+
+class CliAgentProviderTests(unittest.TestCase):
+    def test_cli_agent_argv_claude_uses_stdin_and_json(self) -> None:
+        argv, use_stdin = codex_analyzer.cli_agent_argv("claude", "claude", "claude-opus-4-8", "PROMPT")
+        self.assertTrue(use_stdin)
+        self.assertEqual(argv, ["claude", "-p", "--output-format", "json", "--model", "claude-opus-4-8"])
+        # No model -> no --model flag, prompt still via stdin (not argv).
+        argv, use_stdin = codex_analyzer.cli_agent_argv("claude", "claude", "", "PROMPT")
+        self.assertEqual(argv, ["claude", "-p", "--output-format", "json"])
+        self.assertNotIn("PROMPT", argv)
+
+    def test_cli_agent_argv_others_pass_prompt_as_argv(self) -> None:
+        for provider, command, expect_head in (
+            ("opencode", "opencode", ["opencode", "run", "--model", "m"]),
+            ("cursor", "cursor-agent", ["cursor-agent", "-p", "--output-format", "text", "--model", "m"]),
+        ):
+            argv, use_stdin = codex_analyzer.cli_agent_argv(provider, command, "m", "PROMPT")
+            self.assertFalse(use_stdin)
+            self.assertEqual(argv[: len(expect_head)], expect_head)
+            self.assertEqual(argv[-1], "PROMPT")
+        argv, use_stdin = codex_analyzer.cli_agent_argv("grok", "grok", "grok-4", "PROMPT")
+        self.assertFalse(use_stdin)
+        self.assertEqual(argv, ["grok", "-p", "PROMPT", "--model", "grok-4"])
+
+    def test_cli_agent_response_text_unwraps_claude_envelope(self) -> None:
+        self.assertEqual(
+            codex_analyzer.cli_agent_response_text("claude", '{"type":"result","result":"{\\"filters\\":[]}"}'),
+            '{"filters":[]}',
+        )
+        # Non-JSON stdout is returned verbatim for downstream extract_json.
+        self.assertEqual(codex_analyzer.cli_agent_response_text("claude", "raw text"), "raw text")
+        self.assertEqual(codex_analyzer.cli_agent_response_text("grok", "  hi  "), "hi")
+
+    def test_response_text_from_gemini_joins_parts_and_raises_on_garbage(self) -> None:
+        data = {"candidates": [{"content": {"parts": [{"text": '{"filters":'}, {"text": "[]}"}]}}]}
+        self.assertEqual(codex_analyzer.response_text_from_gemini(data), '{"filters":[]}')
+        with self.assertRaises(RuntimeError):
+            codex_analyzer.response_text_from_gemini({"candidates": []})
+
+    def test_provider_config_exposes_new_providers(self) -> None:
+        cfg = codex_analyzer.load_provider_config(Path("/tmp/nonexistent-altura-provider-config.json"))
+        claude = codex_analyzer.provider_config(cfg, "claude")
+        self.assertEqual(claude["kind"], "cli_agent")
+        self.assertEqual(claude["command"], "claude")
+        self.assertEqual(claude["login_cmd"], "claude auth login")
+        gemini = codex_analyzer.provider_config(cfg, "gemini")
+        self.assertEqual(gemini["api_key_env"], "GEMINI_API_KEY")
+        self.assertIn("generativelanguage", gemini["base_url"])
+
+    def test_run_provider_dispatches_cli_agent_and_sanitizes(self) -> None:
+        prompt = codex_analyzer.build_prompt([], min_count=1, ttl_seconds=30)
+        cfg = codex_analyzer.provider_config(
+            codex_analyzer.load_provider_config(Path("/tmp/nonexistent.json")), "claude"
+        )
+        out = '{"type":"result","result":"{\\"filters\\":[{\\"condition\\":{\\"signature\\":\\"sig-x\\"},\\"action\\":{\\"kind\\":\\"block\\",\\"status\\":403,\\"body\\":\\"x\\"}}]}"}'
+        with patch("subprocess.run", return_value=_FakeProc(0, out)) as run:
+            filters = codex_analyzer.run_provider("claude", prompt, cfg, ttl_seconds=30)
+        # claude is fed on stdin, not argv.
+        self.assertIsNotNone(run.call_args.kwargs.get("input"))
+        self.assertEqual(len(filters), 1)
+        self.assertEqual(filters[0]["condition"]["signature"], "sig-x")
+        self.assertEqual(filters[0]["action"]["status"], 403)
+
+    def test_cli_agent_nonzero_exit_raises(self) -> None:
+        prompt = codex_analyzer.build_prompt([], min_count=1, ttl_seconds=30)
+        cfg = codex_analyzer.provider_config(
+            codex_analyzer.load_provider_config(Path("/tmp/nonexistent.json")), "grok"
+        )
+        with patch("subprocess.run", return_value=_FakeProc(1, "", "not logged in")):
+            with self.assertRaises(RuntimeError):
+                codex_analyzer.run_provider("grok", prompt, cfg, ttl_seconds=30)
+
+    def test_run_provider_dispatches_gemini(self) -> None:
+        prompt = codex_analyzer.build_prompt([], min_count=1, ttl_seconds=30)
+        cfg = codex_analyzer.provider_config(
+            codex_analyzer.load_provider_config(Path("/tmp/nonexistent.json")), "gemini"
+        )
+        gemini_data = {
+            "candidates": [
+                {
+                    "content": {
+                        "parts": [
+                            {
+                                "text": '{"filters":[{"condition":{"signature":"g"},"action":{"kind":"block","status":403,"body":"x"}}]}'
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}, clear=False):
+            with patch.object(codex_analyzer, "post_json", return_value=gemini_data) as post:
+                filters = codex_analyzer.run_provider("gemini", prompt, cfg, ttl_seconds=30)
+        url = post.call_args.args[0]
+        self.assertIn(":generateContent", url)
+        self.assertEqual(post.call_args.args[1]["x-goog-api-key"], "test-key")
+        self.assertEqual(len(filters), 1)
+        self.assertEqual(filters[0]["condition"]["signature"], "g")
+
+    def test_detect_cli_agent_reports_missing_binary(self) -> None:
+        info = codex_analyzer.detect_cli_agent(
+            "claude", {"command": "altura-no-such-binary-xyz", "login_cmd": "x login"}
+        )
+        self.assertFalse(info["installed"])
+        self.assertEqual(info["version"], "")
+        self.assertEqual(info["login_cmd"], "x login")
+
+
+class AiProviderCliTests(unittest.TestCase):
+    def _ns(self, **overrides: object) -> object:
+        import argparse
+
+        base = {
+            "provider": "gemini",
+            "model": None,
+            "cli_command": None,
+            "base_url": None,
+            "api_key_env": None,
+            "api_key": None,
+            "select": True,
+        }
+        base.update(overrides)
+        return argparse.Namespace(**base)
+
+    def test_set_api_provider_writes_config_secret_and_selects(self) -> None:
+        import ai_provider_cli
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg_path = Path(tmp) / "providers.json"
+            sec_path = Path(tmp) / "secrets.json"
+            env = {
+                "ALTURA_PROT_PROVIDER_CONFIG": str(cfg_path),
+                "ALTURA_PROT_PROVIDER_SECRETS": str(sec_path),
+            }
+            with patch.dict(os.environ, env, clear=False):
+                ai_provider_cli.set_provider(
+                    self._ns(provider="gemini", model="gemini-2.5-pro", api_key="sk-secret")
+                )
+            config = json.loads(cfg_path.read_text())
+            self.assertEqual(config["selected_provider"], "gemini")
+            self.assertEqual(config["providers"]["gemini"]["model"], "gemini-2.5-pro")
+            secrets = json.loads(sec_path.read_text())
+            self.assertEqual(secrets["gemini"]["api_key"], "sk-secret")
+            self.assertEqual(sec_path.stat().st_mode & 0o777, 0o600)
+
+    def test_set_cli_agent_records_model_without_secret(self) -> None:
+        import ai_provider_cli
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg_path = Path(tmp) / "providers.json"
+            sec_path = Path(tmp) / "secrets.json"
+            env = {
+                "ALTURA_PROT_PROVIDER_CONFIG": str(cfg_path),
+                "ALTURA_PROT_PROVIDER_SECRETS": str(sec_path),
+            }
+            with patch.dict(os.environ, env, clear=False):
+                ai_provider_cli.set_provider(
+                    self._ns(provider="claude", model="claude-opus-4-8", api_key=None)
+                )
+            config = json.loads(cfg_path.read_text())
+            self.assertEqual(config["selected_provider"], "claude")
+            self.assertEqual(config["providers"]["claude"]["model"], "claude-opus-4-8")
+            self.assertFalse(sec_path.exists())
+
+    def test_set_no_select_keeps_previous_selection(self) -> None:
+        import ai_provider_cli
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg_path = Path(tmp) / "providers.json"
+            sec_path = Path(tmp) / "secrets.json"
+            env = {
+                "ALTURA_PROT_PROVIDER_CONFIG": str(cfg_path),
+                "ALTURA_PROT_PROVIDER_SECRETS": str(sec_path),
+            }
+            with patch.dict(os.environ, env, clear=False):
+                ai_provider_cli.set_provider(self._ns(provider="openai", model="m1", select=True))
+                ai_provider_cli.set_provider(self._ns(provider="anthropic", model="m2", select=False))
+            config = json.loads(cfg_path.read_text())
+            self.assertEqual(config["selected_provider"], "openai")
+            self.assertEqual(config["providers"]["anthropic"]["model"], "m2")
+
+    def test_provider_families_are_disjoint_and_complete(self) -> None:
+        import ai_provider_cli
+
+        self.assertEqual(set(ai_provider_cli.CLI_AGENTS) & set(ai_provider_cli.API_PROVIDERS), set())
+        for provider in ai_provider_cli.PROVIDERS:
+            self.assertIn(provider, codex_analyzer.DEFAULT_PROVIDER_CONFIG["providers"])
+
+
 if __name__ == "__main__":
     unittest.main()

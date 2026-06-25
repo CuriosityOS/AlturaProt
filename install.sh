@@ -17,9 +17,20 @@ USER_INSTALL=0
 FROM_SOURCE=0
 WORK_DIR=""
 BINARY=""
+TOOLS_DIR=""
+# AI Power Detection step (optional). INTERACTIVE is resolved in main().
+NONINTERACTIVE=0
+INTERACTIVE=0
+AI_CHOICE=""
+AI_MODEL=""
+AI_KEY=""
 
 cleanup() {
-  [[ -n "${WORK_DIR}" && -d "${WORK_DIR}" ]] && rm -rf "${WORK_DIR}"
+  # Must end on a zero status: as the EXIT trap, a non-zero final command here
+  # would override the script's real exit code (false failure on success).
+  if [[ -n "${WORK_DIR}" && -d "${WORK_DIR}" ]]; then
+    rm -rf "${WORK_DIR}"
+  fi
 }
 trap cleanup EXIT
 
@@ -43,17 +54,31 @@ Usage:
   # from a checkout
   sudo ./install.sh [options]
 
+By default the installer runs an interactive "AI Power Detection" step that
+lets you (optionally) wire an AI provider for adaptive filter generation: a
+subscription CLI you already logged into (Claude, Codex, OpenCode, Cursor,
+Grok) or an API key (OpenAI, Anthropic, Gemini, OpenRouter). It is skipped
+automatically when there is no terminal (e.g. CI) or with --non-interactive.
+
 Options:
-  --prefix PATH     Install binaries to PATH (default: /usr/local)
-  --user            Install for the current user (~/.local/bin, ~/.config/altura-prot)
-  --start           Enable and start the systemd service after install (system mode only)
-  --from-source     Build from source even when a prebuilt binary is available
-  -h, --help        Show this help
+  --prefix PATH       Install binaries to PATH (default: /usr/local)
+  --user              Install for the current user (~/.local/bin, ~/.config/altura-prot)
+  --start             Enable and start the systemd service after install (system mode only)
+  --from-source       Build from source even when a prebuilt binary is available
+  --ai PROVIDER       Configure an AI provider non-interactively. PROVIDER is one
+                      of none, codex, claude, opencode, cursor, grok, openai,
+                      anthropic, gemini, openrouter.
+  --ai-model MODEL    Model to use for --ai (optional; blank uses the default).
+  --ai-key KEY        API key to store for an API-key --ai provider.
+  --non-interactive   Never prompt; skip the AI step unless --ai is given.
+  -h, --help          Show this help
 
 Examples:
   sudo ./install.sh
   sudo ./install.sh --start
   ./install.sh --user
+  ./install.sh --user --ai gemini --ai-model gemini-2.5-pro --ai-key sk-...
+  ./install.sh --user --ai claude --non-interactive
 EOF
 }
 
@@ -207,6 +232,22 @@ parse_args() {
         FROM_SOURCE=1
         shift
         ;;
+      --ai)
+        AI_CHOICE="$2"
+        shift 2
+        ;;
+      --ai-model)
+        AI_MODEL="$2"
+        shift 2
+        ;;
+      --ai-key)
+        AI_KEY="$2"
+        shift 2
+        ;;
+      --non-interactive)
+        NONINTERACTIVE=1
+        shift
+        ;;
       -h|--help)
         usage
         exit 0
@@ -341,6 +382,222 @@ Configure:
 EOF
 }
 
+# ---- AI Power Detection step (optional, interactive) ------------------------
+
+# Read one line from the controlling terminal. When piped from curl, stdin is
+# the script itself, so prompts must use /dev/tty. Returns the default when not
+# interactive. Usage: value="$(ask 'Prompt: ' 'default')"
+ask() {
+  local prompt="$1" def="${2:-}" ans=""
+  if [[ "${INTERACTIVE}" -ne 1 ]]; then
+    echo "${def}"
+    return
+  fi
+  printf '%s' "${prompt}" >/dev/tty
+  IFS= read -r ans </dev/tty || ans=""
+  echo "${ans:-$def}"
+}
+
+ask_secret() {
+  local prompt="$1" ans=""
+  if [[ "${INTERACTIVE}" -ne 1 ]]; then
+    echo ""
+    return
+  fi
+  printf '%s' "${prompt}" >/dev/tty
+  IFS= read -rs ans </dev/tty || ans=""
+  printf '\n' >/dev/tty
+  echo "${ans}"
+}
+
+is_api_provider() {
+  case "$1" in
+    openai | anthropic | gemini | openrouter) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# Interactive top-level menu; echoes a provider name or "none".
+prompt_ai_menu() {
+  {
+    echo ""
+    echo "Step: AI Power Detection (optional)"
+    echo "AlturaProt can use an AI provider to turn attack telemetry into adaptive"
+    echo "filter rules. The proxy never calls AI on the request path; this is an"
+    echo "out-of-band analyzer you can also configure or change later."
+    echo "  1) None (default)"
+    echo "  2) Subscription CLI you're already logged into (Claude, Codex, OpenCode, Cursor, Grok)"
+    echo "  3) API key (OpenAI, Anthropic, Gemini, OpenRouter)"
+  } >/dev/tty
+  case "$(ask 'Choose [1-3]: ' '1')" in
+    2) prompt_cli_agent_menu ;;
+    3) prompt_api_menu ;;
+    *) echo "none" ;;
+  esac
+}
+
+# Lists the wrapped agent CLIs, marking which binaries are on PATH.
+prompt_cli_agent_menu() {
+  local agents=(claude codex opencode cursor grok)
+  local bins=(claude codex opencode cursor-agent grok)
+  {
+    echo ""
+    echo "Subscription CLIs (AlturaProt invokes the CLI's own login; no API key stored):"
+    local i mark
+    for i in "${!agents[@]}"; do
+      mark="not found"
+      command -v "${bins[$i]}" >/dev/null 2>&1 && mark="installed"
+      printf '  %d) %-9s (%s)\n' "$((i + 1))" "${agents[$i]}" "${mark}"
+    done
+  } >/dev/tty
+  local sel
+  sel="$(ask "Choose [1-${#agents[@]}], blank to skip: " "")"
+  if [[ "${sel}" =~ ^[0-9]+$ ]] && ((sel >= 1 && sel <= ${#agents[@]})); then
+    echo "${agents[$((sel - 1))]}"
+  else
+    echo "none"
+  fi
+}
+
+prompt_api_menu() {
+  local apis=(openai anthropic gemini openrouter)
+  {
+    echo ""
+    echo "API-key providers:"
+    local i
+    for i in "${!apis[@]}"; do
+      printf '  %d) %s\n' "$((i + 1))" "${apis[$i]}"
+    done
+  } >/dev/tty
+  local sel
+  sel="$(ask "Choose [1-${#apis[@]}], blank to skip: " "")"
+  if [[ "${sel}" =~ ^[0-9]+$ ]] && ((sel >= 1 && sel <= ${#apis[@]})); then
+    echo "${apis[$((sel - 1))]}"
+  else
+    echo "none"
+  fi
+}
+
+ai_tools_dest() {
+  if [[ "${USER_INSTALL}" -eq 1 ]]; then
+    echo "${HOME}/.local/share/altura-prot/tools"
+  else
+    echo "${STATE_DIR}/tools"
+  fi
+}
+
+copy_tool_file() {
+  # $1 = source path, $2 = destination path
+  if [[ "${USER_INSTALL}" -eq 1 ]]; then
+    install -m 0755 "$1" "$2"
+  else
+    run_root install -m 0755 "$1" "$2"
+  fi
+}
+
+# Install the Python analyzer tools next to the deployment so the configured
+# provider can actually run. Sources from the checkout, else fetches from raw.
+install_ai_tools() {
+  TOOLS_DIR="$(ai_tools_dest)"
+  local files=(codex_analyzer.py ai_provider_cli.py codexsdgate.py)
+  if [[ "${USER_INSTALL}" -eq 1 ]]; then
+    mkdir -p "${TOOLS_DIR}"
+  else
+    run_root install -d "${TOOLS_DIR}"
+  fi
+  local f raw
+  for f in "${files[@]}"; do
+    if [[ -f "${REPO_ROOT}/tools/${f}" ]]; then
+      copy_tool_file "${REPO_ROOT}/tools/${f}" "${TOOLS_DIR}/${f}"
+    else
+      need_cmd curl
+      ensure_work_dir
+      raw="${REPO_URL/github.com/raw.githubusercontent.com}/${REPO_BRANCH}/tools/${f}"
+      curl -fsSL "${raw}" -o "${WORK_DIR}/${f}"
+      copy_tool_file "${WORK_DIR}/${f}" "${TOOLS_DIR}/${f}"
+    fi
+  done
+  if [[ "${USER_INSTALL}" -ne 1 ]]; then
+    run_root chown -R "${SERVICE_USER}:${SERVICE_GROUP}" "${TOOLS_DIR}" 2>/dev/null || true
+  fi
+}
+
+# Persist the chosen provider via ai_provider_cli.py (writes providers.json and,
+# for API keys, a 0600 secrets file). Echoes the provider config locations used.
+run_ai_set() {
+  local provider="$1" model="$2" key="$3"
+  local args=(set "${provider}")
+  [[ -n "${model}" ]] && args+=(--model "${model}")
+  [[ -n "${key}" ]] && args+=(--api-key "${key}")
+  local pycfg pysec
+  if [[ "${USER_INSTALL}" -eq 1 ]]; then
+    pycfg="${HOME}/.config/altura-prot/providers.json"
+    pysec="${HOME}/.config/altura-prot/secrets.json"
+    PYTHONPATH="${TOOLS_DIR}" \
+      ALTURA_PROT_PROVIDER_CONFIG="${pycfg}" \
+      ALTURA_PROT_PROVIDER_SECRETS="${pysec}" \
+      python3 "${TOOLS_DIR}/ai_provider_cli.py" "${args[@]}"
+  else
+    pycfg="${CONFIG_DIR}/providers.json"
+    pysec="${CONFIG_DIR}/secrets.json"
+    run_root env PYTHONPATH="${TOOLS_DIR}" \
+      ALTURA_PROT_PROVIDER_CONFIG="${pycfg}" \
+      ALTURA_PROT_PROVIDER_SECRETS="${pysec}" \
+      python3 "${TOOLS_DIR}/ai_provider_cli.py" "${args[@]}"
+    run_root chown "${SERVICE_USER}:${SERVICE_GROUP}" "${pycfg}" 2>/dev/null || true
+    [[ -f "${pysec}" ]] && run_root chown "${SERVICE_USER}:${SERVICE_GROUP}" "${pysec}" 2>/dev/null || true
+  fi
+  AI_CONFIG_PATH="${pycfg}"
+}
+
+configure_ai() {
+  local choice="${AI_CHOICE}"
+  if [[ -z "${choice}" ]]; then
+    if [[ "${INTERACTIVE}" -ne 1 ]]; then
+      return 0
+    fi
+    choice="$(prompt_ai_menu)"
+  fi
+  if [[ -z "${choice}" || "${choice}" == "none" ]]; then
+    log "AI Power Detection: skipped (no provider configured)"
+    return 0
+  fi
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    log "python3 not found; skipping AI setup. Install python3, then run ai_provider_cli.py."
+    return 0
+  fi
+
+  log "AI Power Detection: configuring '${choice}'"
+  install_ai_tools
+
+  local model="${AI_MODEL}" key="${AI_KEY}"
+  if [[ "${INTERACTIVE}" -eq 1 ]]; then
+    if is_api_provider "${choice}"; then
+      [[ -n "${model}" ]] || model="$(ask "Model for ${choice} (blank = provider default): " "")"
+      [[ -n "${key}" ]] || key="$(ask_secret "API key for ${choice} (blank = set env var later): ")"
+    else
+      [[ -n "${model}" ]] || model="$(ask "Model for ${choice} (blank = let the CLI choose): " "")"
+    fi
+  fi
+
+  run_ai_set "${choice}" "${model}" "${key}"
+
+  cat <<EOF
+
+AI Power Detection configured: ${choice}
+  provider config: ${AI_CONFIG_PATH:-<default>}
+  analyzer tools:  ${TOOLS_DIR}
+
+Run the analyzer (writes runtime/filters.json from attack telemetry):
+  PYTHONPATH=${TOOLS_DIR} python3 ${TOOLS_DIR}/codexsdgate.py \\
+    --events runtime/attack_events.jsonl --filters runtime/filters.json --once
+EOF
+  if ! is_api_provider "${choice}" && [[ "${choice}" != "codex" ]]; then
+    echo "If the '${choice}' CLI is not logged in yet, run its login command (shown above) first."
+  fi
+}
+
 main() {
   parse_args "$@"
 
@@ -348,6 +605,11 @@ main() {
   if [[ "${USER_INSTALL}" -ne 1 && "${EUID}" -ne 0 ]]; then
     echo "system install requires root; re-run with 'sudo bash' or pass --user" >&2
     exit 1
+  fi
+
+  # Resolve interactivity: prompt only with a usable terminal and no opt-out.
+  if [[ "${NONINTERACTIVE}" -eq 0 && -r /dev/tty && -w /dev/tty ]]; then
+    INTERACTIVE=1
   fi
 
   need_cmd install
@@ -365,6 +627,8 @@ main() {
   else
     install_system_mode
   fi
+
+  configure_ai
 }
 
 main "$@"

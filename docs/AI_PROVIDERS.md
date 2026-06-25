@@ -2,18 +2,55 @@
 
 CodexSDGate is the control-plane analyzer. It reads `runtime/attack_events.jsonl` and writes `runtime/filters.json`.
 
+There are two provider families:
+
+- **Subscription "agent CLI" providers** (`codex`, `claude`, `opencode`, `cursor`,
+  `grok`): AlturaProt shells out to the official CLI you already logged into,
+  the same way [T3 Code](https://github.com/pingdotgg/t3code) does. No API key is
+  stored and there is no custom OAuth — authentication is whatever the vendor CLI
+  manages. `codex` is the one exception that goes through the `openai-codex` SDK
+  rather than a wrapped subprocess.
+- **API-key providers** (`openai`, `anthropic`, `gemini`, `openrouter`): a model
+  plus an API key (env var or `0600` secrets file) called over HTTPS.
+
+The installer's interactive **AI Power Detection** step configures either family
+for you; see [Operations](OPERATIONS.md). You can also do it by hand:
+
 ## Configure Providers
 
 ```bash
-python3 tools/ai_provider_cli.py init
-python3 tools/ai_provider_cli.py status
-python3 tools/ai_provider_cli.py login codex
-python3 tools/ai_provider_cli.py select codex
+python3 tools/ai_provider_cli.py init       # write default providers.json
+python3 tools/ai_provider_cli.py detect     # which agent CLIs are installed
+python3 tools/ai_provider_cli.py status     # selected provider + redacted state
+python3 tools/ai_provider_cli.py login claude   # interactive, any provider
+python3 tools/ai_provider_cli.py select gemini  # change the active provider
+# non-interactive (used by install.sh):
+python3 tools/ai_provider_cli.py set gemini --model gemini-2.5-pro --api-key sk-...
+python3 tools/ai_provider_cli.py set claude --model claude-opus-4-8
 ```
 
 Config is stored in `~/.config/altura-prot/providers.json`. Optional local secrets are stored in `~/.config/altura-prot/secrets.json` with mode `0600`. For public or server deployments, environment variables are preferred.
 
 ## Providers
+
+Subscription CLIs (`claude`, `opencode`, `cursor`, `grok`) — wrap an agent CLI you
+already authenticated with its own login; nothing is stored beyond the optional
+model override:
+
+```bash
+# install + log in with the vendor CLI (examples)
+claude auth login          # https://docs.claude.com/claude-code
+opencode auth login        # https://opencode.ai
+cursor-agent login         # https://cursor.com/cli
+grok login                 # https://github.com/superagent-ai/grok-cli
+
+python3 tools/ai_provider_cli.py set claude --model claude-opus-4-8
+python3 tools/codexsdgate.py --provider claude --once
+```
+
+A blank model lets the CLI pick its default. AlturaProt invokes the CLI
+non-interactively for each analysis pass; if the CLI is not logged in, the run
+fails and CodexSDGate falls back to the deterministic generator.
 
 Codex SDK:
 
@@ -40,6 +77,18 @@ export ANTHROPIC_API_KEY=...
 python3 tools/ai_provider_cli.py login anthropic
 python3 tools/codexsdgate.py --provider anthropic --once
 ```
+
+Gemini API:
+
+```bash
+export GEMINI_API_KEY=...
+python3 tools/ai_provider_cli.py login gemini
+python3 tools/codexsdgate.py --provider gemini --once
+```
+
+The default Gemini provider uses `gemini-2.5-pro` and calls the
+`generativelanguage.googleapis.com` `:generateContent` endpoint with
+`responseMimeType: application/json`.
 
 OpenRouter API:
 
