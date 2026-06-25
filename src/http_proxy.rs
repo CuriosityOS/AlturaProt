@@ -968,7 +968,7 @@ fn validate_raw_http1_header_block(
             return Err("invalid header line");
         };
         let name = &line[..colon];
-        if name.is_empty() || name.iter().any(|byte| byte.is_ascii_whitespace()) {
+        if HeaderName::from_bytes(name).is_err() {
             return Err("invalid header name");
         }
         let value = trim_header_value(&line[colon + 1..]);
@@ -4112,6 +4112,20 @@ mod tests {
             ),
             Err("unsupported transfer-encoding")
         );
+    }
+
+    #[test]
+    fn raw_initial_framing_precheck_rejects_invalid_header_names() {
+        for block in [
+            b"GET / HTTP/1.1\r\nBad Name: value\r\n\r\n".as_slice(),
+            b"GET / HTTP/1.1\r\nBad@Name: value\r\n\r\n".as_slice(),
+            b"GET / HTTP/1.1\r\nBad\x7fName: value\r\n\r\n".as_slice(),
+        ] {
+            assert_eq!(
+                validate_raw_http1_header_block(block, false),
+                Err("invalid header name")
+            );
+        }
     }
 
     #[test]
