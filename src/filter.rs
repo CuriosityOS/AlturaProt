@@ -28,6 +28,8 @@ pub const DEFAULT_FILTER_MAX_MATCH_VALUE_BYTES: usize = 1024;
 pub const DEFAULT_FILTER_MAX_ACTION_BODY_BYTES: usize = 1024;
 pub const FILTER_TTL_MAX_SECONDS: u64 = 24 * 60 * 60;
 const REQUEST_SIGNATURE_HASH_BYTES: usize = 16;
+const CURRENT_SIGNATURE_HEX_CHARS: usize = REQUEST_SIGNATURE_HASH_BYTES * 2;
+const LEGACY_SIGNATURE_HEX_CHARS: usize = 16;
 
 #[derive(Debug, Clone)]
 pub struct RequestContext<'a> {
@@ -211,7 +213,6 @@ fn validate_filter_condition(path: &str, condition: &FilterCondition) -> Result<
             "user_agent_contains",
             condition.user_agent_contains.as_ref(),
         ),
-        ("signature", condition.signature.as_ref()),
     ] {
         if let Some(value) = value {
             validate_non_empty_bounded_string(
@@ -220,6 +221,9 @@ fn validate_filter_condition(path: &str, condition: &FilterCondition) -> Result<
                 DEFAULT_FILTER_MAX_MATCH_VALUE_BYTES,
             )?;
         }
+    }
+    if let Some(signature) = &condition.signature {
+        validate_signature_matcher(&format!("{condition_path}.signature"), signature)?;
     }
     if condition.path_prefix.as_deref() == Some("/") {
         return Err(format!("{condition_path}.path_prefix must be narrower than /").into());
@@ -241,6 +245,23 @@ fn validate_filter_condition(path: &str, condition: &FilterCondition) -> Result<
             &header.contains,
             DEFAULT_FILTER_MAX_MATCH_VALUE_BYTES,
         )?;
+    }
+    Ok(())
+}
+
+fn validate_signature_matcher(path: &str, value: &str) -> Result<(), BoxError> {
+    validate_non_empty_bounded_string(path, value, CURRENT_SIGNATURE_HEX_CHARS)?;
+    if value.len() != CURRENT_SIGNATURE_HEX_CHARS && value.len() != LEGACY_SIGNATURE_HEX_CHARS {
+        return Err(format!(
+            "{path} must be a {CURRENT_SIGNATURE_HEX_CHARS}-hex current signature or {LEGACY_SIGNATURE_HEX_CHARS}-hex legacy signature"
+        )
+        .into());
+    }
+    if !value
+        .bytes()
+        .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+    {
+        return Err(format!("{path} must contain only lowercase hexadecimal characters").into());
     }
     Ok(())
 }
@@ -1210,6 +1231,44 @@ mod tests {
         assert!(err.contains("narrower than /"), "{err}");
     }
 
+    #[test]
+    fn filter_rule_validation_accepts_current_and_legacy_signature_formats() {
+        let mut current = path_rule("current-signature", "/unused");
+        current.condition.path_exact = None;
+        current.condition.signature = Some("0123456789abcdef0123456789abcdef".to_string());
+        let mut legacy = path_rule("legacy-signature", "/unused");
+        legacy.condition.path_exact = None;
+        legacy.condition.signature = Some("0123456789abcdef".to_string());
+
+        validate_filter_rules("filters.static_rules", &[current, legacy], 4).unwrap();
+    }
+
+    #[test]
+    fn filter_rule_validation_rejects_malformed_signature_formats() {
+        for (signature, expected) in [
+            (
+                "abc",
+                "must be a 32-hex current signature or 16-hex legacy signature",
+            ),
+            ("0123456789abcdef0123456789abcdeg", "lowercase hexadecimal"),
+            ("0123456789ABCDEF", "lowercase hexadecimal"),
+        ] {
+            let mut rule = path_rule("bad-signature", "/unused");
+            rule.condition.path_exact = None;
+            rule.condition.signature = Some(signature.to_string());
+
+            let err = validate_filter_rules("filters.static_rules", &[rule], 4)
+                .unwrap_err()
+                .to_string();
+
+            assert!(
+                err.contains("filters.static_rules[0].condition.signature"),
+                "{err}"
+            );
+            assert!(err.contains(expected), "{err}");
+        }
+    }
+
     #[tokio::test]
     async fn static_filter_matches_path() {
         let engine = FilterEngine::new(
@@ -1668,10 +1727,12 @@ mod tests {
     #[tokio::test]
     async fn runtime_filter_reload_prunes_activation_deadlines_for_removed_rules() {
         let path = temp_runtime_filter_path("activation-prune-runtime-filters");
+        let first_signature = "11111111111111111111111111111111";
+        let second_signature = "22222222222222222222222222222222";
         let mut first = path_rule("first", "/first");
         first.adaptive = true;
         first.ttl_seconds = Some(60);
-        first.condition.signature = Some("sig-first".to_string());
+        first.condition.signature = Some(first_signature.to_string());
         std::fs::write(&path, runtime_filter_json(&[first])).unwrap();
         let engine = FilterEngine::new_with_limits(
             Vec::new(),
@@ -1682,7 +1743,7 @@ mod tests {
         )
         .await;
 
-        assert!(engine.activate_signature("sig-first", None));
+        assert!(engine.activate_signature(first_signature, None));
         {
             let activation_deadlines =
                 engine.lock_activation_deadlines("test activation deadline inserted");
@@ -1692,7 +1753,7 @@ mod tests {
         let mut second = path_rule("second", "/second");
         second.adaptive = true;
         second.ttl_seconds = Some(60);
-        second.condition.signature = Some("sig-second".to_string());
+        second.condition.signature = Some(second_signature.to_string());
         std::fs::write(&path, runtime_filter_json(&[second])).unwrap();
 
         engine.reload().await.unwrap();

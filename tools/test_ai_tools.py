@@ -23,6 +23,15 @@ import run_defense_bench
 import validate_edge_templates
 
 
+SIG_A = "a" * 32
+SIG_B = "b" * 32
+SIG_C = "c" * 32
+SIG_D = "d" * 32
+SIG_E = "e" * 32
+SIG_F = "f" * 32
+LEGACY_SIG = "0123456789abcdef"
+
+
 class CiWorkflowTests(unittest.TestCase):
     def test_ci_lints_all_rust_targets(self) -> None:
         workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
@@ -1156,15 +1165,15 @@ class AnalyzerTests(unittest.TestCase):
 
     def test_deterministic_filters_are_adaptive_signature_rules(self) -> None:
         events = [
-            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "per_ip_rate_limited"},
-            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+            {"signature": SIG_A, "path": "/x", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+            {"signature": SIG_A, "path": "/x", "user_agent": "bench", "reason": "per_ip_rate_limited"},
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=2, ttl_seconds=45)
         self.assertEqual(len(filters), 1)
         clean = codex_analyzer.sanitize_filter(filters[0], ttl_seconds=45)
         self.assertTrue(clean["adaptive"])
         self.assertEqual(clean["ttl_seconds"], 45)
-        self.assertEqual(clean["condition"]["signature"], "abc")
+        self.assertEqual(clean["condition"]["signature"], SIG_A)
         self.assertEqual(clean["action"]["status"], 403)
 
     def test_sanitize_filter_clamps_ttl_seconds_to_server_ceiling(self) -> None:
@@ -1172,7 +1181,7 @@ class AnalyzerTests(unittest.TestCase):
             {
                 "id": "ttl",
                 "ttl_seconds": codex_analyzer.FILTER_TTL_MAX_SECONDS + 1,
-                "condition": {"signature": "abc"},
+                "condition": {"signature": SIG_A},
             },
             ttl_seconds=45,
         )
@@ -1184,7 +1193,7 @@ class AnalyzerTests(unittest.TestCase):
             {
                 "id": "ttl",
                 "ttl_seconds": 0,
-                "condition": {"signature": "abc"},
+                "condition": {"signature": SIG_A},
             },
             ttl_seconds=45,
         )
@@ -1197,13 +1206,13 @@ class AnalyzerTests(unittest.TestCase):
                 clean = codex_analyzer.sanitize_filter(
                     {
                         "id": "root-prefix",
-                        "condition": {"path_prefix": path_prefix, "signature": "abc"},
+                        "condition": {"path_prefix": path_prefix, "signature": SIG_A},
                     },
                     ttl_seconds=45,
                 )
 
                 self.assertNotIn("path_prefix", clean["condition"])
-                self.assertEqual(clean["condition"]["signature"], "abc")
+                self.assertEqual(clean["condition"]["signature"], SIG_A)
 
     def test_build_prompt_clamps_ttl_seconds_to_server_ceiling(self) -> None:
         prompt = codex_analyzer.build_prompt(
@@ -1216,8 +1225,8 @@ class AnalyzerTests(unittest.TestCase):
 
     def test_observed_only_events_do_not_learn_by_default(self) -> None:
         events = [
-            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "observed"},
-            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "observed"},
+            {"signature": SIG_A, "path": "/x", "user_agent": "bench", "reason": "observed"},
+            {"signature": SIG_A, "path": "/x", "user_agent": "bench", "reason": "observed"},
         ]
         self.assertEqual(codex_analyzer.deterministic_filters(events, min_count=2, ttl_seconds=45), [])
         self.assertEqual(
@@ -1227,33 +1236,33 @@ class AnalyzerTests(unittest.TestCase):
 
     def test_merge_strong_coverage_adds_missing_signatures(self) -> None:
         events = [
-            {"signature": "covered", "path": "/a", "user_agent": "bench", "reason": "per_ip_rate_limited"},
-            {"signature": "missing", "path": "/b", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+            {"signature": SIG_A, "path": "/a", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+            {"signature": SIG_B, "path": "/b", "user_agent": "bench", "reason": "per_ip_rate_limited"},
         ]
         provider_filters = [
             {
                 "id": "provider-covered",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "covered"},
+                "condition": {"signature": SIG_A},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
         merged = codex_analyzer.merge_strong_coverage(provider_filters, events, min_count=1, ttl_seconds=20)
         signatures = {item["condition"]["signature"] for item in merged}
-        self.assertEqual(signatures, {"covered", "missing"})
+        self.assertEqual(signatures, {SIG_A, SIG_B})
 
     def test_merge_coverage_adds_observed_filters_when_enabled(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/abcdefghij/1",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
                 "reason": "observed",
             },
             {
-                "signature": "sig-b",
+                "signature": SIG_B,
                 "path": "/api/klmnopqrst/2",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
@@ -1284,7 +1293,7 @@ class AnalyzerTests(unittest.TestCase):
                 "id": "old",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "oldsig"},
+                "condition": {"signature": SIG_A},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
@@ -1293,12 +1302,12 @@ class AnalyzerTests(unittest.TestCase):
                 "id": "new",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "newsig"},
+                "condition": {"signature": SIG_B},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
         merged = codex_analyzer.merge_existing_filters(existing, new, ttl_seconds=20, max_filters=10)
-        self.assertEqual({item["condition"]["signature"] for item in merged}, {"oldsig", "newsig"})
+        self.assertEqual({item["condition"]["signature"] for item in merged}, {SIG_A, SIG_B})
 
     def test_merge_existing_filters_replaces_same_signature(self) -> None:
         existing = [
@@ -1306,7 +1315,7 @@ class AnalyzerTests(unittest.TestCase):
                 "id": "old",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "same"},
+                "condition": {"signature": SIG_A},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
@@ -1315,7 +1324,7 @@ class AnalyzerTests(unittest.TestCase):
                 "id": "new",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "same"},
+                "condition": {"signature": SIG_A},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
@@ -1329,7 +1338,7 @@ class AnalyzerTests(unittest.TestCase):
                 "id": f"old-{idx}",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": f"old-{idx}"},
+                "condition": {"signature": [SIG_A, SIG_B, SIG_C][idx]},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
             for idx in range(3)
@@ -1339,13 +1348,13 @@ class AnalyzerTests(unittest.TestCase):
                 "id": "new",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "new"},
+                "condition": {"signature": SIG_D},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
         merged = codex_analyzer.merge_existing_filters(existing, new, ttl_seconds=20, max_filters=3)
         self.assertEqual(len(merged), 3)
-        self.assertIn("new", {item["condition"]["signature"] for item in merged})
+        self.assertIn(SIG_D, {item["condition"]["signature"] for item in merged})
 
     def test_provider_config_merges_defaults(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -1367,14 +1376,14 @@ class AnalyzerTests(unittest.TestCase):
     def test_deterministic_filters_learn_catalog_shape_when_route_family_is_hot(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/catalog/1",
                 "path_shape": "/api/catalog/:num",
                 "user_agent": "bench",
                 "reason": "observed",
             },
             {
-                "signature": "sig-b",
+                "signature": SIG_B,
                 "path": "/api/catalog/2",
                 "path_shape": "/api/catalog/:num",
                 "user_agent": "bench",
@@ -1390,7 +1399,7 @@ class AnalyzerTests(unittest.TestCase):
     def test_deterministic_filters_learn_precise_benign_shape_runtime_signatures(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/catalog/1",
                 "path_shape": "/api/catalog/:num",
                 "signature_basis": "GET|/api/catalog/:num|page,sort|curl|*/*",
@@ -1398,7 +1407,7 @@ class AnalyzerTests(unittest.TestCase):
                 "reason": "observed",
             },
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/catalog/2",
                 "path_shape": "/api/catalog/:num",
                 "signature_basis": "GET|/api/catalog/:num|page,sort|curl|*/*",
@@ -1408,19 +1417,19 @@ class AnalyzerTests(unittest.TestCase):
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=2, ttl_seconds=45, learn_observed=True)
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "sig-a")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_A)
 
     def test_deterministic_filters_learn_dictionary_slug_path_shape(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/subscription/1",
                 "path_shape": "/api/subscription/:num",
                 "user_agent": "bench",
                 "reason": "global_observed",
             },
             {
-                "signature": "sig-b",
+                "signature": SIG_B,
                 "path": "/api/subscription/2",
                 "path_shape": "/api/subscription/:num",
                 "user_agent": "bench",
@@ -1438,14 +1447,14 @@ class AnalyzerTests(unittest.TestCase):
     def test_deterministic_filters_learn_path_shape_for_polymorphic_events(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/abcdefghij/1",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
                 "reason": "global_observed",
             },
             {
-                "signature": "sig-b",
+                "signature": SIG_B,
                 "path": "/api/klmnopqrst/2",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
@@ -1460,14 +1469,14 @@ class AnalyzerTests(unittest.TestCase):
     def test_deterministic_filters_learn_short_token_path_shape_for_polymorphic_events(self) -> None:
         events = [
             {
-                "signature": "a",
+                "signature": SIG_A,
                 "path": "/api/ab",
                 "path_shape": "/api/:short-token",
                 "user_agent": "bench",
                 "reason": "global_observed",
             },
             {
-                "signature": "b",
+                "signature": SIG_B,
                 "path": "/api/cd",
                 "path_shape": "/api/:short-token",
                 "user_agent": "bench",
@@ -1483,7 +1492,7 @@ class AnalyzerTests(unittest.TestCase):
     def test_body_too_large_events_are_strong_evidence(self) -> None:
         events = [
             {
-                "signature": "sig-body",
+                "signature": SIG_C,
                 "path": "/upload",
                 "user_agent": "bench",
                 "reason": "body_too_large",
@@ -1491,12 +1500,12 @@ class AnalyzerTests(unittest.TestCase):
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=1, ttl_seconds=45)
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "sig-body")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_C)
 
     def test_signature_rate_limited_events_are_strong_evidence(self) -> None:
         events = [
             {
-                "signature": "sig-hot",
+                "signature": SIG_D,
                 "path": "/hot",
                 "user_agent": "bench",
                 "reason": "signature_rate_limited",
@@ -1504,12 +1513,12 @@ class AnalyzerTests(unittest.TestCase):
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=1, ttl_seconds=45)
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "sig-hot")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_D)
 
     def test_trusted_proxy_rate_limited_events_are_strong_evidence(self) -> None:
         events = [
             {
-                "signature": "sig-edge",
+                "signature": SIG_E,
                 "path": "/api/login",
                 "path_shape": "/api/login",
                 "user_agent": "bench",
@@ -1518,19 +1527,19 @@ class AnalyzerTests(unittest.TestCase):
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=1, ttl_seconds=45)
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "sig-edge")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_E)
 
     def test_path_shape_rate_limited_events_are_strong_evidence(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/abcdefghij/1",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
                 "reason": "path_shape_rate_limited",
             },
             {
-                "signature": "sig-b",
+                "signature": SIG_B,
                 "path": "/api/klmnopqrst/2",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
@@ -4174,14 +4183,29 @@ class CliAgentProviderTests(unittest.TestCase):
         cfg = codex_analyzer.provider_config(
             codex_analyzer.load_provider_config(Path("/tmp/nonexistent.json")), "claude"
         )
-        out = '{"type":"result","result":"{\\"filters\\":[{\\"condition\\":{\\"signature\\":\\"sig-x\\"},\\"action\\":{\\"kind\\":\\"block\\",\\"status\\":403,\\"body\\":\\"x\\"}}]}"}'
+        out = (
+            '{"type":"result","result":"{\\"filters\\":[{\\"condition\\":'
+            f'{{\\"signature\\":\\"{SIG_A}\\"}}'
+            ',\\"action\\":{\\"kind\\":\\"block\\",\\"status\\":403,\\"body\\":\\"x\\"}}]}"}'
+        )
         with patch("subprocess.run", return_value=_FakeProc(0, out)) as run:
             filters = codex_analyzer.run_provider("claude", prompt, cfg, ttl_seconds=30)
         # claude is fed on stdin, not argv.
         self.assertIsNotNone(run.call_args.kwargs.get("input"))
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "sig-x")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_A)
         self.assertEqual(filters[0]["action"]["status"], 403)
+
+    def test_run_provider_drops_malformed_signature_only_filters(self) -> None:
+        prompt = codex_analyzer.build_prompt([], min_count=1, ttl_seconds=30)
+        cfg = codex_analyzer.provider_config(
+            codex_analyzer.load_provider_config(Path("/tmp/nonexistent.json")), "claude"
+        )
+        out = '{"type":"result","result":"{\\"filters\\":[{\\"condition\\":{\\"signature\\":\\"sig-x\\"},\\"action\\":{\\"kind\\":\\"block\\",\\"status\\":403,\\"body\\":\\"x\\"}}]}"}'
+        with patch("subprocess.run", return_value=_FakeProc(0, out)):
+            filters = codex_analyzer.run_provider("claude", prompt, cfg, ttl_seconds=30)
+
+        self.assertEqual(filters, [])
 
     def test_cli_agent_nonzero_exit_raises(self) -> None:
         prompt = codex_analyzer.build_prompt([], min_count=1, ttl_seconds=30)
@@ -4203,7 +4227,7 @@ class CliAgentProviderTests(unittest.TestCase):
                     "content": {
                         "parts": [
                             {
-                                "text": '{"filters":[{"condition":{"signature":"g"},"action":{"kind":"block","status":403,"body":"x"}}]}'
+                                "text": f'{{"filters":[{{"condition":{{"signature":"{SIG_B}"}},"action":{{"kind":"block","status":403,"body":"x"}}}}]}}'
                             }
                         ]
                     }
@@ -4217,7 +4241,7 @@ class CliAgentProviderTests(unittest.TestCase):
         self.assertIn(":generateContent", url)
         self.assertEqual(post.call_args.args[1]["x-goog-api-key"], "test-key")
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "g")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_B)
 
     def test_detect_cli_agent_reports_missing_binary(self) -> None:
         info = codex_analyzer.detect_cli_agent(

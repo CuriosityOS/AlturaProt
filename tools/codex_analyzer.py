@@ -21,6 +21,7 @@ from typing import Any
 
 
 SAFE_ID = re.compile(r"[^a-zA-Z0-9_.:-]+")
+SUPPORTED_SIGNATURE = re.compile(r"(?:[0-9a-f]{16}|[0-9a-f]{32})\Z")
 FILTER_TTL_MAX_SECONDS = 24 * 60 * 60
 
 DEFAULT_PROVIDER_CONFIG = {
@@ -130,6 +131,10 @@ def is_learnable_attack_shape(shape: str) -> bool:
 def event_has_runtime_signature_basis(event: dict[str, Any]) -> bool:
     basis = event.get("signature_basis")
     return isinstance(basis, str) and basis.count("|") >= 4
+
+
+def is_supported_signature(value: str) -> bool:
+    return bool(SUPPORTED_SIGNATURE.fullmatch(value))
 
 
 def count_attack_evidence(events: list[dict[str, Any]]) -> int:
@@ -395,7 +400,7 @@ def codex_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_seco
         )
     parsed = extract_json(result.final_response)
     filters = parsed.get("filters", []) if isinstance(parsed, dict) else []
-    return [sanitize_filter(item, ttl_seconds) for item in filters if isinstance(item, dict)]
+    return sanitized_filter_list(filters, ttl_seconds)
 
 
 def reasoning_effort(raw: Any, enum_cls: Any) -> Any:
@@ -431,7 +436,7 @@ def openai_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_sec
     )
     parsed = extract_json(response_text_from_openai(data))
     filters = parsed.get("filters", []) if isinstance(parsed, dict) else []
-    return [sanitize_filter(item, ttl_seconds) for item in filters if isinstance(item, dict)]
+    return sanitized_filter_list(filters, ttl_seconds)
 
 
 def anthropic_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_seconds: int) -> list[dict[str, Any]]:
@@ -454,7 +459,7 @@ def anthropic_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_
     )
     parsed = extract_json(response_text_from_anthropic(data))
     filters = parsed.get("filters", []) if isinstance(parsed, dict) else []
-    return [sanitize_filter(item, ttl_seconds) for item in filters if isinstance(item, dict)]
+    return sanitized_filter_list(filters, ttl_seconds)
 
 
 def openrouter_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_seconds: int) -> list[dict[str, Any]]:
@@ -475,7 +480,7 @@ def openrouter_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl
     data = post_json(f"{base_url}/chat/completions", headers, payload)
     parsed = extract_json(response_text_from_chat_completion(data))
     filters = parsed.get("filters", []) if isinstance(parsed, dict) else []
-    return [sanitize_filter(item, ttl_seconds) for item in filters if isinstance(item, dict)]
+    return sanitized_filter_list(filters, ttl_seconds)
 
 
 def gemini_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_seconds: int) -> list[dict[str, Any]]:
@@ -494,7 +499,7 @@ def gemini_filters(prompt: dict[str, Any], provider_cfg: dict[str, Any], ttl_sec
     )
     parsed = extract_json(response_text_from_gemini(data))
     filters = parsed.get("filters", []) if isinstance(parsed, dict) else []
-    return [sanitize_filter(item, ttl_seconds) for item in filters if isinstance(item, dict)]
+    return sanitized_filter_list(filters, ttl_seconds)
 
 
 def cli_agent_argv(provider: str, command: str, model: str, prompt_text: str) -> tuple[list[str], bool]:
@@ -559,7 +564,7 @@ def cli_agent_filters(provider: str, prompt: dict[str, Any], provider_cfg: dict[
         raise RuntimeError(f"{command} exited {proc.returncode}: {detail or 'not logged in? run ' + login_cmd}")
     parsed = extract_json(cli_agent_response_text(provider, proc.stdout))
     filters = parsed.get("filters", []) if isinstance(parsed, dict) else []
-    return [sanitize_filter(item, ttl_seconds) for item in filters if isinstance(item, dict)]
+    return sanitized_filter_list(filters, ttl_seconds)
 
 
 def detect_cli_agent(provider: str, provider_cfg: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -770,6 +775,8 @@ def sanitize_filter(item: dict[str, Any], ttl_seconds: int) -> dict[str, Any]:
         if isinstance(value, str) and len(value) <= 512:
             if key == "path_prefix" and value in {"", "/"}:
                 continue
+            if key == "signature" and not is_supported_signature(value):
+                continue
             clean_condition[key] = value
     methods = condition.get("methods")
     if isinstance(methods, list):
@@ -805,6 +812,20 @@ def sanitize_filter(item: dict[str, Any], ttl_seconds: int) -> dict[str, Any]:
     }
 
 
+def filter_has_matcher(item: dict[str, Any]) -> bool:
+    condition = item.get("condition")
+    return isinstance(condition, dict) and bool(condition)
+
+
+def sanitized_filter_list(filters: list[Any], ttl_seconds: int) -> list[dict[str, Any]]:
+    cleaned = [
+        sanitize_filter(item, ttl_seconds)
+        for item in filters
+        if isinstance(item, dict)
+    ]
+    return [item for item in cleaned if filter_has_matcher(item)]
+
+
 def merge_strong_coverage(
     provider_filters: list[dict[str, Any]],
     events: list[dict[str, Any]],
@@ -812,12 +833,12 @@ def merge_strong_coverage(
     ttl_seconds: int,
     learn_observed: bool = False,
 ) -> list[dict[str, Any]]:
-    merged = [sanitize_filter(item, ttl_seconds) for item in provider_filters]
-    covered_keys = {filter_key(sanitize_filter(item, ttl_seconds)) for item in merged}
+    merged = sanitized_filter_list(provider_filters, ttl_seconds)
+    covered_keys = {filter_key(item) for item in merged}
     for fallback in deterministic_filters(events, min_count, ttl_seconds, learn_observed=learn_observed):
         clean = sanitize_filter(fallback, ttl_seconds)
         key = filter_key(clean)
-        if key != "id:" and key not in covered_keys:
+        if filter_has_matcher(clean) and key != "id:" and key not in covered_keys:
             merged.append(clean)
             covered_keys.add(key)
     return merged
@@ -869,6 +890,8 @@ def merge_existing_filters(
 
     def upsert(item: dict[str, Any]) -> None:
         clean = sanitize_filter(item, ttl_seconds)
+        if not filter_has_matcher(clean):
+            return
         key = filter_key(clean)
         if key == "id:":
             return
@@ -930,7 +953,7 @@ def analyze_once(args: argparse.Namespace) -> None:
             learn_observed=args.learn_observed,
         )
     else:
-        filters = [sanitize_filter(item, ttl_seconds) for item in filters]
+        filters = sanitized_filter_list(filters, ttl_seconds)
     filters = merge_existing_filters(existing_filters, filters, ttl_seconds, args.max_filters)
     write_filters(Path(args.filters), filters)
     print(f"wrote {len(filters)} filters to {args.filters} via {used_provider}", flush=True)
