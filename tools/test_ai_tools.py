@@ -966,6 +966,50 @@ class EdgeNamespaceSmokeTests(unittest.TestCase):
 
         self.assertEqual(run_edge_namespace_smoke.assert_smoke_result(report), [])
 
+    def test_run_edge_namespace_smoke_accepts_canonical_nft_flag_output(self) -> None:
+        original_run = run_edge_namespace_smoke.subprocess.run
+        canonical_stdout = "\n".join(
+            [
+                "table inet altura_prot_edge {",
+                "  chain preraw {",
+                "    tcp dport @protected_tcp_ports tcp flags ! fin,syn,rst,ack drop",
+                "    tcp dport @protected_tcp_ports tcp flags fin,psh,urg / fin,syn,rst,psh,ack,urg drop",
+                "    ip protocol tcp tcp dport @protected_tcp_ports tcp flags syn / fin,syn,rst,ack update @tcp4_syn_rate { ip saddr . tcp dport limit rate over 200/second burst 400 packets } drop",
+                "    tcp dport @protected_tcp_ports tcp flags syn / fin,syn,rst,ack limit rate over 5000/second burst 10000 packets drop",
+                "  }",
+                "  chain input {",
+                "    ct state invalid drop",
+                "    tcp dport @protected_tcp_ports ct state new tcp flags != syn / fin,syn,rst,ack drop",
+                "  }",
+                "}",
+            ]
+        )
+
+        def fake_run(*_args: object, **_kwargs: object) -> object:
+            return run_edge_namespace_smoke.subprocess.CompletedProcess(
+                args=["unshare"],
+                returncode=0,
+                stdout=canonical_stdout,
+                stderr="",
+            )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            nft_path = Path(tmp) / "edge.nft"
+            nft_path.write_text(
+                "meta l4proto udp udp dport @protected_tcp_ports drop\n",
+                encoding="utf-8",
+            )
+            run_edge_namespace_smoke.subprocess.run = fake_run  # type: ignore[assignment]
+            try:
+                report = run_edge_namespace_smoke.run_namespace_smoke(nft_path)
+            finally:
+                run_edge_namespace_smoke.subprocess.run = original_run  # type: ignore[assignment]
+
+        self.assertTrue(report["tcp_invalid_xmas_drop_present"])
+        self.assertTrue(report["tcp4_syn_backstop_present"])
+        self.assertTrue(report["global_syn_backstop_present"])
+        self.assertTrue(report["new_non_syn_drop_present"])
+
     def test_assert_edge_namespace_smoke_accepts_required_packet_probe(self) -> None:
         report = self.valid_edge_smoke_report()
         report["packet_probe"] = self.valid_edge_packet_probe_report()
