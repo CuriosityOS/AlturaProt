@@ -32,8 +32,24 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "short-token sibling churn must emit the parent path-shape event evidence",
     ),
     (
+        "guardrails.path_shape_rate.other_shape_allowed",
+        "path-shape limiting must not block unrelated request shapes",
+    ),
+    (
         "guardrails.path_shape_rate.version_shape_allowed",
         "normal versioned API routes must remain allowed",
+    ),
+    (
+        "guardrails.path_shape_rate.retry_after_header_matches",
+        "path-shape rate-limit responses must carry Retry-After",
+    ),
+    (
+        "guardrails.path_shape_rate.cache_control_header_matches",
+        "path-shape rate-limit responses must be marked no-store",
+    ),
+    (
+        "guardrails.path_shape_rate.path_shape_metric_matches",
+        "path-shape rate-limit probe must increment the dedicated path-shape metric",
     ),
     (
         "guardrails.path_shape_rate.rate_limited_metric_includes_path_shape_limit",
@@ -46,6 +62,14 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.signature_rate.other_signature_allowed",
         "signature limiting must not block unrelated request signatures",
+    ),
+    (
+        "guardrails.signature_rate.retry_after_header_matches",
+        "signature-rate responses must carry Retry-After",
+    ),
+    (
+        "guardrails.signature_rate.cache_control_header_matches",
+        "signature-rate responses must be marked no-store",
     ),
     (
         "guardrails.signature_rate.signature_metric_matches",
@@ -102,6 +126,14 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.tracked_ip_cap.new_client_denied_when_active_shard_full",
         "tracked-IP capacity exhaustion must fail closed for new clients",
+    ),
+    (
+        "guardrails.tracked_ip_cap.first_client_initial_allowed",
+        "tracked-IP capacity probe must allow the first client before shard pressure",
+    ),
+    (
+        "guardrails.tracked_ip_cap.first_client_rate_limited",
+        "tracked-IP capacity probe must keep the existing client bounded after pressure",
     ),
     (
         "guardrails.adaptive_catalog_shape.catalog_shape_requires_strong_evidence",
@@ -426,6 +458,22 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.trusted_proxy_aggregate_rate.rotating_xff_aggregate_limited",
         "trusted-proxy aggregate rate limit must catch rotating X-Forwarded-For floods",
+    ),
+    (
+        "guardrails.trusted_proxy_aggregate_rate.first_burst_allowed",
+        "trusted-proxy aggregate rate limit must allow the initial configured burst",
+    ),
+    (
+        "guardrails.trusted_proxy_aggregate_rate.retry_after_header_matches",
+        "trusted-proxy aggregate rate-limit responses must carry Retry-After",
+    ),
+    (
+        "guardrails.trusted_proxy_aggregate_rate.cache_control_header_matches",
+        "trusted-proxy aggregate rate-limit responses must be marked no-store",
+    ),
+    (
+        "guardrails.trusted_proxy_aggregate_rate.trusted_proxy_metric_matches",
+        "trusted-proxy aggregate probe must increment the trusted-proxy limit metric",
     ),
     (
         "guardrails.forwarded_headers.trusted_proxy.duplicate_xff_chain_preserved",

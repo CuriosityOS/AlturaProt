@@ -601,6 +601,50 @@ class LocalBenchAssertionTests(unittest.TestCase):
         self.assertIn("ip_prefix_aggregation.same_ipv6_prefix_limited", errors[0])
         self.assertIn("expected true", errors[0])
 
+    def test_assert_local_bench_rejects_path_shape_response_header_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["path_shape_rate"]["retry_after_header_matches"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("path_shape_rate.retry_after_header_matches", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_signature_rate_cache_header_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["signature_rate"]["cache_control_header_matches"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("signature_rate.cache_control_header_matches", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_trusted_proxy_metric_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["trusted_proxy_aggregate_rate"][
+            "trusted_proxy_metric_matches"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "trusted_proxy_aggregate_rate.trusted_proxy_metric_matches", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_tracked_ip_allowance_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["tracked_ip_cap"]["first_client_initial_allowed"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("tracked_ip_cap.first_client_initial_allowed", errors[0])
+        self.assertIn("expected true", errors[0])
+
     def test_assert_local_bench_rejects_allowed_host_startup_gap(self) -> None:
         report = self.valid_report()
         report["guardrails"]["allowed_hosts_startup"]["wildcard_rejected"] = False
