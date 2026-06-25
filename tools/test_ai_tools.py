@@ -453,6 +453,42 @@ class LocalBenchAssertionTests(unittest.TestCase):
         self.assertIn("event_log_rotation.total_bytes_bounded", errors[0])
         self.assertIn("expected true", errors[0])
 
+    def test_assert_local_bench_rejects_missing_edge_udp_drop_guardrail(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["edge_template_port_coverage"][
+            "missing_udp_drop_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing_udp_drop_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_missing_ipv6_l4proto_guardrail(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["edge_template_port_coverage"][
+            "missing_ipv6_connlimit_l4proto_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing_ipv6_connlimit_l4proto_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_invalid_fragment_sysctl_guardrail(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["edge_template_port_coverage"][
+            "invalid_fragment_thresholds_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("invalid_fragment_thresholds_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
     def test_assert_local_bench_rejects_post_grace_tcp_echo(self) -> None:
         report = self.valid_report()
         report["guardrails"]["tcp_min_rate"]["slow_drip"]["second_echo_bytes"] = 1

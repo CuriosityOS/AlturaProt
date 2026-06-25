@@ -508,6 +508,106 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "systemd validation must reject weak sandboxing",
     ),
     (
+        "guardrails.edge_template_port_coverage.missing_udp_drop_rejected",
+        "edge template validation must reject missing UDP drop backstops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.generic_tcp_backstops_allowed",
+        "edge template validation must allow generic TCP backstops with explicit transport matching",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_generic_tcp_l4proto_rejected",
+        "edge template validation must reject generic TCP backstops missing meta l4proto",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.ipv6_prefix_backstops_allowed",
+        "edge template validation must allow IPv6 prefix SYN and connlimit backstops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_ipv6_prefix_syn_backstop_rejected",
+        "edge template validation must reject missing IPv6 prefix SYN backstops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_ipv6_prefix_connlimit_rejected",
+        "edge template validation must reject missing IPv6 prefix connlimit backstops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.ipv6_extension_safe_protocols_allowed",
+        "edge template validation must allow IPv6 extension-header-safe protocol matches",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_ipv6_syn_l4proto_rejected",
+        "edge template validation must reject IPv6 SYN rules missing meta l4proto",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_ipv6_connlimit_l4proto_rejected",
+        "edge template validation must reject IPv6 connlimit rules missing meta l4proto",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_ipv6_icmp_l4proto_rejected",
+        "edge template validation must reject IPv6 ICMP rules missing transport-safe matching",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.icmpv4_control_exemption_allowed",
+        "edge template validation must allow required ICMPv4 control traffic before drops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_icmpv4_control_exemption_rejected",
+        "edge template validation must reject missing ICMPv4 control exemptions",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.late_icmpv4_control_exemption_rejected",
+        "edge template validation must reject ICMPv4 control exemptions placed after drops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.icmpv6_control_exemption_allowed",
+        "edge template validation must allow required ICMPv6 control traffic before drops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_icmpv6_control_exemption_rejected",
+        "edge template validation must reject missing ICMPv6 control exemptions",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.late_icmpv6_control_exemption_rejected",
+        "edge template validation must reject ICMPv6 control exemptions placed after drops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.syn_rate_set_bounds_allowed",
+        "edge template validation must allow bounded SYN-rate sets",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_syn_rate_set_size_rejected",
+        "edge template validation must reject SYN-rate sets without explicit size bounds",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_syn_rate_set_timeout_rejected",
+        "edge template validation must reject SYN-rate sets without explicit timeout bounds",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.fragment_sysctls_allowed",
+        "host sysctl validation must allow bounded fragment reassembly settings",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_fragment_sysctls_rejected",
+        "host sysctl validation must reject missing fragment reassembly guardrails",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.excessive_fragment_time_rejected",
+        "host sysctl validation must reject excessive fragment retention time",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.invalid_fragment_thresholds_rejected",
+        "host sysctl validation must reject invalid fragment memory thresholds",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.insufficient_systemd_nofile_rejected",
+        "systemd validation must reject LimitNOFILE values below shipped guardrail minimums",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.excessive_systemd_capabilities_rejected",
+        "systemd validation must reject excessive service capabilities",
+    ),
+    (
         "guardrails.admin_token_startup.long_token_rejected",
         "admin metrics tokens above the bounded comparison budget must fail startup",
     ),
