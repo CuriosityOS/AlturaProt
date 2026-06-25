@@ -3044,15 +3044,13 @@ fn joined_path_and_query(
 fn remove_hop_by_hop_headers(headers: &mut HeaderMap<HeaderValue>) {
     let mut extra = Vec::new();
     for connection in headers.get_all(http::header::CONNECTION).iter() {
-        if let Ok(connection) = connection.to_str() {
-            for token in connection.split(',') {
-                let token = token.trim();
-                if token.is_empty() {
-                    continue;
-                }
-                if let Ok(name) = HeaderName::from_bytes(token.as_bytes()) {
-                    extra.push(name);
-                }
+        for token in connection.as_bytes().split(|byte| *byte == b',') {
+            let token = trim_header_value(token);
+            if token.is_empty() {
+                continue;
+            }
+            if let Ok(name) = HeaderName::from_bytes(token) {
+                extra.push(name);
             }
         }
     }
@@ -3287,6 +3285,24 @@ mod tests {
         assert!(!headers.contains_key("x-test"));
         assert!(!headers.contains_key("x-second-hop"));
         assert!(!headers.contains_key("upgrade"));
+    }
+
+    #[test]
+    fn strips_valid_connection_options_from_non_utf8_connection_values() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            "connection",
+            HeaderValue::from_bytes(b"x-test, \xff").unwrap(),
+        );
+        headers.insert("x-test", HeaderValue::from_static("1"));
+
+        remove_hop_by_hop_headers(&mut headers);
+
+        assert!(!headers.contains_key("connection"));
+        assert!(
+            !headers.contains_key("x-test"),
+            "valid connection-options must be honored even when another token is malformed"
+        );
     }
 
     #[test]
