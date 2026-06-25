@@ -7109,6 +7109,9 @@ def run_host_guard_probe(binary: Path, upstream_port: int, tmp_path: Path) -> di
             "allowed_host_port": send_raw_host_request(
                 proxy_port, ["api.good.local:8080"]
             ),
+            "unlisted_port_host": send_raw_host_request(
+                proxy_port, ["good.local:8080"]
+            ),
             "missing_host": send_raw_host_request(proxy_port, []),
             "duplicate_host": send_raw_host_request(
                 proxy_port, ["good.local", "evil.local"]
@@ -7121,6 +7124,9 @@ def run_host_guard_probe(binary: Path, upstream_port: int, tmp_path: Path) -> di
             ),
             "absolute_form_disallowed_authority": send_raw_host_request(
                 proxy_port, ["good.local"], target="http://evil.local/"
+            ),
+            "absolute_form_unlisted_port_authority": send_raw_host_request(
+                proxy_port, ["good.local"], target="http://good.local:8080/"
             ),
             "absolute_form_unsupported_scheme": send_raw_host_request(
                 proxy_port, ["good.local"], target="ftp://good.local/"
@@ -7145,10 +7151,18 @@ def run_host_guard_probe(binary: Path, upstream_port: int, tmp_path: Path) -> di
                     "invalid_host",
                     "long_host",
                     "disallowed_host",
+                    "unlisted_port_host",
                     "absolute_form_disallowed_authority",
+                    "absolute_form_unlisted_port_authority",
                     "absolute_form_unsupported_scheme",
                 ]
             ),
+            "bare_host_does_not_allow_unlisted_port": probes["unlisted_port_host"].get("status")
+            == 400,
+            "absolute_form_bare_host_does_not_allow_unlisted_port": probes[
+                "absolute_form_unlisted_port_authority"
+            ].get("status")
+            == 400,
             "absolute_form_unsupported_scheme_rejected": probes[
                 "absolute_form_unsupported_scheme"
             ].get("status")

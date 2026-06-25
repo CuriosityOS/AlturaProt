@@ -300,6 +300,14 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "absolute-form request targets must reject non-http schemes before origin work",
     ),
     (
+        "guardrails.host_guard.bare_host_does_not_allow_unlisted_port",
+        "allowed-host entries without ports must not allow unlisted host:port authorities",
+    ),
+    (
+        "guardrails.host_guard.absolute_form_bare_host_does_not_allow_unlisted_port",
+        "absolute-form allowed-host checks must require exact host:port authorities",
+    ),
+    (
         "guardrails.uri_guard.raw_initial_request_target_guard_observed",
         "raw initial request-target guard must reject oversized request targets before origin work",
     ),

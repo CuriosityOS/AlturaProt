@@ -1756,11 +1756,13 @@ fn host_allowed(authority: &Authority, allowed_hosts: &[String]) -> bool {
         .strip_prefix('[')
         .and_then(|value| value.strip_suffix(']'))
         .unwrap_or(host);
+    let authority_has_port = authority.port().is_some();
     allowed_hosts.iter().any(|allowed| {
         let allowed = allowed.trim();
         allowed.eq_ignore_ascii_case(full)
-            || allowed.eq_ignore_ascii_case(host)
-            || allowed.eq_ignore_ascii_case(unbracketed_host)
+            || (!authority_has_port
+                && (allowed.eq_ignore_ascii_case(host)
+                    || allowed.eq_ignore_ascii_case(unbracketed_host)))
     })
 }
 
@@ -4915,11 +4917,17 @@ mod tests {
         allowed_ipv6.insert(HOST, HeaderValue::from_static("[2001:db8::1]"));
         let mut denied = HeaderMap::new();
         denied.insert(HOST, HeaderValue::from_static("evil.example"));
+        let mut denied_unlisted_port = HeaderMap::new();
+        denied_unlisted_port.insert(HOST, HeaderValue::from_static("example.com:8443"));
 
         assert!(validate_host_header(&allowed, &cfg).is_ok());
         assert!(validate_host_header(&allowed_authority, &cfg).is_ok());
         assert!(validate_host_header(&allowed_ipv6, &cfg).is_ok());
         assert_eq!(validate_host_header(&denied, &cfg), Err("host not allowed"));
+        assert_eq!(
+            validate_host_header(&denied_unlisted_port, &cfg),
+            Err("host not allowed")
+        );
     }
 
     #[test]
@@ -4936,6 +4944,12 @@ mod tests {
 
         headers.insert(HOST, HeaderValue::from_static("good.local"));
         let uri: Uri = "http://evil.local/app?x=1".parse().unwrap();
+        assert_eq!(
+            validate_effective_host(&uri, &headers, &cfg),
+            Err("host not allowed")
+        );
+
+        let uri: Uri = "http://good.local:8443/app?x=1".parse().unwrap();
         assert_eq!(
             validate_effective_host(&uri, &headers, &cfg),
             Err("host not allowed")
