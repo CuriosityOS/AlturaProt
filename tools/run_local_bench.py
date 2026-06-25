@@ -70,6 +70,7 @@ BENCH_HTTP_CONNECTION_LIMITS = {
     "global_connects_per_second": 1_000_000,
     "global_connect_burst": 1_000_000,
 }
+PROCESS_STDERR_TAIL_CHARS = 4000
 
 
 class FastHttpHandler(socketserver.BaseRequestHandler):
@@ -447,6 +448,47 @@ def wait_http(url_host: str, url_port: int, path: str = "/__altura/health") -> N
             except Exception:
                 pass
     raise RuntimeError("AlturaProt did not become ready")
+
+
+def stop_process_and_collect_stderr(
+    process: subprocess.Popen[str],
+    timeout_seconds: float = 5.0,
+) -> str:
+    if process.poll() is None:
+        try:
+            process.terminate()
+        except ProcessLookupError:
+            pass
+    try:
+        _, stderr = process.communicate(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        try:
+            _, stderr = process.communicate(timeout=timeout_seconds)
+        except subprocess.TimeoutExpired:
+            return "<stderr unavailable: process did not exit after SIGKILL>"
+    return stderr or ""
+
+
+def format_process_stderr_tail(stderr: str) -> str:
+    stderr = stderr.strip()
+    if not stderr:
+        return "<empty>"
+    if len(stderr) <= PROCESS_STDERR_TAIL_CHARS:
+        return stderr
+    return f"<truncated>\n{stderr[-PROCESS_STDERR_TAIL_CHARS:]}"
+
+
+def startup_failure_with_stderr(
+    reason: BaseException,
+    process: subprocess.Popen[str],
+    stderr: str,
+) -> RuntimeError:
+    return RuntimeError(
+        "AlturaProt benchmark proxy startup failed: "
+        f"{reason}; exit_status={process.returncode}; "
+        f"stderr_tail={format_process_stderr_tail(stderr)}"
+    )
 
 
 def wait_tcp_port(port: int) -> None:
@@ -11107,9 +11149,15 @@ def main() -> None:
             text=True,
             env={**os.environ, "RUST_BACKTRACE": "0"},
         )
+        proxy_stopped = False
         try:
-            wait_http("127.0.0.1", proxy_port)
-            wait_tcp_port(tcp_proxy_port)
+            try:
+                wait_http("127.0.0.1", proxy_port)
+                wait_tcp_port(tcp_proxy_port)
+            except Exception as err:
+                stderr = stop_process_and_collect_stderr(proxy)
+                proxy_stopped = True
+                raise startup_failure_with_stderr(err, proxy, stderr) from err
             result = {
                 "generated_at_utc": generated_at_utc(),
                 "source_tree": source_tree_metadata(Path.cwd()),
@@ -11634,11 +11682,8 @@ def main() -> None:
             }
             print(json.dumps(result, indent=2, sort_keys=True))
         finally:
-            proxy.terminate()
-            try:
-                proxy.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                proxy.kill()
+            if not proxy_stopped:
+                stop_process_and_collect_stderr(proxy)
             upstream.shutdown()
 
 

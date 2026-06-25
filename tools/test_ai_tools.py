@@ -5,6 +5,7 @@ import json
 import os
 import socketserver
 import subprocess
+import sys
 import tempfile
 import threading
 import unittest
@@ -206,6 +207,43 @@ class LocalBenchTests(unittest.TestCase):
             Path(run_local_bench.__file__).resolve().parent / "local_http_flood.py"
         )
         self.assertEqual(calls[0][1], str(expected_helper))
+
+    def test_process_stderr_tail_is_bounded(self) -> None:
+        stderr = "a" * (run_local_bench.PROCESS_STDERR_TAIL_CHARS + 10)
+
+        tail = run_local_bench.format_process_stderr_tail(stderr)
+
+        self.assertTrue(tail.startswith("<truncated>\n"))
+        self.assertLessEqual(
+            len(tail),
+            len("<truncated>\n") + run_local_bench.PROCESS_STDERR_TAIL_CHARS,
+        )
+        self.assertTrue(tail.endswith("a" * run_local_bench.PROCESS_STDERR_TAIL_CHARS))
+
+    def test_startup_failure_includes_exit_status_and_stderr_tail(self) -> None:
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import sys; sys.stderr.write('startup boom\\n'); sys.exit(17)",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        process.wait(timeout=1)
+        stderr = run_local_bench.stop_process_and_collect_stderr(process)
+
+        err = run_local_bench.startup_failure_with_stderr(
+            RuntimeError("AlturaProt did not become ready"),
+            process,
+            stderr,
+        )
+
+        message = str(err)
+        self.assertIn("AlturaProt did not become ready", message)
+        self.assertIn("exit_status=17", message)
+        self.assertIn("startup boom", message)
 
     def test_first_decodable_json_line_skips_partial_event_log_line(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
