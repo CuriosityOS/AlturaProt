@@ -1530,6 +1530,7 @@ fn validate_parsed_content_length(
     if value.is_empty() || value.contains(',') || !value.bytes().all(|byte| byte.is_ascii_digit()) {
         return Err(invalid_reason);
     }
+    let _ = value.parse::<u64>().map_err(|_| invalid_reason)?;
     Ok(())
 }
 
@@ -3867,6 +3868,11 @@ mod tests {
         comma_list.insert(CONTENT_LENGTH, HeaderValue::from_static("4, 4"));
         let mut invalid = HeaderMap::new();
         invalid.insert(CONTENT_LENGTH, HeaderValue::from_static("nope"));
+        let mut overflow = HeaderMap::new();
+        overflow.insert(
+            CONTENT_LENGTH,
+            HeaderValue::from_static("18446744073709551616"),
+        );
 
         assert_eq!(
             validate_request_framing(&duplicate, false),
@@ -3878,6 +3884,10 @@ mod tests {
         );
         assert_eq!(
             validate_request_framing(&invalid, false),
+            Err("invalid content-length header")
+        );
+        assert_eq!(
+            validate_request_framing(&overflow, false),
             Err("invalid content-length header")
         );
     }
@@ -3982,6 +3992,11 @@ mod tests {
         comma_list.insert(CONTENT_LENGTH, HeaderValue::from_static("4, 4"));
         let mut invalid = HeaderMap::new();
         invalid.insert(CONTENT_LENGTH, HeaderValue::from_static("nope"));
+        let mut overflow = HeaderMap::new();
+        overflow.insert(
+            CONTENT_LENGTH,
+            HeaderValue::from_static("18446744073709551616"),
+        );
 
         assert_eq!(
             validate_upstream_response_framing(&duplicate),
@@ -3993,6 +4008,10 @@ mod tests {
         );
         assert_eq!(
             validate_upstream_response_framing(&invalid),
+            Err("invalid upstream content-length header")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&overflow),
             Err("invalid upstream content-length header")
         );
     }

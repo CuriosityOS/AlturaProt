@@ -785,9 +785,11 @@ def sanitize_filter(item: dict[str, Any], ttl_seconds: int) -> dict[str, Any]:
             clean_condition[key] = value
     methods = condition.get("methods")
     if isinstance(methods, list):
-        clean_condition["methods"] = [
+        clean_methods = [
             str(method).upper() for method in methods if str(method).upper() in {"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
         ][:8]
+        if clean_methods:
+            clean_condition["methods"] = clean_methods
     headers = condition.get("headers")
     if isinstance(headers, list):
         clean_headers = []

@@ -1232,6 +1232,25 @@ class AnalyzerTests(unittest.TestCase):
 
         self.assertEqual(clean["condition"], {"signature": SIG_A})
 
+    def test_sanitize_filter_drops_empty_methods_matcher(self) -> None:
+        clean = codex_analyzer.sanitize_filter(
+            {
+                "id": "empty-methods",
+                "condition": {"methods": ["TRACE", ""]},
+            },
+            ttl_seconds=45,
+        )
+
+        self.assertEqual(clean["condition"], {})
+        self.assertFalse(codex_analyzer.filter_has_matcher(clean))
+        self.assertEqual(
+            codex_analyzer.sanitized_filter_list(
+                [{"id": "empty-methods", "condition": {"methods": ["TRACE", ""]}}],
+                ttl_seconds=45,
+            ),
+            [],
+        )
+
     def test_sanitize_filter_drops_matchers_above_runtime_byte_caps(self) -> None:
         clean = codex_analyzer.sanitize_filter(
             {

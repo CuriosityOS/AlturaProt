@@ -479,6 +479,9 @@ impl FilterEngine {
             loaded.extend(file.filters);
         }
         validate_unique_filter_rule_ids("merged filters", &loaded)?;
+        for (idx, rule) in loaded.iter().enumerate() {
+            validate_filter_rule(&format!("merged filters[{idx}]"), rule)?;
+        }
         loaded.sort_by(|a, b| b.priority.cmp(&a.priority).then_with(|| a.id.cmp(&b.id)));
 
         let now_ms = unix_time_ms();
@@ -1515,6 +1518,7 @@ mod tests {
 
     #[tokio::test]
     async fn adaptive_filter_only_matches_when_active() {
+        let signature = "0123456789abcdef0123456789abcdef";
         let engine = FilterEngine::new(
             vec![FilterRule {
                 id: "adaptive".to_string(),
@@ -1524,7 +1528,7 @@ mod tests {
                 ttl_seconds: Some(30),
                 expires_at_unix_ms: None,
                 condition: FilterCondition {
-                    signature: Some("abc".to_string()),
+                    signature: Some(signature.to_string()),
                     ..Default::default()
                 },
                 action: FilterAction::default(),
@@ -1540,10 +1544,10 @@ mod tests {
             path: "/",
             query: None,
             headers: &headers,
-            signature: "abc".to_string(),
+            signature: signature.to_string(),
         };
         assert!(engine.evaluate(&ctx).is_none());
-        assert!(engine.activate_signature("abc", None));
+        assert!(engine.activate_signature(signature, None));
         assert!(engine.evaluate(&ctx).is_some());
     }
 
@@ -1560,7 +1564,7 @@ mod tests {
                     ttl_seconds: Some(30),
                     expires_at_unix_ms: Some(expired_at),
                     condition: FilterCondition {
-                        signature: Some("expired".to_string()),
+                        signature: Some("11111111111111111111111111111111".to_string()),
                         ..Default::default()
                     },
                     action: FilterAction::default(),
@@ -1590,10 +1594,10 @@ mod tests {
             path: "/api/abcdefghij",
             query: None,
             headers: &headers,
-            signature: "expired".to_string(),
+            signature: "11111111111111111111111111111111".to_string(),
         };
 
-        assert!(!engine.activate_signature("expired", None));
+        assert!(!engine.activate_signature("11111111111111111111111111111111", None));
         assert!(!engine.activate_path_shape("/api/:token", None));
         assert_eq!(engine.active_rule_count(), 0);
         assert!(engine.evaluate(&ctx).is_none());
@@ -1601,6 +1605,7 @@ mod tests {
 
     #[tokio::test]
     async fn active_rule_count_matches_evaluation_gates() {
+        let adaptive_signature = "22222222222222222222222222222222";
         let mut expired_static = path_rule("expired-static", "/expired");
         expired_static.expires_at_unix_ms = Some(unix_time_ms().saturating_sub(1));
         let mut disabled_static = path_rule("disabled-static", "/disabled");
@@ -1618,7 +1623,7 @@ mod tests {
                     ttl_seconds: Some(30),
                     expires_at_unix_ms: None,
                     condition: FilterCondition {
-                        signature: Some("adaptive".to_string()),
+                        signature: Some(adaptive_signature.to_string()),
                         ..Default::default()
                     },
                     action: FilterAction::default(),
@@ -1630,12 +1635,13 @@ mod tests {
         .await;
 
         assert_eq!(engine.active_rule_count(), 1);
-        assert!(engine.activate_signature("adaptive", None));
+        assert!(engine.activate_signature(adaptive_signature, None));
         assert_eq!(engine.active_rule_count(), 2);
     }
 
     #[tokio::test]
     async fn adaptive_activation_does_not_wait_for_rule_snapshot_readers() {
+        let signature = "33333333333333333333333333333333";
         let engine = FilterEngine::new(
             vec![FilterRule {
                 id: "adaptive-nonblocking".to_string(),
@@ -1645,7 +1651,7 @@ mod tests {
                 ttl_seconds: Some(30),
                 expires_at_unix_ms: None,
                 condition: FilterCondition {
-                    signature: Some("abc".to_string()),
+                    signature: Some(signature.to_string()),
                     ..Default::default()
                 },
                 action: FilterAction::default(),
@@ -1659,7 +1665,7 @@ mod tests {
         let engine_for_thread = Arc::clone(&engine);
 
         std::thread::spawn(move || {
-            tx.send(engine_for_thread.activate_signature("abc", None))
+            tx.send(engine_for_thread.activate_signature(signature, None))
                 .unwrap();
         });
 
@@ -1673,7 +1679,7 @@ mod tests {
             path: "/",
             query: None,
             headers: &headers,
-            signature: "abc".to_string(),
+            signature: signature.to_string(),
         };
         assert_eq!(
             engine.evaluate(&ctx).map(|decision| decision.rule_id),
@@ -1683,16 +1689,17 @@ mod tests {
 
     #[tokio::test]
     async fn adaptive_activation_clamps_unvalidated_ttl_before_instant_math() {
+        let signature = "44444444444444444444444444444444";
         let engine = FilterEngine::new(
             vec![FilterRule {
                 id: "adaptive-huge-ttl".to_string(),
                 enabled: true,
                 adaptive: true,
                 priority: 10,
-                ttl_seconds: Some(u64::MAX),
+                ttl_seconds: None,
                 expires_at_unix_ms: None,
                 condition: FilterCondition {
-                    signature: Some("huge".to_string()),
+                    signature: Some(signature.to_string()),
                     ..Default::default()
                 },
                 action: FilterAction::default(),
@@ -1708,10 +1715,10 @@ mod tests {
             path: "/",
             query: None,
             headers: &headers,
-            signature: "huge".to_string(),
+            signature: signature.to_string(),
         };
 
-        assert!(engine.activate_signature("huge", Some(Duration::from_secs(u64::MAX))));
+        assert!(engine.activate_signature(signature, Some(Duration::from_secs(u64::MAX))));
         assert!(engine.evaluate(&ctx).is_some());
     }
 
@@ -1934,6 +1941,37 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn filter_reload_rejects_invalid_static_rules_before_publish() {
+        let path = temp_runtime_filter_path("invalid-static-filters");
+        let _ = std::fs::remove_file(&path);
+        let mut invalid = path_rule("bad-static", "/blocked");
+        invalid.action.status = 200;
+        let engine = FilterEngine::new_with_limits(
+            vec![invalid],
+            path.clone(),
+            Duration::from_secs(30),
+            4096,
+            4,
+        )
+        .await;
+
+        let err = engine.reload().await.unwrap_err().to_string();
+
+        assert!(err.contains("merged filters[0].action.status"), "{err}");
+        let headers = HeaderMap::new();
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/blocked",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        assert!(engine.evaluate(&ctx).is_none());
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[tokio::test]
     async fn runtime_filter_reload_rejects_static_runtime_duplicate_ids_and_preserves_rules() {
         let path = temp_runtime_filter_path("duplicate-merged-runtime-filters");
         let static_rule = path_rule("shared-id", "/static-blocked");
@@ -2021,6 +2059,8 @@ mod tests {
         let legacy = legacy_request_signature("GET", "/users/123/profile", None, &headers);
 
         assert_eq!(first, second);
+        assert_eq!(first, "3b24cf3645105622c3fc4fc45e5a7ed2");
+        assert_eq!(legacy, "ca65ef3c06c65c1b");
         assert_eq!(first.len(), REQUEST_SIGNATURE_HASH_BYTES * 2);
         assert_eq!(legacy.len(), 16);
         assert_ne!(first, legacy);

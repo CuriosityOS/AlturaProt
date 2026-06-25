@@ -555,6 +555,7 @@ mod tests {
 
     #[tokio::test]
     async fn detector_activates_learned_signature() {
+        let signature = "0123456789abcdef0123456789abcdef";
         let engine = FilterEngine::new(
             vec![FilterRule {
                 id: "learned".to_string(),
@@ -564,7 +565,7 @@ mod tests {
                 ttl_seconds: Some(30),
                 expires_at_unix_ms: None,
                 condition: FilterCondition {
-                    signature: Some("sig".to_string()),
+                    signature: Some(signature.to_string()),
                     ..Default::default()
                 },
                 action: FilterAction::default(),
@@ -586,7 +587,7 @@ mod tests {
             path: "/",
             query: None,
             headers: &headers,
-            signature: "sig".to_string(),
+            signature: signature.to_string(),
         };
         assert!(engine.evaluate(&ctx).is_none());
         detector.observe(&ctx, "test");
@@ -648,6 +649,8 @@ mod tests {
 
     #[tokio::test]
     async fn detector_keeps_distinct_signatures_below_threshold() {
+        let signature_a = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        let signature_b = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
         let engine = FilterEngine::new(
             vec![FilterRule {
                 id: "learned".to_string(),
@@ -657,7 +660,7 @@ mod tests {
                 ttl_seconds: Some(30),
                 expires_at_unix_ms: None,
                 condition: FilterCondition {
-                    signature: Some("sig-a".to_string()),
+                    signature: Some(signature_a.to_string()),
                     ..Default::default()
                 },
                 action: FilterAction::default(),
@@ -680,7 +683,7 @@ mod tests {
             path: "/",
             query: None,
             headers: &headers,
-            signature: "sig-a".to_string(),
+            signature: signature_a.to_string(),
         };
         let ctx_b = RequestContext {
             client_ip: "127.0.0.1".parse().unwrap(),
@@ -688,7 +691,7 @@ mod tests {
             path: "/",
             query: None,
             headers: &headers,
-            signature: "sig-b".to_string(),
+            signature: signature_b.to_string(),
         };
         detector.observe(&ctx_a, "test");
         detector.observe(&ctx_b, "test");
