@@ -27,6 +27,7 @@ pub const DEFAULT_FILTER_MAX_HEADERS: usize = 16;
 pub const DEFAULT_FILTER_MAX_MATCH_VALUE_BYTES: usize = 1024;
 pub const DEFAULT_FILTER_MAX_ACTION_BODY_BYTES: usize = 1024;
 pub const FILTER_TTL_MAX_SECONDS: u64 = 24 * 60 * 60;
+const REQUEST_SIGNATURE_HASH_BYTES: usize = 16;
 
 #[derive(Debug, Clone)]
 pub struct RequestContext<'a> {
@@ -361,6 +362,7 @@ struct CompiledHeaderContains {
 struct FilterEvalScratch {
     path_shape: Option<String>,
     short_token_parent_shape: Option<Option<String>>,
+    legacy_signature: Option<String>,
 }
 
 impl FilterEvalScratch {
@@ -378,6 +380,14 @@ impl FilterEvalScratch {
             .short_token_parent_shape
             .get_or_insert_with(|| short_token_parent_shape(path).map(|(shape, _)| shape));
         parent.as_deref() == Some(expected)
+    }
+
+    fn legacy_signature(&mut self, ctx: &RequestContext<'_>) -> &str {
+        self.legacy_signature
+            .get_or_insert_with(|| {
+                legacy_request_signature(ctx.method, ctx.path, ctx.query, ctx.headers)
+            })
+            .as_str()
     }
 }
 
@@ -677,6 +687,19 @@ pub fn request_signature(
     headers: &HeaderMap<HeaderValue>,
 ) -> String {
     let basis = signature_basis(method, path, query, headers);
+    hex_prefix(
+        blake3::hash(basis.as_bytes()).as_bytes(),
+        REQUEST_SIGNATURE_HASH_BYTES,
+    )
+}
+
+pub fn legacy_request_signature(
+    method: &str,
+    path: &str,
+    query: Option<&str>,
+    headers: &HeaderMap<HeaderValue>,
+) -> String {
+    let basis = signature_basis(method, path, query, headers);
     format!("{:016x}", fnv1a64(basis.as_bytes()))
 }
 
@@ -722,7 +745,7 @@ fn rule_matches(
         return false;
     }
     if let Some(signature) = &rule.condition.signature {
-        if signature != &ctx.signature {
+        if signature != &ctx.signature && signature != scratch.legacy_signature(ctx) {
             return false;
         }
     }
@@ -797,6 +820,16 @@ fn header_values_contain_ignore_case(
         .iter()
         .filter_map(|value| value.to_str().ok())
         .any(|value| ascii_contains_ignore_case(value.as_bytes(), needle))
+}
+
+fn hex_prefix(bytes: &[u8], prefix_len: usize) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut out = String::with_capacity(prefix_len * 2);
+    for byte in bytes.iter().take(prefix_len) {
+        out.push(HEX[(byte >> 4) as usize] as char);
+        out.push(HEX[(byte & 0x0f) as usize] as char);
+    }
+    out
 }
 
 fn ascii_contains_ignore_case(haystack: &[u8], needle: &[u8]) -> bool {
@@ -1207,6 +1240,44 @@ mod tests {
             signature: "sig".to_string(),
         };
         assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "test");
+    }
+
+    #[tokio::test]
+    async fn filter_signature_conditions_accept_legacy_fnv_signatures() {
+        let headers = HeaderMap::new();
+        let legacy_signature =
+            legacy_request_signature("GET", "/api/users/123", Some("cachebust=1"), &headers);
+        let engine = FilterEngine::new(
+            vec![FilterRule {
+                id: "legacy-signature".to_string(),
+                enabled: true,
+                adaptive: false,
+                priority: 1,
+                ttl_seconds: None,
+                expires_at_unix_ms: None,
+                condition: FilterCondition {
+                    signature: Some(legacy_signature),
+                    ..Default::default()
+                },
+                action: FilterAction::default(),
+            }],
+            PathBuf::from("/tmp/altura-prot-nonexistent-legacy-signature-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/api/users/123",
+            query: Some("cachebust=1"),
+            headers: &headers,
+            signature: request_signature("GET", "/api/users/123", Some("cachebust=1"), &headers),
+        };
+
+        assert_eq!(
+            engine.evaluate(&ctx).map(|decision| decision.rule_id),
+            Some("legacy-signature".to_string())
+        );
     }
 
     #[test]
@@ -1819,6 +1890,21 @@ mod tests {
 
         assert!(engine.reload().await.is_err());
         let _ = std::fs::remove_dir_all(path);
+    }
+
+    #[test]
+    fn request_signature_uses_blake3_fingerprint_with_legacy_helper() {
+        let headers = HeaderMap::new();
+        let first = request_signature("GET", "/users/123/profile", None, &headers);
+        let second = request_signature("GET", "/users/456/profile", None, &headers);
+        let legacy = legacy_request_signature("GET", "/users/123/profile", None, &headers);
+
+        assert_eq!(first, second);
+        assert_eq!(first.len(), REQUEST_SIGNATURE_HASH_BYTES * 2);
+        assert_eq!(legacy.len(), 16);
+        assert_ne!(first, legacy);
+        assert!(first.bytes().all(|byte| byte.is_ascii_hexdigit()));
+        assert!(legacy.bytes().all(|byte| byte.is_ascii_hexdigit()));
     }
 
     #[test]

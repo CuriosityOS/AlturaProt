@@ -8352,7 +8352,7 @@ def run_path_shape_rate_probe(binary: Path, upstream_port: int, tmp_path: Path) 
                 "global_burst": 1_000_000,
                 "signature_rps": 1_000_000,
                 "signature_burst": 1_000_000,
-                "max_tracked_signatures": 64,
+                "max_tracked_signatures": 4096,
                 "path_shape_rps": path_shape_rps,
                 "path_shape_burst": path_shape_burst,
                 "max_tracked_path_shapes": 64,

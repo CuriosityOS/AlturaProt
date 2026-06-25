@@ -7,7 +7,9 @@ use std::{
 };
 
 use crate::{
-    filter::{request_path_shape, signature_basis, FilterEngine, RequestContext},
+    filter::{
+        legacy_request_signature, request_path_shape, signature_basis, FilterEngine, RequestContext,
+    },
     limiter::TokenBucket,
     telemetry::{unix_time_ms, AdaptiveWindowStats, AttackEvent, EventLogger},
 };
@@ -151,6 +153,13 @@ impl AdaptiveDetector {
             let _ = self
                 .engine
                 .activate_signature(&ctx.signature, Some(self.activation_ttl));
+            let legacy_signature =
+                legacy_request_signature(ctx.method, ctx.path, ctx.query, ctx.headers);
+            if legacy_signature != ctx.signature {
+                let _ = self
+                    .engine
+                    .activate_signature(&legacy_signature, Some(self.activation_ttl));
+            }
         }
         if let Some(shape_observation) = &shape_observation {
             if shape_observation.activate {
@@ -584,6 +593,57 @@ mod tests {
         assert!(engine.evaluate(&ctx).is_none());
         detector.observe(&ctx, "test");
         assert!(engine.evaluate(&ctx).is_some());
+    }
+
+    #[tokio::test]
+    async fn detector_activates_legacy_learned_signature() {
+        let headers = HeaderMap::new();
+        let legacy_signature = legacy_request_signature("GET", "/api/orders/123", None, &headers);
+        let current_signature =
+            crate::filter::request_signature("GET", "/api/orders/123", None, &headers);
+        assert_ne!(legacy_signature, current_signature);
+        let engine = FilterEngine::new(
+            vec![FilterRule {
+                id: "legacy-learned".to_string(),
+                enabled: true,
+                adaptive: true,
+                priority: 1,
+                ttl_seconds: Some(30),
+                expires_at_unix_ms: None,
+                condition: FilterCondition {
+                    signature: Some(legacy_signature),
+                    ..Default::default()
+                },
+                action: FilterAction::default(),
+            }],
+            PathBuf::from("/tmp/altura-prot-nonexistent-legacy-adaptive-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let logger =
+            Arc::new(EventLogger::new("/tmp/altura-prot-test-legacy-events.jsonl").unwrap());
+        let detector = AdaptiveDetector::new(
+            test_detector_config(2, 8_192, 8_192),
+            Arc::clone(&engine),
+            logger,
+        );
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/api/orders/123",
+            query: None,
+            headers: &headers,
+            signature: current_signature,
+        };
+
+        assert!(engine.evaluate(&ctx).is_none());
+        detector.observe(&ctx, "test");
+        assert!(engine.evaluate(&ctx).is_none());
+        detector.observe(&ctx, "test");
+        assert_eq!(
+            engine.evaluate(&ctx).map(|decision| decision.rule_id),
+            Some("legacy-learned".to_string())
+        );
     }
 
     #[tokio::test]
