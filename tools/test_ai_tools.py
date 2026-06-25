@@ -179,6 +179,24 @@ class LocalBenchTests(unittest.TestCase):
         for key in validate_edge_templates.DDOS_SYSCTL_RULES:
             self.assertIn(f"{key} = ", template)
 
+    def test_edge_template_probe_skips_kernel_nft_syntax_check(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(cmd: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+            calls.append(cmd)
+            return subprocess.CompletedProcess(cmd, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.object(run_local_bench.subprocess, "run", side_effect=fake_run):
+                report = run_local_bench.run_edge_template_port_coverage_probe(Path(tmp))
+
+        self.assertTrue(calls)
+        self.assertTrue(
+            all("--skip-nft-syntax-check" in call for call in calls),
+            calls,
+        )
+        self.assertTrue(report["covered_public_ports_allowed"])
+
     def test_chunked_message_complete_accepts_empty_and_nonempty_trailers(self) -> None:
         self.assertTrue(run_local_bench.chunked_message_complete(b"0\r\n\r\n"))
         self.assertTrue(
@@ -3409,6 +3427,22 @@ class DefenseBenchTests(unittest.TestCase):
 
 
 class EdgeTemplateTests(unittest.TestCase):
+    def test_validate_nft_skip_syntax_check_does_not_call_nft(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            nft = Path(tmp) / "edge.nft"
+            nft.write_text("table inet altura_prot_edge {}\n", encoding="utf-8")
+
+            with patch.object(
+                validate_edge_templates.shutil, "which", return_value="/usr/sbin/nft"
+            ), patch.object(validate_edge_templates, "run") as run:
+                errors = validate_edge_templates.validate_nft(
+                    nft,
+                    skip_syntax_check=True,
+                )
+
+        self.assertEqual(errors, ["nftables syntax check skipped by request"])
+        run.assert_not_called()
+
     def test_loopback_listeners_do_not_require_edge_port_coverage(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)

@@ -96,6 +96,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--nft", default="ops/nftables/altura-prot-edge.nft")
     parser.add_argument("--sysctl", default="ops/sysctl.d/99-altura-prot-ddos.conf")
     parser.add_argument("--systemd", default="ops/systemd/altura-prot.service")
+    parser.add_argument(
+        "--skip-nft-syntax-check",
+        action="store_true",
+        help="skip kernel-backed nft -c validation while keeping static template checks",
+    )
     return parser.parse_args()
 
 
@@ -103,9 +108,11 @@ def run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
-def validate_nft(path: Path) -> list[str]:
+def validate_nft(path: Path, *, skip_syntax_check: bool = False) -> list[str]:
     if not path.exists():
         return [f"missing nftables template: {path}"]
+    if skip_syntax_check:
+        return ["nftables syntax check skipped by request"]
     nft = shutil.which("nft")
     if nft is None:
         return ["nft not found; skipped nftables syntax check"]
@@ -1298,7 +1305,12 @@ def validate_systemd_unit(path: Path, config: Path) -> list[str]:
 def main() -> int:
     args = parse_args()
     errors: list[str] = []
-    errors.extend(validate_nft(Path(args.nft)))
+    errors.extend(
+        validate_nft(
+            Path(args.nft),
+            skip_syntax_check=args.skip_nft_syntax_check,
+        )
+    )
     errors.extend(validate_protected_tcp_ports(Path(args.nft)))
     errors.extend(validate_udp_protected_port_drop(Path(args.nft)))
     errors.extend(validate_generic_tcp_backstop_protocol_matches(Path(args.nft)))

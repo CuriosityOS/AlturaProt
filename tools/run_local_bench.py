@@ -10565,6 +10565,7 @@ def run_edge_template_port_coverage_probe(tmp_path: Path) -> dict[str, Any]:
                 str(sysctl_path),
                 "--systemd",
                 str(systemd_path),
+                "--skip-nft-syntax-check",
             ],
             text=True,
             stdout=subprocess.PIPE,
