@@ -32,8 +32,24 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "short-token sibling churn must emit the parent path-shape event evidence",
     ),
     (
+        "guardrails.path_shape_rate.other_shape_allowed",
+        "path-shape limiting must not block unrelated request shapes",
+    ),
+    (
         "guardrails.path_shape_rate.version_shape_allowed",
         "normal versioned API routes must remain allowed",
+    ),
+    (
+        "guardrails.path_shape_rate.retry_after_header_matches",
+        "path-shape rate-limit responses must carry Retry-After",
+    ),
+    (
+        "guardrails.path_shape_rate.cache_control_header_matches",
+        "path-shape rate-limit responses must be marked no-store",
+    ),
+    (
+        "guardrails.path_shape_rate.path_shape_metric_matches",
+        "path-shape rate-limit probe must increment the dedicated path-shape metric",
     ),
     (
         "guardrails.path_shape_rate.rate_limited_metric_includes_path_shape_limit",
@@ -46,6 +62,14 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.signature_rate.other_signature_allowed",
         "signature limiting must not block unrelated request signatures",
+    ),
+    (
+        "guardrails.signature_rate.retry_after_header_matches",
+        "signature-rate responses must carry Retry-After",
+    ),
+    (
+        "guardrails.signature_rate.cache_control_header_matches",
+        "signature-rate responses must be marked no-store",
     ),
     (
         "guardrails.signature_rate.signature_metric_matches",
@@ -92,12 +116,24 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "runtime filter reload must successfully load the generated rule set",
     ),
     (
+        "guardrails.runtime_sigterm.sigterm_graceful",
+        "runtime shutdown must handle SIGTERM gracefully within the probe timeout",
+    ),
+    (
         "guardrails.rate_limit_before_filter.rate_limit_precedes_filter",
         "rate limiting must run before blocking filter activation on the hot path",
     ),
     (
         "guardrails.tracked_ip_cap.new_client_denied_when_active_shard_full",
         "tracked-IP capacity exhaustion must fail closed for new clients",
+    ),
+    (
+        "guardrails.tracked_ip_cap.first_client_initial_allowed",
+        "tracked-IP capacity probe must allow the first client before shard pressure",
+    ),
+    (
+        "guardrails.tracked_ip_cap.first_client_rate_limited",
+        "tracked-IP capacity probe must keep the existing client bounded after pressure",
     ),
     (
         "guardrails.adaptive_catalog_shape.catalog_shape_requires_strong_evidence",
@@ -140,6 +176,14 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "compressed request rejection must be marked no-store",
     ),
     (
+        "guardrails.request_content_encoding.identity_request_allowed",
+        "identity-encoded request bodies must remain allowed",
+    ),
+    (
+        "guardrails.expect_guard.normal_request_allowed",
+        "normal requests without Expect headers must remain allowed",
+    ),
+    (
         "guardrails.expect_guard.expect_continue_rejected",
         "Expect: 100-continue must be rejected by default",
     ),
@@ -166,6 +210,14 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.range_guard.range_rejections_not_stored",
         "Range rejections must be marked no-store",
+    ),
+    (
+        "guardrails.range_guard.single_range_allowed",
+        "single-range requests must remain allowed",
+    ),
+    (
+        "guardrails.chunked_request_body_opt_in.chunked_request_allowed",
+        "chunked request bodies must be allowed only when explicitly configured",
     ),
     (
         "guardrails.accept_encoding.origin_accept_encoding_stripped",
@@ -232,6 +284,10 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "initial header byte overflow must generate a bounded rejection",
     ),
     (
+        "guardrails.initial_framing_precheck_response.initial_header_late_terminator_over_cap_observed",
+        "initial header byte overflow with a late terminator must generate a bounded rejection",
+    ),
+    (
         "guardrails.initial_framing_precheck_response.raw_initial_400_closes_connection",
         "raw initial framing rejection must close the downstream connection",
     ),
@@ -244,6 +300,70 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "absolute-form request targets must reject non-http schemes before origin work",
     ),
     (
+        "guardrails.host_guard.bare_host_does_not_allow_unlisted_port",
+        "allowed-host entries without ports must not allow unlisted host:port authorities",
+    ),
+    (
+        "guardrails.host_guard.absolute_form_bare_host_does_not_allow_unlisted_port",
+        "absolute-form allowed-host checks must require exact host:port authorities",
+    ),
+    (
+        "guardrails.uri_guard.raw_initial_request_target_guard_observed",
+        "raw initial request-target guard must reject oversized request targets before origin work",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.blank_rejected",
+        "allowed-host config must reject blank authorities at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.duplicate_rejected",
+        "allowed-host config must reject duplicate authorities at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.invalid_authority_rejected",
+        "allowed-host config must reject invalid authorities at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.oversized_rejected",
+        "allowed-host config must reject oversized authorities at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.too_many_rejected",
+        "allowed-host config must reject excessive authorities at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.userinfo_rejected",
+        "allowed-host config must reject authorities with userinfo at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.whitespace_rejected",
+        "allowed-host config must reject authorities with whitespace at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.wildcard_rejected",
+        "allowed-host config must reject wildcard authorities at startup",
+    ),
+    (
+        "guardrails.allowed_methods_startup.duplicate_rejected",
+        "allowed HTTP methods must reject duplicates at startup",
+    ),
+    (
+        "guardrails.allowed_methods_startup.empty_rejected",
+        "allowed HTTP methods must reject empty method lists at startup",
+    ),
+    (
+        "guardrails.allowed_methods_startup.invalid_token_rejected",
+        "allowed HTTP methods must reject invalid method tokens at startup",
+    ),
+    (
+        "guardrails.allowed_methods_startup.oversized_token_rejected",
+        "allowed HTTP methods must reject oversized method tokens at startup",
+    ),
+    (
+        "guardrails.allowed_methods_startup.too_many_rejected",
+        "allowed HTTP methods must reject excessive method lists at startup",
+    ),
+    (
         "guardrails.allowed_methods_startup.unsupported_connect_rejected",
         "allowed HTTP methods must reject CONNECT at startup",
     ),
@@ -254,6 +374,38 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.allowed_methods_startup.unsupported_track_rejected",
         "allowed HTTP methods must reject TRACK at startup",
+    ),
+    (
+        "guardrails.header_buffer_floor_startup.downstream_max_header_bytes_rejected",
+        "downstream header byte cap below the safe floor must fail startup",
+    ),
+    (
+        "guardrails.header_buffer_floor_startup.upstream_max_header_bytes_rejected",
+        "upstream header byte cap below the safe floor must fail startup",
+    ),
+    (
+        "guardrails.header_buffer_ceiling_startup.downstream_max_header_bytes_rejected",
+        "downstream header byte cap above the supported ceiling must fail startup",
+    ),
+    (
+        "guardrails.header_buffer_ceiling_startup.upstream_max_header_bytes_rejected",
+        "upstream header byte cap above the supported ceiling must fail startup",
+    ),
+    (
+        "guardrails.header_count_ceiling_startup.downstream_max_headers_rejected",
+        "downstream header count above the supported ceiling must fail startup",
+    ),
+    (
+        "guardrails.header_count_ceiling_startup.upstream_max_headers_rejected",
+        "upstream header count above the supported ceiling must fail startup",
+    ),
+    (
+        "guardrails.header_read_timeout_ceiling_startup.header_read_timeout_rejected",
+        "header read timeout above the supported ceiling must fail startup",
+    ),
+    (
+        "guardrails.header_read_timeout_ceiling_startup.startup_rejected",
+        "header read-timeout ceiling probe must fail startup for unsupported values",
     ),
     (
         "guardrails.http_endpoint_startup.invalid_listen_rejected",
@@ -300,6 +452,38 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "TCP upstream config must reject port zero",
     ),
     (
+        "guardrails.client_ip_config_startup.blank_trusted_proxy_rejected",
+        "client-IP config must reject blank trusted-proxy entries",
+    ),
+    (
+        "guardrails.client_ip_config_startup.duplicate_trusted_proxy_rejected",
+        "client-IP config must reject duplicate trusted-proxy entries",
+    ),
+    (
+        "guardrails.client_ip_config_startup.invalid_header_rejected",
+        "client-IP config must reject invalid trusted identity header names",
+    ),
+    (
+        "guardrails.client_ip_config_startup.invalid_trusted_proxy_rejected",
+        "client-IP config must reject invalid trusted-proxy networks",
+    ),
+    (
+        "guardrails.client_ip_config_startup.oversized_header_rejected",
+        "client-IP config must reject oversized trusted identity header names",
+    ),
+    (
+        "guardrails.client_ip_config_startup.oversized_trusted_proxy_rejected",
+        "client-IP config must reject oversized trusted-proxy entries",
+    ),
+    (
+        "guardrails.client_ip_config_startup.too_many_trusted_proxies_rejected",
+        "client-IP config must reject excessive trusted-proxy entries",
+    ),
+    (
+        "guardrails.trusted_proxy_global_trust_startup.global_trusted_proxy_rejected",
+        "trusted-proxy config must reject globally trusting all remote clients",
+    ),
+    (
         "guardrails.method_override_headers.override_headers_rejected",
         "method override headers must be rejected by default before origin work",
     ),
@@ -310,6 +494,22 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.trusted_proxy_aggregate_rate.rotating_xff_aggregate_limited",
         "trusted-proxy aggregate rate limit must catch rotating X-Forwarded-For floods",
+    ),
+    (
+        "guardrails.trusted_proxy_aggregate_rate.first_burst_allowed",
+        "trusted-proxy aggregate rate limit must allow the initial configured burst",
+    ),
+    (
+        "guardrails.trusted_proxy_aggregate_rate.retry_after_header_matches",
+        "trusted-proxy aggregate rate-limit responses must carry Retry-After",
+    ),
+    (
+        "guardrails.trusted_proxy_aggregate_rate.cache_control_header_matches",
+        "trusted-proxy aggregate rate-limit responses must be marked no-store",
+    ),
+    (
+        "guardrails.trusted_proxy_aggregate_rate.trusted_proxy_metric_matches",
+        "trusted-proxy aggregate probe must increment the trusted-proxy limit metric",
     ),
     (
         "guardrails.forwarded_headers.trusted_proxy.duplicate_xff_chain_preserved",
@@ -330,6 +530,62 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.forwarded_headers.custom_identity_header.custom_identity_rejected_metric_matches",
         "trusted custom identity header rejections must increment the forwarded-rejected metric",
+    ),
+    (
+        "guardrails.forwarded_header_bounds.valid_chain_allowed",
+        "bounded forwarded-header parsing must allow a valid trusted chain",
+    ),
+    (
+        "guardrails.forwarded_header_bounds.malformed_chain_rejected",
+        "bounded forwarded-header parsing must reject malformed chains",
+    ),
+    (
+        "guardrails.forwarded_header_bounds.oversized_chain_rejected",
+        "bounded forwarded-header parsing must reject oversized chains",
+    ),
+    (
+        "guardrails.forwarded_header_bounds.too_many_hops_rejected",
+        "bounded forwarded-header parsing must reject excessive hop counts",
+    ),
+    (
+        "guardrails.forwarded_header_bounds.rejection_metric_matches",
+        "bounded forwarded-header rejections must increment the forwarded-rejected metric",
+    ),
+    (
+        "guardrails.trusted_proxy_in_flight.rotating_xff_peer_concurrency_limited",
+        "trusted-proxy in-flight limits must catch rotating X-Forwarded-For peer floods",
+    ),
+    (
+        "guardrails.trusted_proxy_in_flight.retry_after_header_matches",
+        "trusted-proxy in-flight overload responses must carry Retry-After",
+    ),
+    (
+        "guardrails.trusted_proxy_in_flight.cache_control_header_matches",
+        "trusted-proxy in-flight overload responses must be marked no-store",
+    ),
+    (
+        "guardrails.trusted_proxy_in_flight.trusted_proxy_metric_matches",
+        "trusted-proxy in-flight probe must increment the trusted-proxy limit metric",
+    ),
+    (
+        "guardrails.ip_prefix_aggregation.same_ipv6_prefix_limited",
+        "IPv6 prefix aggregation must limit rotating clients inside the same prefix",
+    ),
+    (
+        "guardrails.ip_prefix_aggregation.different_ipv6_prefix_allowed",
+        "IPv6 prefix aggregation must allow clients from unrelated prefixes",
+    ),
+    (
+        "guardrails.ip_prefix_aggregation.retry_after_header_matches",
+        "IPv6 prefix aggregation limit responses must carry Retry-After",
+    ),
+    (
+        "guardrails.ip_prefix_aggregation.cache_control_header_matches",
+        "IPv6 prefix aggregation limit responses must be marked no-store",
+    ),
+    (
+        "guardrails.ip_prefix_aggregation.rate_limited_metric_matches",
+        "IPv6 prefix aggregation probe must increment the rate-limited metric",
     ),
     (
         "guardrails.upstream_failure_circuit.circuit_scoped_to_path_shape",
@@ -392,8 +648,60 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "stalled upstream response bodies must be closed",
     ),
     (
+        "guardrails.request_trailer_policy.request_trailer_policy_observed",
+        "request trailer policy must be exercised by the benchmark",
+    ),
+    (
+        "guardrails.request_trailer_policy.oversized_request_trailer_rejected",
+        "oversized request trailers must be rejected",
+    ),
+    (
+        "guardrails.request_trailer_policy.generated_431_closes_connection",
+        "oversized request-trailer rejections must close the downstream connection",
+    ),
+    (
+        "guardrails.request_trailer_policy.generated_431_not_stored",
+        "oversized request-trailer rejections must be marked no-store",
+    ),
+    (
+        "guardrails.request_trailer_policy.connection_closed_before_followup",
+        "oversized request-trailer rejections must close before keep-alive reuse",
+    ),
+    (
+        "guardrails.upstream_trailer_policy.upstream_trailer_policy_observed",
+        "upstream trailer policy must be exercised by the benchmark",
+    ),
+    (
         "guardrails.downstream_keep_alive.closed_before_second_response",
         "downstream keep-alive must be disabled by default",
+    ),
+    (
+        "guardrails.connection_request_limit.connection_request_limit_observed",
+        "per-connection request-count guard must be observed",
+    ),
+    (
+        "guardrails.connection_request_limit.third_request_limited",
+        "per-connection request-count guard must limit excess keep-alive reuse",
+    ),
+    (
+        "guardrails.connection_request_limit.retry_after_header_matches",
+        "per-connection request-count limit responses must carry Retry-After",
+    ),
+    (
+        "guardrails.connection_request_limit.cache_control_header_matches",
+        "per-connection request-count limit responses must be marked no-store",
+    ),
+    (
+        "guardrails.connection_request_limit.connection_close_header_matches",
+        "per-connection request-count limit responses must close the connection",
+    ),
+    (
+        "guardrails.connection_request_limit.connection_closed_before_fourth",
+        "per-connection request-count guard must close before further reuse",
+    ),
+    (
+        "guardrails.downstream_write_timeout.downstream_write_timeout_observed",
+        "downstream write timeout must close write-backpressured responses",
     ),
     (
         "guardrails.tcp_global_connection_cap.rejected_closed",
@@ -412,6 +720,10 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "TCP relay must keep the opposite direction flowing while one direction is write-backpressured",
     ),
     (
+        "guardrails.log_suppression.timeout_log_lines_bounded",
+        "timeout log suppression must keep repeated timeout logs bounded",
+    ),
+    (
         "guardrails.event_log_async_queue.all_requests_completed",
         "event-log queue pressure must not stall request completion",
     ),
@@ -420,8 +732,44 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "event-log async queue must drop when full instead of blocking the request thread",
     ),
     (
+        "guardrails.event_log_flush.all_requests_ok",
+        "event-log flush probe traffic must complete successfully",
+    ),
+    (
+        "guardrails.event_log_flush.first_event_flushed_immediately",
+        "event logging must flush the first event immediately for early attack evidence",
+    ),
+    (
+        "guardrails.event_log_flush.burst_flush_batched",
+        "event logging must batch burst flushes instead of forcing per-event sync I/O",
+    ),
+    (
+        "guardrails.event_log_flush.interval_flush_observed",
+        "event logging must flush batched events on the configured interval",
+    ),
+    (
         "guardrails.event_log_field_bounds.all_event_fields_bounded",
         "event-log fields must remain bounded before serialization",
+    ),
+    (
+        "guardrails.event_log_rotation.all_requests_ok",
+        "event-log rotation probe traffic must complete successfully",
+    ),
+    (
+        "guardrails.event_log_rotation.backup_present",
+        "event-log rotation must create a bounded backup file after the byte cap is reached",
+    ),
+    (
+        "guardrails.event_log_rotation.active_log_present",
+        "event-log rotation must leave an active log file available for new events",
+    ),
+    (
+        "guardrails.event_log_rotation.jsonl_valid",
+        "event-log rotation must preserve valid JSONL records",
+    ),
+    (
+        "guardrails.event_log_rotation.total_bytes_bounded",
+        "event-log rotation must keep retained log bytes bounded",
     ),
     (
         "guardrails.runtime_filter_bounds.oversized_file_rejected_and_last_good_preserved",
@@ -430,6 +778,218 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.runtime_filter_bounds.too_many_rules_rejected_and_last_good_preserved",
         "runtime filter over-capacity files must be rejected while preserving last-good rules",
+    ),
+    (
+        "guardrails.runtime_filter_hot_path.normal_request_allowed",
+        "runtime filter hot-path probe must allow normal requests",
+    ),
+    (
+        "guardrails.runtime_filter_hot_path.control_request_allowed",
+        "runtime filter hot-path probe must allow control requests",
+    ),
+    (
+        "guardrails.filter_rule_startup.empty_condition_rejected",
+        "static filter rules with empty conditions must fail startup",
+    ),
+    (
+        "guardrails.filter_rule_startup.invalid_status_rejected",
+        "static filter rules with invalid generated status codes must fail startup",
+    ),
+    (
+        "guardrails.filter_rule_startup.oversized_body_rejected",
+        "static filter rules with oversized generated bodies must fail startup",
+    ),
+    (
+        "guardrails.filter_rule_startup.too_many_static_filters_rejected",
+        "static filter rule counts above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.config_file_startup.oversized_config_rejected",
+        "oversized config files must fail startup before loading",
+    ),
+    (
+        "guardrails.config_file_startup.non_regular_config_rejected",
+        "non-regular config paths must fail startup before loading",
+    ),
+    (
+        "guardrails.negative_rate_startup.negative_http_rate_rejected",
+        "negative HTTP rate limits must fail startup",
+    ),
+    (
+        "guardrails.negative_rate_startup.negative_tcp_rate_rejected",
+        "negative TCP rate limits must fail startup",
+    ),
+    (
+        "guardrails.zero_capacity_startup.http_connection_cap_rejected",
+        "zero HTTP connection capacity must fail startup",
+    ),
+    (
+        "guardrails.zero_capacity_startup.tcp_connection_cap_rejected",
+        "zero TCP connection capacity must fail startup",
+    ),
+    (
+        "guardrails.zero_capacity_startup.http_metadata_cap_rejected",
+        "zero HTTP metadata capacity must fail startup",
+    ),
+    (
+        "guardrails.zero_capacity_startup.http_forwarded_cap_rejected",
+        "zero forwarded-header capacity must fail startup",
+    ),
+    (
+        "guardrails.zero_capacity_startup.http_upstream_connect_timeout_rejected",
+        "zero HTTP upstream connect timeout must fail startup",
+    ),
+    (
+        "guardrails.dynamic_state_ceiling_startup.all_dynamic_state_ceilings_rejected",
+        "dynamic state ceilings above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.filter_file_cap_rejected",
+        "filter file capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.filter_rule_cap_rejected",
+        "filter rule capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.adaptive_queue_cap_rejected",
+        "adaptive queue capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.adaptive_window_cap_rejected",
+        "adaptive window capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.adaptive_log_cap_rejected",
+        "adaptive log capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.control_capacity_startup.adaptive_flush_interval_rejected",
+        "adaptive flush interval above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_metadata_ceiling_startup.all_http_metadata_ceilings_rejected",
+        "HTTP metadata ceilings above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_stream_timeout_ceiling_startup.request_body_idle_timeout_rejected",
+        "request-body idle timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_stream_timeout_ceiling_startup.upstream_body_idle_timeout_rejected",
+        "upstream-body idle timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_stream_timeout_ceiling_startup.downstream_write_timeout_rejected",
+        "downstream write timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_stream_timeout_ceiling_startup.request_body_min_rate_grace_rejected",
+        "request-body minimum-rate grace above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.http_stream_timeout_ceiling_startup.upstream_body_min_rate_grace_rejected",
+        "upstream-body minimum-rate grace above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.body_size_ceiling_startup.max_body_bytes_rejected",
+        "request body size above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.body_size_ceiling_startup.max_upstream_body_bytes_rejected",
+        "upstream body size above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.min_rate_ceiling_startup.all_min_rate_ceilings_rejected",
+        "minimum-rate ceilings above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.min_rate_ceiling_startup.http_request_body_min_rate_rejected",
+        "HTTP request-body minimum-rate ceiling above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.min_rate_ceiling_startup.http_upstream_body_min_rate_rejected",
+        "HTTP upstream-body minimum-rate ceiling above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.min_rate_ceiling_startup.tcp_downstream_min_rate_rejected",
+        "TCP downstream minimum-rate ceiling above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.min_rate_ceiling_startup.tcp_upstream_min_rate_rejected",
+        "TCP upstream minimum-rate ceiling above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connect_timeout_ceiling_startup.http_upstream_connect_timeout_rejected",
+        "HTTP upstream connect timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connect_timeout_ceiling_startup.tcp_connect_timeout_rejected",
+        "TCP connect timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_timeout_ceiling_startup.upstream_timeout_rejected",
+        "upstream response timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_timeout_ceiling_startup.startup_rejected",
+        "upstream response timeout ceiling probe must fail startup for unsupported values",
+    ),
+    (
+        "guardrails.upstream_failure_circuit_ceiling_startup.upstream_failure_threshold_rejected",
+        "upstream failure threshold above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_failure_circuit_ceiling_startup.upstream_failure_open_ms_rejected",
+        "upstream failure open interval above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_idle_pool_ceiling_startup.upstream_pool_max_idle_per_host_rejected",
+        "upstream idle pool size above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.upstream_idle_pool_ceiling_startup.upstream_pool_idle_timeout_rejected",
+        "upstream idle pool timeout above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connection_duration_ceiling_startup.http_max_connection_duration_rejected",
+        "HTTP maximum connection duration above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connection_duration_ceiling_startup.tcp_max_connection_duration_rejected",
+        "TCP maximum connection duration above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connection_request_count_ceiling_startup.max_requests_per_connection_rejected",
+        "maximum requests per connection above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.connection_request_count_ceiling_startup.startup_rejected",
+        "connection request-count ceiling probe must fail startup for unsupported values",
+    ),
+    (
+        "guardrails.event_log_queue_capacity_ceiling_startup.event_log_queue_capacity_rejected",
+        "event-log queue capacity above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.event_log_queue_capacity_ceiling_startup.startup_rejected",
+        "event-log queue capacity ceiling probe must fail startup for unsupported values",
+    ),
+    (
+        "guardrails.event_log_backup_count_ceiling_startup.event_log_backup_count_rejected",
+        "event-log backup count above supported bounds must fail startup",
+    ),
+    (
+        "guardrails.event_log_backup_count_ceiling_startup.startup_rejected",
+        "event-log backup count ceiling probe must fail startup for unsupported values",
+    ),
+    (
+        "guardrails.runtime_nofile.runtime_nofile_observed",
+        "runtime NOFILE limit must be observed in the benchmarked process",
+    ),
+    (
+        "guardrails.runtime_nofile_capacity.capacity_rejected",
+        "startup must reject configured socket capacity above runtime NOFILE capacity",
     ),
     (
         "guardrails.edge_template_port_coverage.systemd_unit_allowed",
@@ -464,16 +1024,204 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "edge template validation must reject missing public listener ports",
     ),
     (
+        "guardrails.edge_template_port_coverage.loopback_missing_port_allowed",
+        "edge template validation must allow loopback-only listeners to be absent from public edge rules",
+    ),
+    (
         "guardrails.edge_template_port_coverage.weak_systemd_sandbox_rejected",
         "systemd validation must reject weak sandboxing",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_connlimit_set_size_rejected",
+        "edge template validation must reject connlimit sets without explicit size bounds",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_udp_drop_rejected",
+        "edge template validation must reject missing UDP drop backstops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.generic_tcp_backstops_allowed",
+        "edge template validation must allow generic TCP backstops with explicit transport matching",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_generic_tcp_l4proto_rejected",
+        "edge template validation must reject generic TCP backstops missing meta l4proto",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.ipv6_prefix_backstops_allowed",
+        "edge template validation must allow IPv6 prefix SYN and connlimit backstops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_ipv6_prefix_syn_backstop_rejected",
+        "edge template validation must reject missing IPv6 prefix SYN backstops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_ipv6_prefix_connlimit_rejected",
+        "edge template validation must reject missing IPv6 prefix connlimit backstops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.ipv6_extension_safe_protocols_allowed",
+        "edge template validation must allow IPv6 extension-header-safe protocol matches",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_ipv6_syn_l4proto_rejected",
+        "edge template validation must reject IPv6 SYN rules missing meta l4proto",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_ipv6_connlimit_l4proto_rejected",
+        "edge template validation must reject IPv6 connlimit rules missing meta l4proto",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_ipv6_icmp_l4proto_rejected",
+        "edge template validation must reject IPv6 ICMP rules missing transport-safe matching",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.icmpv4_control_exemption_allowed",
+        "edge template validation must allow required ICMPv4 control traffic before drops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_icmpv4_control_exemption_rejected",
+        "edge template validation must reject missing ICMPv4 control exemptions",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.late_icmpv4_control_exemption_rejected",
+        "edge template validation must reject ICMPv4 control exemptions placed after drops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.icmpv6_control_exemption_allowed",
+        "edge template validation must allow required ICMPv6 control traffic before drops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_icmpv6_control_exemption_rejected",
+        "edge template validation must reject missing ICMPv6 control exemptions",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.late_icmpv6_control_exemption_rejected",
+        "edge template validation must reject ICMPv6 control exemptions placed after drops",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.syn_rate_set_bounds_allowed",
+        "edge template validation must allow bounded SYN-rate sets",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_syn_rate_set_size_rejected",
+        "edge template validation must reject SYN-rate sets without explicit size bounds",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_syn_rate_set_timeout_rejected",
+        "edge template validation must reject SYN-rate sets without explicit timeout bounds",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.fragment_sysctls_allowed",
+        "host sysctl validation must allow bounded fragment reassembly settings",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.missing_fragment_sysctls_rejected",
+        "host sysctl validation must reject missing fragment reassembly guardrails",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.excessive_fragment_time_rejected",
+        "host sysctl validation must reject excessive fragment retention time",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.invalid_fragment_thresholds_rejected",
+        "host sysctl validation must reject invalid fragment memory thresholds",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.insufficient_systemd_nofile_rejected",
+        "systemd validation must reject LimitNOFILE values below shipped guardrail minimums",
+    ),
+    (
+        "guardrails.edge_template_port_coverage.excessive_systemd_capabilities_rejected",
+        "systemd validation must reject excessive service capabilities",
+    ),
+    (
+        "guardrails.admin_prefix_startup.query_prefix_rejected",
+        "admin prefix config must reject prefixes containing query strings",
+    ),
+    (
+        "guardrails.admin_prefix_startup.relative_prefix_rejected",
+        "admin prefix config must reject relative prefixes",
+    ),
+    (
+        "guardrails.admin_prefix_startup.root_prefix_rejected",
+        "admin prefix config must reject root prefixes",
+    ),
+    (
+        "guardrails.admin_token_startup.blank_token_rejected",
+        "admin metrics token config must reject blank tokens",
+    ),
+    (
+        "guardrails.admin_token_startup.control_token_rejected",
+        "admin metrics token config must reject control characters",
+    ),
+    (
+        "guardrails.admin_token_startup.empty_token_rejected",
+        "admin metrics token config must reject empty tokens",
     ),
     (
         "guardrails.admin_token_startup.long_token_rejected",
         "admin metrics tokens above the bounded comparison budget must fail startup",
     ),
     (
+        "guardrails.admin_token_startup.padded_token_rejected",
+        "admin metrics token config must reject tokens with padding whitespace",
+    ),
+    (
         "guardrails.admin_control_plane.duplicate_metrics_token_rejected",
         "metrics auth must fail closed when duplicate admin token headers are present",
+    ),
+    (
+        "guardrails.admin_control_plane.admin_responses_not_stored",
+        "admin control-plane responses must be marked no-store",
+    ),
+    (
+        "guardrails.admin_control_plane.admin_responses_close_connection",
+        "admin control-plane responses must close connections by default",
+    ),
+    (
+        "guardrails.admin_control_plane.body_bearing_admin_responses_not_stored",
+        "body-bearing admin control-plane responses must be marked no-store",
+    ),
+    (
+        "guardrails.admin_control_plane.body_bearing_health_closes_connection",
+        "body-bearing health checks must close before keep-alive reuse",
+    ),
+    (
+        "guardrails.admin_control_plane.body_bearing_metrics_without_token_closes_connection",
+        "body-bearing unauthenticated metrics checks must close before keep-alive reuse",
+    ),
+    (
+        "guardrails.admin_control_plane.body_bearing_metrics_with_token_closes_connection",
+        "body-bearing authenticated metrics checks must close before keep-alive reuse",
+    ),
+    (
+        "guardrails.admin_rate_limit.retry_after_header_matches",
+        "admin endpoint per-IP rate-limit responses must carry Retry-After",
+    ),
+    (
+        "guardrails.admin_rate_limit.cache_control_header_matches",
+        "admin endpoint per-IP rate-limit responses must be marked no-store",
+    ),
+    (
+        "guardrails.admin_signature_rate.admin_health_signature_limited",
+        "admin health requests must be covered by request-signature limiting",
+    ),
+    (
+        "guardrails.admin_signature_rate.retry_after_header_matches",
+        "admin signature-rate responses must carry Retry-After",
+    ),
+    (
+        "guardrails.admin_signature_rate.cache_control_header_matches",
+        "admin signature-rate responses must be marked no-store",
+    ),
+    (
+        "guardrails.admin_signature_rate.signature_metric_matches",
+        "admin signature-rate probe must increment the dedicated signature metric",
+    ),
+    (
+        "guardrails.admin_signature_rate.rate_limited_metric_includes_signature_limit",
+        "aggregate rate-limit metrics must include admin signature limiting",
     ),
 )
 
@@ -498,6 +1246,16 @@ REQUIRED_VALUE_CHECKS: tuple[tuple[str, Any, str], ...] = (
         "guardrails.tcp_min_rate.default_slow_drip.third_echo_bytes",
         0,
         "default TCP minimum-rate guard must keep the third slow-drip byte from echoing",
+    ),
+    (
+        "guardrails.admin_rate_limit.statuses",
+        [200, 429],
+        "admin health per-IP rate-limit probe must allow the first request and limit the second",
+    ),
+    (
+        "guardrails.admin_signature_rate.statuses",
+        [200, 200, 429, 429],
+        "admin health signature-rate probe must allow the burst then limit repeated signatures",
     ),
 )
 

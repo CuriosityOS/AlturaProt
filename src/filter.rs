@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     collections::{HashMap, HashSet},
     io,
     net::IpAddr,
@@ -26,6 +27,9 @@ pub const DEFAULT_FILTER_MAX_HEADERS: usize = 16;
 pub const DEFAULT_FILTER_MAX_MATCH_VALUE_BYTES: usize = 1024;
 pub const DEFAULT_FILTER_MAX_ACTION_BODY_BYTES: usize = 1024;
 pub const FILTER_TTL_MAX_SECONDS: u64 = 24 * 60 * 60;
+const REQUEST_SIGNATURE_HASH_BYTES: usize = 16;
+const CURRENT_SIGNATURE_HEX_CHARS: usize = REQUEST_SIGNATURE_HASH_BYTES * 2;
+const LEGACY_SIGNATURE_HEX_CHARS: usize = 16;
 
 #[derive(Debug, Clone)]
 pub struct RequestContext<'a> {
@@ -39,11 +43,9 @@ pub struct RequestContext<'a> {
 
 impl<'a> RequestContext<'a> {
     pub fn user_agent(&self) -> String {
-        self.headers
-            .get(http::header::USER_AGENT)
-            .and_then(|v| v.to_str().ok())
-            .unwrap_or("")
-            .to_string()
+        combined_header_value(self.headers, &http::header::USER_AGENT)
+            .unwrap_or(Cow::Borrowed(""))
+            .into_owned()
     }
 }
 
@@ -135,29 +137,46 @@ pub fn validate_filter_rules(
         )
         .into());
     }
-    let mut seen_ids = HashSet::new();
-    for (idx, rule) in rules.iter().enumerate() {
-        if !seen_ids.insert(rule.id.as_str()) {
-            return Err(format!("{source}[{idx}].id duplicates rule id {:?}", rule.id).into());
-        }
-    }
+    validate_unique_filter_rule_ids(source, rules)?;
     for (idx, rule) in rules.iter().enumerate() {
         validate_filter_rule(&format!("{source}[{idx}]"), rule)?;
     }
     Ok(())
 }
 
+fn validate_unique_filter_rule_ids(source: &str, rules: &[FilterRule]) -> Result<(), BoxError> {
+    let mut seen_ids = HashSet::new();
+    for (idx, rule) in rules.iter().enumerate() {
+        if !seen_ids.insert(rule.id.as_str()) {
+            return Err(format!("{source}[{idx}].id duplicates rule id {:?}", rule.id).into());
+        }
+    }
+    Ok(())
+}
+
 fn validate_filter_rule(path: &str, rule: &FilterRule) -> Result<(), BoxError> {
-    validate_non_empty_bounded_string(
-        &format!("{path}.id"),
-        &rule.id,
-        DEFAULT_FILTER_MAX_RULE_ID_BYTES,
-    )?;
+    validate_filter_rule_id(&format!("{path}.id"), &rule.id)?;
     if let Some(ttl_seconds) = rule.ttl_seconds {
         validate_filter_ttl(&format!("{path}.ttl_seconds"), ttl_seconds)?;
     }
     validate_filter_condition(path, &rule.condition)?;
     validate_filter_action(path, &rule.action)?;
+    Ok(())
+}
+
+fn validate_filter_rule_id(path: &str, value: &str) -> Result<(), BoxError> {
+    validate_non_empty_bounded_string(path, value, DEFAULT_FILTER_MAX_RULE_ID_BYTES)?;
+    if value
+        .bytes()
+        .any(|byte| !byte.is_ascii_graphic() || byte == b',')
+    {
+        return Err(format!(
+            "{path} must contain only visible ASCII identifier bytes without commas"
+        )
+        .into());
+    }
+    HeaderValue::from_str(value)
+        .map_err(|err| format!("{path} must be safe to emit in x-altura-filter: {err}"))?;
     Ok(())
 }
 
@@ -206,7 +225,6 @@ fn validate_filter_condition(path: &str, condition: &FilterCondition) -> Result<
             "user_agent_contains",
             condition.user_agent_contains.as_ref(),
         ),
-        ("signature", condition.signature.as_ref()),
     ] {
         if let Some(value) = value {
             validate_non_empty_bounded_string(
@@ -215,6 +233,9 @@ fn validate_filter_condition(path: &str, condition: &FilterCondition) -> Result<
                 DEFAULT_FILTER_MAX_MATCH_VALUE_BYTES,
             )?;
         }
+    }
+    if let Some(signature) = &condition.signature {
+        validate_signature_matcher(&format!("{condition_path}.signature"), signature)?;
     }
     if condition.path_prefix.as_deref() == Some("/") {
         return Err(format!("{condition_path}.path_prefix must be narrower than /").into());
@@ -236,6 +257,23 @@ fn validate_filter_condition(path: &str, condition: &FilterCondition) -> Result<
             &header.contains,
             DEFAULT_FILTER_MAX_MATCH_VALUE_BYTES,
         )?;
+    }
+    Ok(())
+}
+
+fn validate_signature_matcher(path: &str, value: &str) -> Result<(), BoxError> {
+    validate_non_empty_bounded_string(path, value, CURRENT_SIGNATURE_HEX_CHARS)?;
+    if value.len() != CURRENT_SIGNATURE_HEX_CHARS && value.len() != LEGACY_SIGNATURE_HEX_CHARS {
+        return Err(format!(
+            "{path} must be a {CURRENT_SIGNATURE_HEX_CHARS}-hex current signature or {LEGACY_SIGNATURE_HEX_CHARS}-hex legacy signature"
+        )
+        .into());
+    }
+    if !value
+        .bytes()
+        .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+    {
+        return Err(format!("{path} must contain only lowercase hexadecimal characters").into());
     }
     Ok(())
 }
@@ -357,6 +395,7 @@ struct CompiledHeaderContains {
 struct FilterEvalScratch {
     path_shape: Option<String>,
     short_token_parent_shape: Option<Option<String>>,
+    legacy_signature: Option<String>,
 }
 
 impl FilterEvalScratch {
@@ -374,6 +413,14 @@ impl FilterEvalScratch {
             .short_token_parent_shape
             .get_or_insert_with(|| short_token_parent_shape(path).map(|(shape, _)| shape));
         parent.as_deref() == Some(expected)
+    }
+
+    fn legacy_signature(&mut self, ctx: &RequestContext<'_>) -> &str {
+        self.legacy_signature
+            .get_or_insert_with(|| {
+                legacy_request_signature(ctx.method, ctx.path, ctx.query, ctx.headers)
+            })
+            .as_str()
     }
 }
 
@@ -431,12 +478,22 @@ impl FilterEngine {
         if let Some(file) = self.load_runtime_filter_file().await? {
             loaded.extend(file.filters);
         }
+        validate_unique_filter_rule_ids("merged filters", &loaded)?;
+        for (idx, rule) in loaded.iter().enumerate() {
+            validate_filter_rule(&format!("merged filters[{idx}]"), rule)?;
+        }
         loaded.sort_by(|a, b| b.priority.cmp(&a.priority).then_with(|| a.id.cmp(&b.id)));
 
         let now_ms = unix_time_ms();
+        let loaded_rule_ids = loaded
+            .iter()
+            .map(|rule| rule.id.as_str())
+            .collect::<HashSet<_>>();
         let mut activation_deadlines =
             self.lock_activation_deadlines("reload activation state preservation");
-        activation_deadlines.retain(|_, active_until_ms| *active_until_ms > now_ms);
+        activation_deadlines.retain(|rule_id, active_until_ms| {
+            *active_until_ms > now_ms && loaded_rule_ids.contains(rule_id.as_str())
+        });
         let mut runtime_rules = Vec::with_capacity(loaded.len());
         for rule in loaded {
             let active_until_ms = activation_deadlines
@@ -666,6 +723,19 @@ pub fn request_signature(
     headers: &HeaderMap<HeaderValue>,
 ) -> String {
     let basis = signature_basis(method, path, query, headers);
+    hex_prefix(
+        blake3::hash(basis.as_bytes()).as_bytes(),
+        REQUEST_SIGNATURE_HASH_BYTES,
+    )
+}
+
+pub fn legacy_request_signature(
+    method: &str,
+    path: &str,
+    query: Option<&str>,
+    headers: &HeaderMap<HeaderValue>,
+) -> String {
+    let basis = signature_basis(method, path, query, headers);
     format!("{:016x}", fnv1a64(basis.as_bytes()))
 }
 
@@ -675,15 +745,11 @@ pub fn signature_basis(
     query: Option<&str>,
     headers: &HeaderMap<HeaderValue>,
 ) -> String {
-    let ua = headers
-        .get(http::header::USER_AGENT)
-        .and_then(|v| v.to_str().ok())
-        .map(user_agent_family)
+    let ua = combined_header_value(headers, &http::header::USER_AGENT)
+        .map(|value| user_agent_family(value.as_ref()))
         .unwrap_or_else(|| "empty".to_string());
-    let accept = headers
-        .get(http::header::ACCEPT)
-        .and_then(|v| v.to_str().ok())
-        .map(header_class)
+    let accept = combined_header_value(headers, &http::header::ACCEPT)
+        .map(|value| header_class(value.as_ref()))
         .unwrap_or_else(|| "empty".to_string());
     format!(
         "{}|{}|{}|{}|{}",
@@ -715,7 +781,7 @@ fn rule_matches(
         return false;
     }
     if let Some(signature) = &rule.condition.signature {
-        if signature != &ctx.signature {
+        if signature != &ctx.signature && signature != scratch.legacy_signature(ctx) {
             return false;
         }
     }
@@ -745,26 +811,61 @@ fn rule_matches(
         }
     }
     if let Some(needle) = &compiled.user_agent_contains {
-        let ua = ctx
-            .headers
-            .get(http::header::USER_AGENT)
-            .and_then(|v| v.to_str().ok())
-            .unwrap_or("");
-        if !ascii_contains_ignore_case(ua.as_bytes(), needle) {
+        if !header_values_contain_ignore_case(ctx.headers, &http::header::USER_AGENT, needle) {
             return false;
         }
     }
     for header in &compiled.headers {
-        let value = ctx
-            .headers
-            .get(&header.name)
-            .and_then(|v| v.to_str().ok())
-            .unwrap_or("");
-        if !ascii_contains_ignore_case(value.as_bytes(), &header.contains) {
+        if !header_values_contain_ignore_case(ctx.headers, &header.name, &header.contains) {
             return false;
         }
     }
     true
+}
+
+fn combined_header_value<'a>(
+    headers: &'a HeaderMap<HeaderValue>,
+    name: &HeaderName,
+) -> Option<Cow<'a, str>> {
+    let mut values = headers
+        .get_all(name)
+        .iter()
+        .filter_map(|value| value.to_str().ok());
+    let first = values.next()?;
+    let Some(second) = values.next() else {
+        return Some(Cow::Borrowed(first));
+    };
+    let mut combined = String::with_capacity(first.len() + second.len() + 2);
+    combined.push_str(first);
+    combined.push_str(", ");
+    combined.push_str(second);
+    for value in values {
+        combined.push_str(", ");
+        combined.push_str(value);
+    }
+    Some(Cow::Owned(combined))
+}
+
+fn header_values_contain_ignore_case(
+    headers: &HeaderMap<HeaderValue>,
+    name: &HeaderName,
+    needle: &[u8],
+) -> bool {
+    headers
+        .get_all(name)
+        .iter()
+        .filter_map(|value| value.to_str().ok())
+        .any(|value| ascii_contains_ignore_case(value.as_bytes(), needle))
+}
+
+fn hex_prefix(bytes: &[u8], prefix_len: usize) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut out = String::with_capacity(prefix_len * 2);
+    for byte in bytes.iter().take(prefix_len) {
+        out.push(HEX[(byte >> 4) as usize] as char);
+        out.push(HEX[(byte & 0x0f) as usize] as char);
+    }
+    out
 }
 
 fn ascii_contains_ignore_case(haystack: &[u8], needle: &[u8]) -> bool {
@@ -1129,6 +1230,20 @@ mod tests {
     }
 
     #[test]
+    fn filter_rule_validation_rejects_ids_that_are_unsafe_response_headers() {
+        for id in ["bad\nid", "bad\rid", "bad\u{7f}id", "bad-☃", "bad,id"] {
+            let rule = path_rule(id, "/blocked");
+
+            let err = validate_filter_rules("filters.static_rules", &[rule], 4)
+                .unwrap_err()
+                .to_string();
+
+            assert!(err.contains("filters.static_rules[0].id"), "{err}");
+            assert!(err.contains("visible ASCII identifier"), "{err}");
+        }
+    }
+
+    #[test]
     fn filter_rule_validation_rejects_root_path_prefix() {
         let mut rule = path_rule("catchall-prefix", "/blocked");
         rule.condition.path_exact = None;
@@ -1143,6 +1258,44 @@ mod tests {
             "{err}"
         );
         assert!(err.contains("narrower than /"), "{err}");
+    }
+
+    #[test]
+    fn filter_rule_validation_accepts_current_and_legacy_signature_formats() {
+        let mut current = path_rule("current-signature", "/unused");
+        current.condition.path_exact = None;
+        current.condition.signature = Some("0123456789abcdef0123456789abcdef".to_string());
+        let mut legacy = path_rule("legacy-signature", "/unused");
+        legacy.condition.path_exact = None;
+        legacy.condition.signature = Some("0123456789abcdef".to_string());
+
+        validate_filter_rules("filters.static_rules", &[current, legacy], 4).unwrap();
+    }
+
+    #[test]
+    fn filter_rule_validation_rejects_malformed_signature_formats() {
+        for (signature, expected) in [
+            (
+                "abc",
+                "must be a 32-hex current signature or 16-hex legacy signature",
+            ),
+            ("0123456789abcdef0123456789abcdeg", "lowercase hexadecimal"),
+            ("0123456789ABCDEF", "lowercase hexadecimal"),
+        ] {
+            let mut rule = path_rule("bad-signature", "/unused");
+            rule.condition.path_exact = None;
+            rule.condition.signature = Some(signature.to_string());
+
+            let err = validate_filter_rules("filters.static_rules", &[rule], 4)
+                .unwrap_err()
+                .to_string();
+
+            assert!(
+                err.contains("filters.static_rules[0].condition.signature"),
+                "{err}"
+            );
+            assert!(err.contains(expected), "{err}");
+        }
     }
 
     #[tokio::test]
@@ -1175,6 +1328,44 @@ mod tests {
             signature: "sig".to_string(),
         };
         assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "test");
+    }
+
+    #[tokio::test]
+    async fn filter_signature_conditions_accept_legacy_fnv_signatures() {
+        let headers = HeaderMap::new();
+        let legacy_signature =
+            legacy_request_signature("GET", "/api/users/123", Some("cachebust=1"), &headers);
+        let engine = FilterEngine::new(
+            vec![FilterRule {
+                id: "legacy-signature".to_string(),
+                enabled: true,
+                adaptive: false,
+                priority: 1,
+                ttl_seconds: None,
+                expires_at_unix_ms: None,
+                condition: FilterCondition {
+                    signature: Some(legacy_signature),
+                    ..Default::default()
+                },
+                action: FilterAction::default(),
+            }],
+            PathBuf::from("/tmp/altura-prot-nonexistent-legacy-signature-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/api/users/123",
+            query: Some("cachebust=1"),
+            headers: &headers,
+            signature: request_signature("GET", "/api/users/123", Some("cachebust=1"), &headers),
+        };
+
+        assert_eq!(
+            engine.evaluate(&ctx).map(|decision| decision.rule_id),
+            Some("legacy-signature".to_string())
+        );
     }
 
     #[test]
@@ -1233,6 +1424,63 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn filter_matches_duplicate_user_agent_and_header_values() {
+        let engine = FilterEngine::new(
+            vec![FilterRule {
+                id: "duplicate-header-values".to_string(),
+                enabled: true,
+                adaptive: false,
+                priority: 1,
+                ttl_seconds: None,
+                expires_at_unix_ms: None,
+                condition: FilterCondition {
+                    user_agent_contains: Some("floodbot".to_string()),
+                    headers: vec![HeaderContains {
+                        name: "X-Altura-Signal".to_string(),
+                        contains: "burst".to_string(),
+                    }],
+                    ..Default::default()
+                },
+                action: FilterAction::default(),
+            }],
+            PathBuf::from("/tmp/altura-prot-nonexistent-duplicate-header-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let mut headers = HeaderMap::new();
+        headers.append(
+            http::header::USER_AGENT,
+            HeaderValue::from_static("legit browser"),
+        );
+        headers.append(
+            http::header::USER_AGENT,
+            HeaderValue::from_static("floodbot/1.0"),
+        );
+        headers.append(
+            HeaderName::from_static("x-altura-signal"),
+            HeaderValue::from_static("warmup"),
+        );
+        headers.append(
+            HeaderName::from_static("x-altura-signal"),
+            HeaderValue::from_static("coordinated burst"),
+        );
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+
+        assert_eq!(
+            engine.evaluate(&ctx).map(|decision| decision.rule_id),
+            Some("duplicate-header-values".to_string())
+        );
+        assert_eq!(ctx.user_agent(), "legit browser, floodbot/1.0");
+    }
+
+    #[tokio::test]
     async fn filter_with_invalid_header_condition_never_matches() {
         let engine = FilterEngine::new(
             vec![FilterRule {
@@ -1270,6 +1518,7 @@ mod tests {
 
     #[tokio::test]
     async fn adaptive_filter_only_matches_when_active() {
+        let signature = "0123456789abcdef0123456789abcdef";
         let engine = FilterEngine::new(
             vec![FilterRule {
                 id: "adaptive".to_string(),
@@ -1279,7 +1528,7 @@ mod tests {
                 ttl_seconds: Some(30),
                 expires_at_unix_ms: None,
                 condition: FilterCondition {
-                    signature: Some("abc".to_string()),
+                    signature: Some(signature.to_string()),
                     ..Default::default()
                 },
                 action: FilterAction::default(),
@@ -1295,10 +1544,10 @@ mod tests {
             path: "/",
             query: None,
             headers: &headers,
-            signature: "abc".to_string(),
+            signature: signature.to_string(),
         };
         assert!(engine.evaluate(&ctx).is_none());
-        assert!(engine.activate_signature("abc", None));
+        assert!(engine.activate_signature(signature, None));
         assert!(engine.evaluate(&ctx).is_some());
     }
 
@@ -1315,7 +1564,7 @@ mod tests {
                     ttl_seconds: Some(30),
                     expires_at_unix_ms: Some(expired_at),
                     condition: FilterCondition {
-                        signature: Some("expired".to_string()),
+                        signature: Some("11111111111111111111111111111111".to_string()),
                         ..Default::default()
                     },
                     action: FilterAction::default(),
@@ -1345,10 +1594,10 @@ mod tests {
             path: "/api/abcdefghij",
             query: None,
             headers: &headers,
-            signature: "expired".to_string(),
+            signature: "11111111111111111111111111111111".to_string(),
         };
 
-        assert!(!engine.activate_signature("expired", None));
+        assert!(!engine.activate_signature("11111111111111111111111111111111", None));
         assert!(!engine.activate_path_shape("/api/:token", None));
         assert_eq!(engine.active_rule_count(), 0);
         assert!(engine.evaluate(&ctx).is_none());
@@ -1356,6 +1605,7 @@ mod tests {
 
     #[tokio::test]
     async fn active_rule_count_matches_evaluation_gates() {
+        let adaptive_signature = "22222222222222222222222222222222";
         let mut expired_static = path_rule("expired-static", "/expired");
         expired_static.expires_at_unix_ms = Some(unix_time_ms().saturating_sub(1));
         let mut disabled_static = path_rule("disabled-static", "/disabled");
@@ -1373,7 +1623,7 @@ mod tests {
                     ttl_seconds: Some(30),
                     expires_at_unix_ms: None,
                     condition: FilterCondition {
-                        signature: Some("adaptive".to_string()),
+                        signature: Some(adaptive_signature.to_string()),
                         ..Default::default()
                     },
                     action: FilterAction::default(),
@@ -1385,12 +1635,13 @@ mod tests {
         .await;
 
         assert_eq!(engine.active_rule_count(), 1);
-        assert!(engine.activate_signature("adaptive", None));
+        assert!(engine.activate_signature(adaptive_signature, None));
         assert_eq!(engine.active_rule_count(), 2);
     }
 
     #[tokio::test]
     async fn adaptive_activation_does_not_wait_for_rule_snapshot_readers() {
+        let signature = "33333333333333333333333333333333";
         let engine = FilterEngine::new(
             vec![FilterRule {
                 id: "adaptive-nonblocking".to_string(),
@@ -1400,7 +1651,7 @@ mod tests {
                 ttl_seconds: Some(30),
                 expires_at_unix_ms: None,
                 condition: FilterCondition {
-                    signature: Some("abc".to_string()),
+                    signature: Some(signature.to_string()),
                     ..Default::default()
                 },
                 action: FilterAction::default(),
@@ -1414,7 +1665,7 @@ mod tests {
         let engine_for_thread = Arc::clone(&engine);
 
         std::thread::spawn(move || {
-            tx.send(engine_for_thread.activate_signature("abc", None))
+            tx.send(engine_for_thread.activate_signature(signature, None))
                 .unwrap();
         });
 
@@ -1428,7 +1679,7 @@ mod tests {
             path: "/",
             query: None,
             headers: &headers,
-            signature: "abc".to_string(),
+            signature: signature.to_string(),
         };
         assert_eq!(
             engine.evaluate(&ctx).map(|decision| decision.rule_id),
@@ -1438,16 +1689,17 @@ mod tests {
 
     #[tokio::test]
     async fn adaptive_activation_clamps_unvalidated_ttl_before_instant_math() {
+        let signature = "44444444444444444444444444444444";
         let engine = FilterEngine::new(
             vec![FilterRule {
                 id: "adaptive-huge-ttl".to_string(),
                 enabled: true,
                 adaptive: true,
                 priority: 10,
-                ttl_seconds: Some(u64::MAX),
+                ttl_seconds: None,
                 expires_at_unix_ms: None,
                 condition: FilterCondition {
-                    signature: Some("huge".to_string()),
+                    signature: Some(signature.to_string()),
                     ..Default::default()
                 },
                 action: FilterAction::default(),
@@ -1463,10 +1715,10 @@ mod tests {
             path: "/",
             query: None,
             headers: &headers,
-            signature: "huge".to_string(),
+            signature: signature.to_string(),
         };
 
-        assert!(engine.activate_signature("huge", Some(Duration::from_secs(u64::MAX))));
+        assert!(engine.activate_signature(signature, Some(Duration::from_secs(u64::MAX))));
         assert!(engine.evaluate(&ctx).is_some());
     }
 
@@ -1502,6 +1754,47 @@ mod tests {
 
         assert!(err.contains("[0].ttl_seconds"), "{err}");
         assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "good");
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[tokio::test]
+    async fn runtime_filter_reload_prunes_activation_deadlines_for_removed_rules() {
+        let path = temp_runtime_filter_path("activation-prune-runtime-filters");
+        let first_signature = "11111111111111111111111111111111";
+        let second_signature = "22222222222222222222222222222222";
+        let mut first = path_rule("first", "/first");
+        first.adaptive = true;
+        first.ttl_seconds = Some(60);
+        first.condition.signature = Some(first_signature.to_string());
+        std::fs::write(&path, runtime_filter_json(&[first])).unwrap();
+        let engine = FilterEngine::new_with_limits(
+            Vec::new(),
+            path.clone(),
+            Duration::from_secs(60),
+            4096,
+            4,
+        )
+        .await;
+
+        assert!(engine.activate_signature(first_signature, None));
+        {
+            let activation_deadlines =
+                engine.lock_activation_deadlines("test activation deadline inserted");
+            assert!(activation_deadlines.contains_key("first"));
+        }
+
+        let mut second = path_rule("second", "/second");
+        second.adaptive = true;
+        second.ttl_seconds = Some(60);
+        second.condition.signature = Some(second_signature.to_string());
+        std::fs::write(&path, runtime_filter_json(&[second])).unwrap();
+
+        engine.reload().await.unwrap();
+
+        let activation_deadlines =
+            engine.lock_activation_deadlines("test activation deadline pruning");
+        assert!(!activation_deadlines.contains_key("first"));
+        assert!(activation_deadlines.is_empty());
         let _ = std::fs::remove_file(path);
     }
 
@@ -1614,6 +1907,130 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn runtime_filter_reload_rejects_unsafe_rule_ids_and_preserves_last_good_rules() {
+        let path = temp_runtime_filter_path("unsafe-id-runtime-filters");
+        std::fs::write(&path, runtime_filter_json(&[path_rule("good", "/blocked")])).unwrap();
+        let engine = FilterEngine::new_with_limits(
+            Vec::new(),
+            path.clone(),
+            Duration::from_secs(30),
+            4096,
+            4,
+        )
+        .await;
+
+        let headers = HeaderMap::new();
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/blocked",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "good");
+
+        std::fs::write(&path, runtime_filter_json(&[path_rule("bad\nid", "/bad")])).unwrap();
+
+        let err = engine.reload().await.unwrap_err().to_string();
+
+        assert!(err.contains("[0].id"), "{err}");
+        assert!(err.contains("visible ASCII identifier"), "{err}");
+        assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "good");
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[tokio::test]
+    async fn filter_reload_rejects_invalid_static_rules_before_publish() {
+        let path = temp_runtime_filter_path("invalid-static-filters");
+        let _ = std::fs::remove_file(&path);
+        let mut invalid = path_rule("bad-static", "/blocked");
+        invalid.action.status = 200;
+        let engine = FilterEngine::new_with_limits(
+            vec![invalid],
+            path.clone(),
+            Duration::from_secs(30),
+            4096,
+            4,
+        )
+        .await;
+
+        let err = engine.reload().await.unwrap_err().to_string();
+
+        assert!(err.contains("merged filters[0].action.status"), "{err}");
+        let headers = HeaderMap::new();
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/blocked",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        assert!(engine.evaluate(&ctx).is_none());
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[tokio::test]
+    async fn runtime_filter_reload_rejects_static_runtime_duplicate_ids_and_preserves_rules() {
+        let path = temp_runtime_filter_path("duplicate-merged-runtime-filters");
+        let static_rule = path_rule("shared-id", "/static-blocked");
+        std::fs::write(
+            &path,
+            runtime_filter_json(&[path_rule("runtime-good", "/runtime-blocked")]),
+        )
+        .unwrap();
+        let engine = FilterEngine::new_with_limits(
+            vec![static_rule],
+            path.clone(),
+            Duration::from_secs(30),
+            4096,
+            4,
+        )
+        .await;
+
+        let headers = HeaderMap::new();
+        let static_ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/static-blocked",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        let runtime_ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/runtime-blocked",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        assert_eq!(engine.evaluate(&static_ctx).unwrap().rule_id, "shared-id");
+        assert_eq!(
+            engine.evaluate(&runtime_ctx).unwrap().rule_id,
+            "runtime-good"
+        );
+
+        std::fs::write(
+            &path,
+            runtime_filter_json(&[path_rule("shared-id", "/runtime-shadow")]),
+        )
+        .unwrap();
+
+        let err = engine.reload().await.unwrap_err().to_string();
+
+        assert!(err.contains("merged filters[1].id"), "{err}");
+        assert!(err.contains("duplicates rule id \"shared-id\""), "{err}");
+        assert_eq!(engine.evaluate(&static_ctx).unwrap().rule_id, "shared-id");
+        assert_eq!(
+            engine.evaluate(&runtime_ctx).unwrap().rule_id,
+            "runtime-good"
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[tokio::test]
     async fn runtime_filter_reload_rejects_non_regular_files() {
         let path = std::env::temp_dir().join(format!(
             "altura-prot-runtime-filter-dir-{}",
@@ -1632,6 +2049,23 @@ mod tests {
 
         assert!(engine.reload().await.is_err());
         let _ = std::fs::remove_dir_all(path);
+    }
+
+    #[test]
+    fn request_signature_uses_blake3_fingerprint_with_legacy_helper() {
+        let headers = HeaderMap::new();
+        let first = request_signature("GET", "/users/123/profile", None, &headers);
+        let second = request_signature("GET", "/users/456/profile", None, &headers);
+        let legacy = legacy_request_signature("GET", "/users/123/profile", None, &headers);
+
+        assert_eq!(first, second);
+        assert_eq!(first, "3b24cf3645105622c3fc4fc45e5a7ed2");
+        assert_eq!(legacy, "ca65ef3c06c65c1b");
+        assert_eq!(first.len(), REQUEST_SIGNATURE_HASH_BYTES * 2);
+        assert_eq!(legacy.len(), 16);
+        assert_ne!(first, legacy);
+        assert!(first.bytes().all(|byte| byte.is_ascii_hexdigit()));
+        assert!(legacy.bytes().all(|byte| byte.is_ascii_hexdigit()));
     }
 
     #[test]
@@ -1674,6 +2108,32 @@ mod tests {
         let a = signature_basis("GET", "/search", Some("b=2&a=1"), &headers);
         let b = signature_basis("GET", "/search", Some("a=3&b=4"), &headers);
         assert_eq!(a, b);
+    }
+
+    #[test]
+    fn signatures_classify_combined_duplicate_header_values() {
+        let mut first_only = HeaderMap::new();
+        first_only.append(
+            http::header::USER_AGENT,
+            HeaderValue::from_static("randomized-browser"),
+        );
+        first_only.append(
+            http::header::ACCEPT,
+            HeaderValue::from_static("application/json"),
+        );
+        let mut duplicate_values = first_only.clone();
+        duplicate_values.append(
+            http::header::USER_AGENT,
+            HeaderValue::from_static("Python-Requests/2.32"),
+        );
+        duplicate_values.append(http::header::ACCEPT, HeaderValue::from_static("text/html"));
+
+        let baseline = signature_basis("GET", "/api/catalog", None, &first_only);
+        let combined = signature_basis("GET", "/api/catalog", None, &duplicate_values);
+
+        assert_ne!(baseline, combined);
+        assert!(combined.contains("|python|"));
+        assert!(combined.ends_with("|application/json"));
     }
 
     #[test]

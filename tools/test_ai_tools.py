@@ -5,6 +5,7 @@ import json
 import os
 import socketserver
 import subprocess
+import sys
 import tempfile
 import threading
 import unittest
@@ -20,6 +21,15 @@ import run_local_bench
 import run_edge_namespace_smoke
 import run_defense_bench
 import validate_edge_templates
+
+
+SIG_A = "a" * 32
+SIG_B = "b" * 32
+SIG_C = "c" * 32
+SIG_D = "d" * 32
+SIG_E = "e" * 32
+SIG_F = "f" * 32
+LEGACY_SIG = "0123456789abcdef"
 
 
 class CiWorkflowTests(unittest.TestCase):
@@ -169,6 +179,24 @@ class LocalBenchTests(unittest.TestCase):
         for key in validate_edge_templates.DDOS_SYSCTL_RULES:
             self.assertIn(f"{key} = ", template)
 
+    def test_edge_template_probe_skips_kernel_nft_syntax_check(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(cmd: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+            calls.append(cmd)
+            return subprocess.CompletedProcess(cmd, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.object(run_local_bench.subprocess, "run", side_effect=fake_run):
+                report = run_local_bench.run_edge_template_port_coverage_probe(Path(tmp))
+
+        self.assertTrue(calls)
+        self.assertTrue(
+            all("--skip-nft-syntax-check" in call for call in calls),
+            calls,
+        )
+        self.assertTrue(report["covered_public_ports_allowed"])
+
     def test_chunked_message_complete_accepts_empty_and_nonempty_trailers(self) -> None:
         self.assertTrue(run_local_bench.chunked_message_complete(b"0\r\n\r\n"))
         self.assertTrue(
@@ -207,6 +235,43 @@ class LocalBenchTests(unittest.TestCase):
         )
         self.assertEqual(calls[0][1], str(expected_helper))
 
+    def test_process_stderr_tail_is_bounded(self) -> None:
+        stderr = "a" * (run_local_bench.PROCESS_STDERR_TAIL_CHARS + 10)
+
+        tail = run_local_bench.format_process_stderr_tail(stderr)
+
+        self.assertTrue(tail.startswith("<truncated>\n"))
+        self.assertLessEqual(
+            len(tail),
+            len("<truncated>\n") + run_local_bench.PROCESS_STDERR_TAIL_CHARS,
+        )
+        self.assertTrue(tail.endswith("a" * run_local_bench.PROCESS_STDERR_TAIL_CHARS))
+
+    def test_startup_failure_includes_exit_status_and_stderr_tail(self) -> None:
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                "import sys; sys.stderr.write('startup boom\\n'); sys.exit(17)",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        process.wait(timeout=1)
+        stderr = run_local_bench.stop_process_and_collect_stderr(process)
+
+        err = run_local_bench.startup_failure_with_stderr(
+            RuntimeError("AlturaProt did not become ready"),
+            process,
+            stderr,
+        )
+
+        message = str(err)
+        self.assertIn("AlturaProt did not become ready", message)
+        self.assertIn("exit_status=17", message)
+        self.assertIn("startup boom", message)
+
     def test_first_decodable_json_line_skips_partial_event_log_line(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "events.jsonl"
@@ -218,6 +283,33 @@ class LocalBenchTests(unittest.TestCase):
             event = run_local_bench.first_decodable_json_line(path)
 
         self.assertEqual(event, {"signature": "valid"})
+
+    def test_wait_for_jsonl_event_waits_for_matching_event(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "events.jsonl"
+            path.write_text('{"path_shape": "/api/:id"}\n', encoding="utf-8")
+
+            def append_target_event() -> None:
+                path.write_text(
+                    '{"path_shape": "/api/:id"}\n'
+                    '{"path_shape": "/api/:short-token"}\n',
+                    encoding="utf-8",
+                )
+
+            timer = threading.Timer(0.05, append_target_event)
+            timer.start()
+            try:
+                events = run_local_bench.wait_for_jsonl_event(
+                    path,
+                    lambda event: event.get("path_shape") == "/api/:short-token",
+                    1.0,
+                )
+            finally:
+                timer.cancel()
+
+        self.assertTrue(
+            any(event.get("path_shape") == "/api/:short-token" for event in events)
+        )
 
     def test_http_max_connection_duration_probe_detects_closed_connection(self) -> None:
         class CloseAfterOneHttp(socketserver.BaseRequestHandler):
@@ -406,6 +498,360 @@ class LocalBenchAssertionTests(unittest.TestCase):
         self.assertIn("short_token_sibling_churn_limited", errors[0])
         self.assertIn("expected true", errors[0])
 
+    def test_assert_local_bench_rejects_failed_runtime_sigterm_probe(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["runtime_sigterm"]["sigterm_graceful"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("runtime_sigterm.sigterm_graceful", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_failed_event_log_rotation_probe(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["event_log_rotation"]["total_bytes_bounded"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("event_log_rotation.total_bytes_bounded", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_missing_edge_udp_drop_guardrail(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["edge_template_port_coverage"][
+            "missing_udp_drop_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing_udp_drop_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_missing_ipv6_l4proto_guardrail(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["edge_template_port_coverage"][
+            "missing_ipv6_connlimit_l4proto_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing_ipv6_connlimit_l4proto_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_invalid_fragment_sysctl_guardrail(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["edge_template_port_coverage"][
+            "invalid_fragment_thresholds_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("invalid_fragment_thresholds_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_admin_rate_limit_bypass(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["admin_rate_limit"]["statuses"] = [200, 200]
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("admin_rate_limit.statuses", errors[0])
+        self.assertIn("expected [200, 429]", errors[0])
+
+    def test_assert_local_bench_rejects_admin_signature_rate_bypass(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["admin_signature_rate"][
+            "admin_health_signature_limited"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("admin_health_signature_limited", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_oversized_config_startup_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["config_file_startup"][
+            "oversized_config_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("config_file_startup.oversized_config_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_dynamic_state_ceiling_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["dynamic_state_ceiling_startup"][
+            "all_dynamic_state_ceilings_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "dynamic_state_ceiling_startup.all_dynamic_state_ceilings_rejected",
+            errors[0],
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_runtime_nofile_capacity_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["runtime_nofile_capacity"]["capacity_rejected"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("runtime_nofile_capacity.capacity_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_invalid_client_ip_config_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["client_ip_config_startup"][
+            "invalid_trusted_proxy_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "client_ip_config_startup.invalid_trusted_proxy_rejected", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_forwarded_header_bounds_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["forwarded_header_bounds"][
+            "too_many_hops_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("forwarded_header_bounds.too_many_hops_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_trusted_proxy_in_flight_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["trusted_proxy_in_flight"][
+            "rotating_xff_peer_concurrency_limited"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "trusted_proxy_in_flight.rotating_xff_peer_concurrency_limited",
+            errors[0],
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_ipv6_prefix_aggregation_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["ip_prefix_aggregation"][
+            "same_ipv6_prefix_limited"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("ip_prefix_aggregation.same_ipv6_prefix_limited", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_path_shape_response_header_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["path_shape_rate"]["retry_after_header_matches"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("path_shape_rate.retry_after_header_matches", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_signature_rate_cache_header_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["signature_rate"]["cache_control_header_matches"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("signature_rate.cache_control_header_matches", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_trusted_proxy_metric_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["trusted_proxy_aggregate_rate"][
+            "trusted_proxy_metric_matches"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "trusted_proxy_aggregate_rate.trusted_proxy_metric_matches", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_tracked_ip_allowance_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["tracked_ip_cap"]["first_client_initial_allowed"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("tracked_ip_cap.first_client_initial_allowed", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_identity_encoding_allowance_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["request_content_encoding"][
+            "identity_request_allowed"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("request_content_encoding.identity_request_allowed", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_uri_guard_observation_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["uri_guard"][
+            "raw_initial_request_target_guard_observed"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("uri_guard.raw_initial_request_target_guard_observed", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_runtime_filter_hot_path_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["runtime_filter_hot_path"][
+            "normal_request_allowed"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("runtime_filter_hot_path.normal_request_allowed", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_min_rate_ceiling_detail_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["min_rate_ceiling_startup"][
+            "tcp_upstream_min_rate_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "min_rate_ceiling_startup.tcp_upstream_min_rate_rejected", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_edge_connlimit_size_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["edge_template_port_coverage"][
+            "missing_connlimit_set_size_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "edge_template_port_coverage.missing_connlimit_set_size_rejected",
+            errors[0],
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_allowed_host_startup_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["allowed_hosts_startup"]["wildcard_rejected"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("allowed_hosts_startup.wildcard_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_header_ceiling_startup_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["header_buffer_ceiling_startup"][
+            "downstream_max_header_bytes_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "header_buffer_ceiling_startup.downstream_max_header_bytes_rejected",
+            errors[0],
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_filter_rule_startup_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["filter_rule_startup"][
+            "too_many_static_filters_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "filter_rule_startup.too_many_static_filters_rejected", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_connection_request_limit_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["connection_request_limit"][
+            "connection_closed_before_fourth"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "connection_request_limit.connection_closed_before_fourth", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_request_trailer_policy_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["request_trailer_policy"][
+            "oversized_request_trailer_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "request_trailer_policy.oversized_request_trailer_rejected", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_admin_prefix_startup_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["admin_prefix_startup"]["root_prefix_rejected"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("admin_prefix_startup.root_prefix_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
     def test_assert_local_bench_rejects_post_grace_tcp_echo(self) -> None:
         report = self.valid_report()
         report["guardrails"]["tcp_min_rate"]["slow_drip"]["second_echo_bytes"] = 1
@@ -537,6 +983,79 @@ class EdgeNamespaceSmokeTests(unittest.TestCase):
         report = self.valid_edge_smoke_report()
 
         self.assertEqual(run_edge_namespace_smoke.assert_smoke_result(report), [])
+
+    def test_run_edge_namespace_smoke_accepts_canonical_nft_flag_output(self) -> None:
+        original_run = run_edge_namespace_smoke.subprocess.run
+        canonical_stdout = "\n".join(
+            [
+                "table   inet   altura_prot_edge {",
+                "  set   protected_tcp_ports { type inet_service; }",
+                "  set   tcp4_connlimit { type ipv4_addr . inet_service; }",
+                "  set   tcp6_connlimit { type ipv6_addr . inet_service; }",
+                "  set   tcp4_syn_rate { flags timeout; timeout 10s; }",
+                "  set   tcp6_syn_rate { flags timeout; timeout 10s; }",
+                "  chain preraw {",
+                "    tcp   dport   @protected_tcp_ports   tcp flags ! fin,syn,rst,ack drop",
+                "    tcp   dport   @protected_tcp_ports tcp flags fin,psh,urg / fin,syn,rst,psh,ack,urg drop",
+                "    ip protocol tcp tcp dport @protected_tcp_ports tcp flags syn / fin,syn,rst,ack update   @tcp4_syn_rate { ip saddr . tcp dport limit rate over 200/second burst 400 packets } drop",
+                "    meta nfproto ipv6 meta l4proto tcp ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport update   @tcp6_syn_rate { ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport limit rate over 200/second burst 400 packets } drop",
+                "    tcp dport @protected_tcp_ports tcp flags syn / fin,syn,rst,ack limit rate over 5000/second burst 10000 packets drop",
+                "    meta l4proto udp udp   dport   @protected_tcp_ports drop",
+                "    ip protocol icmp icmp type { destination-unreachable } accept",
+                "    ip protocol icmp limit rate over 100/second burst 200 packets drop",
+                "    meta l4proto ipv6-icmp icmpv6 type { packet-too-big } accept",
+                "    meta l4proto ipv6-icmp limit rate over 100/second burst 200 packets drop",
+                "  }",
+                "  chain input {",
+                "    ct state invalid drop",
+                "    tcp dport @protected_tcp_ports ct state new tcp flags != syn / fin,syn,rst,ack drop",
+                "    meta l4proto tcp add   @tcp4_connlimit { ip saddr . tcp dport ct count over 128 } drop",
+                "    meta nfproto ipv6 meta l4proto tcp ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport add   @tcp6_connlimit { ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport ct count over 128 } drop",
+                "  }",
+                "}",
+            ]
+        )
+
+        def fake_run(*_args: object, **_kwargs: object) -> object:
+            return run_edge_namespace_smoke.subprocess.CompletedProcess(
+                args=["unshare"],
+                returncode=0,
+                stdout=canonical_stdout,
+                stderr="",
+            )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            nft_path = Path(tmp) / "edge.nft"
+            nft_path.write_text(
+                "meta l4proto udp udp dport @protected_tcp_ports drop\n",
+                encoding="utf-8",
+            )
+            run_edge_namespace_smoke.subprocess.run = fake_run  # type: ignore[assignment]
+            try:
+                report = run_edge_namespace_smoke.run_namespace_smoke(nft_path)
+            finally:
+                run_edge_namespace_smoke.subprocess.run = original_run  # type: ignore[assignment]
+
+        self.assertTrue(report["tcp_invalid_xmas_drop_present"])
+        self.assertTrue(report["listed_edge_table"])
+        self.assertTrue(report["protected_tcp_ports_present"])
+        self.assertTrue(report["tcp4_connlimit_present"])
+        self.assertTrue(report["tcp6_connlimit_present"])
+        self.assertTrue(report["syn_rate_sets_timeout_bounded"])
+        self.assertTrue(report["tcp_invalid_null_drop_present"])
+        self.assertTrue(report["tcp4_syn_backstop_present"])
+        self.assertTrue(report["ipv6_prefix_syn_backstop_present"])
+        self.assertTrue(report["global_syn_backstop_present"])
+        self.assertTrue(report["ct_invalid_drop_present"])
+        self.assertTrue(report["new_non_syn_drop_present"])
+        self.assertTrue(report["tcp4_connlimit_rule_present"])
+        self.assertTrue(report["ipv6_prefix_connlimit_present"])
+        self.assertTrue(report["tcp6_connlimit_rule_present"])
+        self.assertTrue(report["udp_protected_port_drop_present"])
+        self.assertTrue(report["icmpv4_control_exemption_present"])
+        self.assertTrue(report["icmpv4_flood_drop_present"])
+        self.assertTrue(report["icmpv6_control_exemption_present"])
+        self.assertTrue(report["icmpv6_flood_drop_present"])
 
     def test_assert_edge_namespace_smoke_accepts_required_packet_probe(self) -> None:
         report = self.valid_edge_smoke_report()
@@ -737,15 +1256,15 @@ class AnalyzerTests(unittest.TestCase):
 
     def test_deterministic_filters_are_adaptive_signature_rules(self) -> None:
         events = [
-            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "per_ip_rate_limited"},
-            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+            {"signature": SIG_A, "path": "/x", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+            {"signature": SIG_A, "path": "/x", "user_agent": "bench", "reason": "per_ip_rate_limited"},
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=2, ttl_seconds=45)
         self.assertEqual(len(filters), 1)
         clean = codex_analyzer.sanitize_filter(filters[0], ttl_seconds=45)
         self.assertTrue(clean["adaptive"])
         self.assertEqual(clean["ttl_seconds"], 45)
-        self.assertEqual(clean["condition"]["signature"], "abc")
+        self.assertEqual(clean["condition"]["signature"], SIG_A)
         self.assertEqual(clean["action"]["status"], 403)
 
     def test_sanitize_filter_clamps_ttl_seconds_to_server_ceiling(self) -> None:
@@ -753,7 +1272,7 @@ class AnalyzerTests(unittest.TestCase):
             {
                 "id": "ttl",
                 "ttl_seconds": codex_analyzer.FILTER_TTL_MAX_SECONDS + 1,
-                "condition": {"signature": "abc"},
+                "condition": {"signature": SIG_A},
             },
             ttl_seconds=45,
         )
@@ -765,7 +1284,7 @@ class AnalyzerTests(unittest.TestCase):
             {
                 "id": "ttl",
                 "ttl_seconds": 0,
-                "condition": {"signature": "abc"},
+                "condition": {"signature": SIG_A},
             },
             ttl_seconds=45,
         )
@@ -778,13 +1297,124 @@ class AnalyzerTests(unittest.TestCase):
                 clean = codex_analyzer.sanitize_filter(
                     {
                         "id": "root-prefix",
-                        "condition": {"path_prefix": path_prefix, "signature": "abc"},
+                        "condition": {"path_prefix": path_prefix, "signature": SIG_A},
                     },
                     ttl_seconds=45,
                 )
 
                 self.assertNotIn("path_prefix", clean["condition"])
-                self.assertEqual(clean["condition"]["signature"], "abc")
+                self.assertEqual(clean["condition"]["signature"], SIG_A)
+
+    def test_sanitize_filter_drops_empty_runtime_matchers(self) -> None:
+        clean = codex_analyzer.sanitize_filter(
+            {
+                "id": "empty-matchers",
+                "condition": {
+                    "signature": SIG_A,
+                    "path_exact": "",
+                    "path_contains": "",
+                    "path_shape": "",
+                    "query_contains": "",
+                    "user_agent_contains": "",
+                },
+            },
+            ttl_seconds=45,
+        )
+
+        self.assertEqual(clean["condition"], {"signature": SIG_A})
+
+    def test_sanitize_filter_drops_empty_methods_matcher(self) -> None:
+        clean = codex_analyzer.sanitize_filter(
+            {
+                "id": "empty-methods",
+                "condition": {"methods": ["TRACE", ""]},
+            },
+            ttl_seconds=45,
+        )
+
+        self.assertEqual(clean["condition"], {})
+        self.assertFalse(codex_analyzer.filter_has_matcher(clean))
+        self.assertEqual(
+            codex_analyzer.sanitized_filter_list(
+                [{"id": "empty-methods", "condition": {"methods": ["TRACE", ""]}}],
+                ttl_seconds=45,
+            ),
+            [],
+        )
+
+    def test_sanitize_filter_drops_matchers_above_runtime_byte_caps(self) -> None:
+        clean = codex_analyzer.sanitize_filter(
+            {
+                "id": "oversized-matchers",
+                "condition": {
+                    "signature": SIG_A,
+                    "path_contains": "\u2603" * 200,
+                    "headers": [
+                        {"name": "x-altura-signal", "contains": "\u2603" * 100},
+                    ],
+                },
+            },
+            ttl_seconds=45,
+        )
+
+        self.assertEqual(clean["condition"], {"signature": SIG_A})
+
+    def test_sanitize_filter_drops_invalid_header_matchers(self) -> None:
+        clean = codex_analyzer.sanitize_filter(
+            {
+                "id": "bad-headers",
+                "condition": {
+                    "signature": SIG_A,
+                    "headers": [
+                        {"name": "x-altura-signal", "contains": "burst"},
+                        {"name": "bad header", "contains": "burst"},
+                        {"name": "bad:header", "contains": "burst"},
+                        {"name": "x-empty", "contains": ""},
+                        {"name": "x-non-string", "contains": 123},
+                    ],
+                },
+            },
+            ttl_seconds=45,
+        )
+
+        self.assertEqual(
+            clean["condition"]["headers"],
+            [{"name": "x-altura-signal", "contains": "burst"}],
+        )
+
+    def test_sanitize_filter_normalizes_response_header_safe_id(self) -> None:
+        clean = codex_analyzer.sanitize_filter(
+            {
+                "id": "bad\r\nid,with unicode \u2603",
+                "condition": {"signature": SIG_A},
+            },
+            ttl_seconds=45,
+        )
+
+        self.assertEqual(clean["id"], "bad-id-with-unicode")
+        self.assertNotRegex(clean["id"], r"[\x00-\x20\x7f,]")
+        self.assertTrue(clean["id"].isascii())
+
+    def test_merge_existing_filters_deconflicts_duplicate_sanitized_ids(self) -> None:
+        filters = codex_analyzer.merge_existing_filters(
+            [],
+            [
+                {
+                    "id": "same id",
+                    "condition": {"signature": SIG_A},
+                },
+                {
+                    "id": "same\nid",
+                    "condition": {"path_shape": "/api/:num"},
+                },
+            ],
+            ttl_seconds=45,
+            max_filters=8,
+        )
+
+        ids = [item["id"] for item in filters]
+        self.assertEqual(ids, ["same-id", "same-id-2"])
+        self.assertEqual(len(ids), len(set(ids)))
 
     def test_build_prompt_clamps_ttl_seconds_to_server_ceiling(self) -> None:
         prompt = codex_analyzer.build_prompt(
@@ -797,8 +1427,8 @@ class AnalyzerTests(unittest.TestCase):
 
     def test_observed_only_events_do_not_learn_by_default(self) -> None:
         events = [
-            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "observed"},
-            {"signature": "abc", "path": "/x", "user_agent": "bench", "reason": "observed"},
+            {"signature": SIG_A, "path": "/x", "user_agent": "bench", "reason": "observed"},
+            {"signature": SIG_A, "path": "/x", "user_agent": "bench", "reason": "observed"},
         ]
         self.assertEqual(codex_analyzer.deterministic_filters(events, min_count=2, ttl_seconds=45), [])
         self.assertEqual(
@@ -808,33 +1438,33 @@ class AnalyzerTests(unittest.TestCase):
 
     def test_merge_strong_coverage_adds_missing_signatures(self) -> None:
         events = [
-            {"signature": "covered", "path": "/a", "user_agent": "bench", "reason": "per_ip_rate_limited"},
-            {"signature": "missing", "path": "/b", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+            {"signature": SIG_A, "path": "/a", "user_agent": "bench", "reason": "per_ip_rate_limited"},
+            {"signature": SIG_B, "path": "/b", "user_agent": "bench", "reason": "per_ip_rate_limited"},
         ]
         provider_filters = [
             {
                 "id": "provider-covered",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "covered"},
+                "condition": {"signature": SIG_A},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
         merged = codex_analyzer.merge_strong_coverage(provider_filters, events, min_count=1, ttl_seconds=20)
         signatures = {item["condition"]["signature"] for item in merged}
-        self.assertEqual(signatures, {"covered", "missing"})
+        self.assertEqual(signatures, {SIG_A, SIG_B})
 
     def test_merge_coverage_adds_observed_filters_when_enabled(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/abcdefghij/1",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
                 "reason": "observed",
             },
             {
-                "signature": "sig-b",
+                "signature": SIG_B,
                 "path": "/api/klmnopqrst/2",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
@@ -865,7 +1495,7 @@ class AnalyzerTests(unittest.TestCase):
                 "id": "old",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "oldsig"},
+                "condition": {"signature": SIG_A},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
@@ -874,12 +1504,12 @@ class AnalyzerTests(unittest.TestCase):
                 "id": "new",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "newsig"},
+                "condition": {"signature": SIG_B},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
         merged = codex_analyzer.merge_existing_filters(existing, new, ttl_seconds=20, max_filters=10)
-        self.assertEqual({item["condition"]["signature"] for item in merged}, {"oldsig", "newsig"})
+        self.assertEqual({item["condition"]["signature"] for item in merged}, {SIG_A, SIG_B})
 
     def test_merge_existing_filters_replaces_same_signature(self) -> None:
         existing = [
@@ -887,7 +1517,7 @@ class AnalyzerTests(unittest.TestCase):
                 "id": "old",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "same"},
+                "condition": {"signature": SIG_A},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
@@ -896,7 +1526,7 @@ class AnalyzerTests(unittest.TestCase):
                 "id": "new",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "same"},
+                "condition": {"signature": SIG_A},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
@@ -910,7 +1540,7 @@ class AnalyzerTests(unittest.TestCase):
                 "id": f"old-{idx}",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": f"old-{idx}"},
+                "condition": {"signature": [SIG_A, SIG_B, SIG_C][idx]},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
             for idx in range(3)
@@ -920,13 +1550,13 @@ class AnalyzerTests(unittest.TestCase):
                 "id": "new",
                 "enabled": True,
                 "adaptive": True,
-                "condition": {"signature": "new"},
+                "condition": {"signature": SIG_D},
                 "action": {"kind": "block", "status": 403, "body": "blocked by adaptive filter\n"},
             }
         ]
         merged = codex_analyzer.merge_existing_filters(existing, new, ttl_seconds=20, max_filters=3)
         self.assertEqual(len(merged), 3)
-        self.assertIn("new", {item["condition"]["signature"] for item in merged})
+        self.assertIn(SIG_D, {item["condition"]["signature"] for item in merged})
 
     def test_provider_config_merges_defaults(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -948,14 +1578,14 @@ class AnalyzerTests(unittest.TestCase):
     def test_deterministic_filters_learn_catalog_shape_when_route_family_is_hot(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/catalog/1",
                 "path_shape": "/api/catalog/:num",
                 "user_agent": "bench",
                 "reason": "observed",
             },
             {
-                "signature": "sig-b",
+                "signature": SIG_B,
                 "path": "/api/catalog/2",
                 "path_shape": "/api/catalog/:num",
                 "user_agent": "bench",
@@ -971,7 +1601,7 @@ class AnalyzerTests(unittest.TestCase):
     def test_deterministic_filters_learn_precise_benign_shape_runtime_signatures(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/catalog/1",
                 "path_shape": "/api/catalog/:num",
                 "signature_basis": "GET|/api/catalog/:num|page,sort|curl|*/*",
@@ -979,7 +1609,7 @@ class AnalyzerTests(unittest.TestCase):
                 "reason": "observed",
             },
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/catalog/2",
                 "path_shape": "/api/catalog/:num",
                 "signature_basis": "GET|/api/catalog/:num|page,sort|curl|*/*",
@@ -989,19 +1619,19 @@ class AnalyzerTests(unittest.TestCase):
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=2, ttl_seconds=45, learn_observed=True)
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "sig-a")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_A)
 
     def test_deterministic_filters_learn_dictionary_slug_path_shape(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/subscription/1",
                 "path_shape": "/api/subscription/:num",
                 "user_agent": "bench",
                 "reason": "global_observed",
             },
             {
-                "signature": "sig-b",
+                "signature": SIG_B,
                 "path": "/api/subscription/2",
                 "path_shape": "/api/subscription/:num",
                 "user_agent": "bench",
@@ -1019,14 +1649,14 @@ class AnalyzerTests(unittest.TestCase):
     def test_deterministic_filters_learn_path_shape_for_polymorphic_events(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/abcdefghij/1",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
                 "reason": "global_observed",
             },
             {
-                "signature": "sig-b",
+                "signature": SIG_B,
                 "path": "/api/klmnopqrst/2",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
@@ -1041,14 +1671,14 @@ class AnalyzerTests(unittest.TestCase):
     def test_deterministic_filters_learn_short_token_path_shape_for_polymorphic_events(self) -> None:
         events = [
             {
-                "signature": "a",
+                "signature": SIG_A,
                 "path": "/api/ab",
                 "path_shape": "/api/:short-token",
                 "user_agent": "bench",
                 "reason": "global_observed",
             },
             {
-                "signature": "b",
+                "signature": SIG_B,
                 "path": "/api/cd",
                 "path_shape": "/api/:short-token",
                 "user_agent": "bench",
@@ -1064,7 +1694,7 @@ class AnalyzerTests(unittest.TestCase):
     def test_body_too_large_events_are_strong_evidence(self) -> None:
         events = [
             {
-                "signature": "sig-body",
+                "signature": SIG_C,
                 "path": "/upload",
                 "user_agent": "bench",
                 "reason": "body_too_large",
@@ -1072,12 +1702,12 @@ class AnalyzerTests(unittest.TestCase):
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=1, ttl_seconds=45)
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "sig-body")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_C)
 
     def test_signature_rate_limited_events_are_strong_evidence(self) -> None:
         events = [
             {
-                "signature": "sig-hot",
+                "signature": SIG_D,
                 "path": "/hot",
                 "user_agent": "bench",
                 "reason": "signature_rate_limited",
@@ -1085,12 +1715,12 @@ class AnalyzerTests(unittest.TestCase):
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=1, ttl_seconds=45)
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "sig-hot")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_D)
 
     def test_trusted_proxy_rate_limited_events_are_strong_evidence(self) -> None:
         events = [
             {
-                "signature": "sig-edge",
+                "signature": SIG_E,
                 "path": "/api/login",
                 "path_shape": "/api/login",
                 "user_agent": "bench",
@@ -1099,19 +1729,19 @@ class AnalyzerTests(unittest.TestCase):
         ]
         filters = codex_analyzer.deterministic_filters(events, min_count=1, ttl_seconds=45)
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "sig-edge")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_E)
 
     def test_path_shape_rate_limited_events_are_strong_evidence(self) -> None:
         events = [
             {
-                "signature": "sig-a",
+                "signature": SIG_A,
                 "path": "/api/abcdefghij/1",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
                 "reason": "path_shape_rate_limited",
             },
             {
-                "signature": "sig-b",
+                "signature": SIG_B,
                 "path": "/api/klmnopqrst/2",
                 "path_shape": "/api/:token/:num",
                 "user_agent": "bench",
@@ -2826,6 +3456,22 @@ class DefenseBenchTests(unittest.TestCase):
 
 
 class EdgeTemplateTests(unittest.TestCase):
+    def test_validate_nft_skip_syntax_check_does_not_call_nft(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            nft = Path(tmp) / "edge.nft"
+            nft.write_text("table inet altura_prot_edge {}\n", encoding="utf-8")
+
+            with patch.object(
+                validate_edge_templates.shutil, "which", return_value="/usr/sbin/nft"
+            ), patch.object(validate_edge_templates, "run") as run:
+                errors = validate_edge_templates.validate_nft(
+                    nft,
+                    skip_syntax_check=True,
+                )
+
+        self.assertEqual(errors, ["nftables syntax check skipped by request"])
+        run.assert_not_called()
+
     def test_loopback_listeners_do_not_require_edge_port_coverage(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -3755,14 +4401,29 @@ class CliAgentProviderTests(unittest.TestCase):
         cfg = codex_analyzer.provider_config(
             codex_analyzer.load_provider_config(Path("/tmp/nonexistent.json")), "claude"
         )
-        out = '{"type":"result","result":"{\\"filters\\":[{\\"condition\\":{\\"signature\\":\\"sig-x\\"},\\"action\\":{\\"kind\\":\\"block\\",\\"status\\":403,\\"body\\":\\"x\\"}}]}"}'
+        out = (
+            '{"type":"result","result":"{\\"filters\\":[{\\"condition\\":'
+            f'{{\\"signature\\":\\"{SIG_A}\\"}}'
+            ',\\"action\\":{\\"kind\\":\\"block\\",\\"status\\":403,\\"body\\":\\"x\\"}}]}"}'
+        )
         with patch("subprocess.run", return_value=_FakeProc(0, out)) as run:
             filters = codex_analyzer.run_provider("claude", prompt, cfg, ttl_seconds=30)
         # claude is fed on stdin, not argv.
         self.assertIsNotNone(run.call_args.kwargs.get("input"))
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "sig-x")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_A)
         self.assertEqual(filters[0]["action"]["status"], 403)
+
+    def test_run_provider_drops_malformed_signature_only_filters(self) -> None:
+        prompt = codex_analyzer.build_prompt([], min_count=1, ttl_seconds=30)
+        cfg = codex_analyzer.provider_config(
+            codex_analyzer.load_provider_config(Path("/tmp/nonexistent.json")), "claude"
+        )
+        out = '{"type":"result","result":"{\\"filters\\":[{\\"condition\\":{\\"signature\\":\\"sig-x\\"},\\"action\\":{\\"kind\\":\\"block\\",\\"status\\":403,\\"body\\":\\"x\\"}}]}"}'
+        with patch("subprocess.run", return_value=_FakeProc(0, out)):
+            filters = codex_analyzer.run_provider("claude", prompt, cfg, ttl_seconds=30)
+
+        self.assertEqual(filters, [])
 
     def test_cli_agent_nonzero_exit_raises(self) -> None:
         prompt = codex_analyzer.build_prompt([], min_count=1, ttl_seconds=30)
@@ -3784,7 +4445,7 @@ class CliAgentProviderTests(unittest.TestCase):
                     "content": {
                         "parts": [
                             {
-                                "text": '{"filters":[{"condition":{"signature":"g"},"action":{"kind":"block","status":403,"body":"x"}}]}'
+                                "text": f'{{"filters":[{{"condition":{{"signature":"{SIG_B}"}},"action":{{"kind":"block","status":403,"body":"x"}}}}]}}'
                             }
                         ]
                     }
@@ -3798,7 +4459,7 @@ class CliAgentProviderTests(unittest.TestCase):
         self.assertIn(":generateContent", url)
         self.assertEqual(post.call_args.args[1]["x-goog-api-key"], "test-key")
         self.assertEqual(len(filters), 1)
-        self.assertEqual(filters[0]["condition"]["signature"], "g")
+        self.assertEqual(filters[0]["condition"]["signature"], SIG_B)
 
     def test_detect_cli_agent_reports_missing_binary(self) -> None:
         info = codex_analyzer.detect_cli_agent(

@@ -67,6 +67,7 @@ const GENERATED_RETRY_AFTER_SECONDS: &str = "1";
 const GENERATED_CACHE_CONTROL: &str = "no-store";
 const UPSTREAM_CIRCUIT_SHARDS: usize = 64;
 const UPSTREAM_CIRCUIT_EVICTION_SCAN_LIMIT: usize = 32;
+const MAX_EMPTY_TRANSFER_ENCODING_ELEMENTS: usize = 8;
 
 static HTTP_ACCEPT_ERROR_LOG: LogLimiter = LogLimiter::new();
 static HTTP_CONNECTION_REJECTED_LOG: LogLimiter = LogLimiter::new();
@@ -967,7 +968,7 @@ fn validate_raw_http1_header_block(
             return Err("invalid header line");
         };
         let name = &line[..colon];
-        if name.is_empty() || name.iter().any(|byte| byte.is_ascii_whitespace()) {
+        if HeaderName::from_bytes(name).is_err() {
             return Err("invalid header name");
         }
         let value = trim_header_value(&line[colon + 1..]);
@@ -1023,12 +1024,23 @@ fn validate_raw_transfer_encoding(
     value: &[u8],
     allow_chunked_request_bodies: bool,
 ) -> Result<(), &'static str> {
+    validate_transfer_encoding_value(value, allow_chunked_request_bodies)
+}
+
+fn validate_transfer_encoding_value(
+    value: &[u8],
+    allow_chunked_request_bodies: bool,
+) -> Result<(), &'static str> {
     let mut saw_coding = false;
-    for coding in value
-        .split(|byte| *byte == b',')
-        .map(trim_header_value)
-        .filter(|coding| !coding.is_empty())
-    {
+    let mut empty_elements = 0usize;
+    for coding in value.split(|byte| *byte == b',').map(trim_header_value) {
+        if coding.is_empty() {
+            empty_elements += 1;
+            if empty_elements > MAX_EMPTY_TRANSFER_ENCODING_ELEMENTS {
+                return Err("too many empty transfer-encoding elements");
+            }
+            continue;
+        }
         if saw_coding || !coding.eq_ignore_ascii_case(b"chunked") {
             return Err("unsupported transfer-encoding");
         }
@@ -1342,6 +1354,21 @@ async fn handle_http(
                     "upstream response headers too large\n",
                 ));
             }
+            if let Err(reason) = validate_upstream_response_framing(resp.headers()) {
+                Stats::inc(&state.stats.http_upstream_header_rejected);
+                state.upstream_circuit.record_failure(&path_shape);
+                Stats::inc(&state.stats.http_upstream_errors);
+                log_limited(
+                    &HTTP_UPSTREAM_ERROR_LOG,
+                    HOT_PATH_LOG_INTERVAL,
+                    |suppressed| {
+                        eprintln!("upstream response rejected: {reason}{suppressed}");
+                    },
+                );
+                return Ok(upstream_bad_gateway_response(
+                    "upstream response framing invalid\n",
+                ));
+            }
             if let Some(length) = content_length(resp.headers()) {
                 if state.cfg.max_upstream_body_bytes > 0
                     && length > state.cfg.max_upstream_body_bytes
@@ -1440,7 +1467,7 @@ fn content_length(headers: &HeaderMap<HeaderValue>) -> Option<u64> {
     headers
         .get(CONTENT_LENGTH)
         .and_then(|value| value.to_str().ok())
-        .and_then(|value| value.parse::<u64>().ok())
+        .and_then(|value| value.trim().parse::<u64>().ok())
 }
 
 fn validate_request_framing(
@@ -1453,16 +1480,7 @@ fn validate_request_framing(
         return Err("multiple content-length headers");
     }
     if let Some(value) = content_length {
-        let value = value
-            .to_str()
-            .map_err(|_| "invalid content-length header")?
-            .trim();
-        if value.is_empty()
-            || value.contains(',')
-            || !value.bytes().all(|byte| byte.is_ascii_digit())
-        {
-            return Err("invalid content-length header");
-        }
+        validate_parsed_content_length(value, "invalid content-length header")?;
     }
 
     let mut transfer_encodings = headers.get_all(TRANSFER_ENCODING).iter();
@@ -1475,27 +1493,44 @@ fn validate_request_framing(
     if transfer_encodings.next().is_some() {
         return Err("multiple transfer-encoding headers");
     }
-    let value = transfer_encoding
-        .to_str()
-        .map_err(|_| "invalid transfer-encoding header")?;
-    let mut saw_coding = false;
-    for coding in value
-        .split(',')
-        .map(str::trim)
-        .filter(|coding| !coding.is_empty())
-    {
-        if saw_coding || !coding.eq_ignore_ascii_case("chunked") {
-            return Err("unsupported transfer-encoding");
-        }
-        saw_coding = true;
+    validate_transfer_encoding_value(transfer_encoding.as_bytes(), allow_chunked_request_bodies)
+}
+
+fn validate_upstream_response_framing(
+    headers: &HeaderMap<HeaderValue>,
+) -> Result<(), &'static str> {
+    let mut content_lengths = headers.get_all(CONTENT_LENGTH).iter();
+    let content_length = content_lengths.next();
+    if content_lengths.next().is_some() {
+        return Err("multiple upstream content-length headers");
     }
-    if !saw_coding {
-        return Err("invalid transfer-encoding header");
-    }
-    if !allow_chunked_request_bodies {
-        return Err("chunked request body not allowed");
+    if let Some(value) = content_length {
+        validate_parsed_content_length(value, "invalid upstream content-length header")?;
     }
 
+    let mut transfer_encodings = headers.get_all(TRANSFER_ENCODING).iter();
+    let Some(transfer_encoding) = transfer_encodings.next() else {
+        return Ok(());
+    };
+    if content_length.is_some() {
+        return Err("ambiguous upstream transfer-encoding and content-length");
+    }
+    if transfer_encodings.next().is_some() {
+        return Err("multiple upstream transfer-encoding headers");
+    }
+    validate_transfer_encoding_value(transfer_encoding.as_bytes(), true)
+        .map_err(|_| "unsupported upstream transfer-encoding")
+}
+
+fn validate_parsed_content_length(
+    value: &HeaderValue,
+    invalid_reason: &'static str,
+) -> Result<(), &'static str> {
+    let value = value.to_str().map_err(|_| invalid_reason)?.trim();
+    if value.is_empty() || value.contains(',') || !value.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err(invalid_reason);
+    }
+    let _ = value.parse::<u64>().map_err(|_| invalid_reason)?;
     Ok(())
 }
 
@@ -1756,11 +1791,13 @@ fn host_allowed(authority: &Authority, allowed_hosts: &[String]) -> bool {
         .strip_prefix('[')
         .and_then(|value| value.strip_suffix(']'))
         .unwrap_or(host);
+    let authority_has_port = authority.port().is_some();
     allowed_hosts.iter().any(|allowed| {
         let allowed = allowed.trim();
         allowed.eq_ignore_ascii_case(full)
-            || allowed.eq_ignore_ascii_case(host)
-            || allowed.eq_ignore_ascii_case(unbracketed_host)
+            || (!authority_has_port
+                && (allowed.eq_ignore_ascii_case(host)
+                    || allowed.eq_ignore_ascii_case(unbracketed_host)))
     })
 }
 
@@ -2746,7 +2783,7 @@ impl ClientIpResolver {
         if self.max_forwarded_for_bytes > 0 && value.len() > self.max_forwarded_for_bytes {
             return Err(ClientIpHeaderError::TooLong);
         }
-        parse_forwarded_ip_token(value).ok_or(ClientIpHeaderError::Invalid)
+        parse_singleton_client_ip_token(value).ok_or(ClientIpHeaderError::Invalid)
     }
 
     fn is_trusted(&self, ip: IpAddr) -> bool {
@@ -2875,6 +2912,14 @@ fn parse_forwarded_ip_token(raw: &str) -> Option<IpAddr> {
         }
     }
     token.parse::<Ipv6Addr>().map(IpAddr::V6).ok()
+}
+
+fn parse_singleton_client_ip_token(raw: &str) -> Option<IpAddr> {
+    let token = raw.trim();
+    if token.is_empty() {
+        return None;
+    }
+    token.parse().ok()
 }
 
 fn maybe_admin_response(
@@ -3034,15 +3079,13 @@ fn joined_path_and_query(
 fn remove_hop_by_hop_headers(headers: &mut HeaderMap<HeaderValue>) {
     let mut extra = Vec::new();
     for connection in headers.get_all(http::header::CONNECTION).iter() {
-        if let Ok(connection) = connection.to_str() {
-            for token in connection.split(',') {
-                let token = token.trim();
-                if token.is_empty() {
-                    continue;
-                }
-                if let Ok(name) = HeaderName::from_bytes(token.as_bytes()) {
-                    extra.push(name);
-                }
+        for token in connection.as_bytes().split(|byte| *byte == b',') {
+            let token = trim_header_value(token);
+            if token.is_empty() {
+                continue;
+            }
+            if let Ok(name) = HeaderName::from_bytes(token) {
+                extra.push(name);
             }
         }
     }
@@ -3280,6 +3323,24 @@ mod tests {
     }
 
     #[test]
+    fn strips_valid_connection_options_from_non_utf8_connection_values() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            "connection",
+            HeaderValue::from_bytes(b"x-test, \xff").unwrap(),
+        );
+        headers.insert("x-test", HeaderValue::from_static("1"));
+
+        remove_hop_by_hop_headers(&mut headers);
+
+        assert!(!headers.contains_key("connection"));
+        assert!(
+            !headers.contains_key("x-test"),
+            "valid connection-options must be honored even when another token is malformed"
+        );
+    }
+
+    #[test]
     fn upstream_response_hop_by_hop_headers_are_sanitized() {
         let mut response = Response::builder()
             .status(200)
@@ -3495,6 +3556,27 @@ mod tests {
             resolver.resolve(peer, &oversized).unwrap_err(),
             ClientIpHeaderError::TooLong
         );
+    }
+
+    #[test]
+    fn client_ip_custom_identity_header_rejects_forwarded_for_address_variants() {
+        let resolver = ClientIpResolver::from_config(&ClientIpConfig {
+            header: "cf-connecting-ip".to_string(),
+            trusted_proxies: vec!["127.0.0.1/32".to_string()],
+            max_forwarded_for_bytes: 64,
+            ..Default::default()
+        });
+        let peer: IpAddr = "127.0.0.1".parse().unwrap();
+
+        for value in ["198.51.100.7:443", "[2001:db8::1]", "[2001:db8::1]:443"] {
+            let mut headers = HeaderMap::new();
+            headers.insert("cf-connecting-ip", HeaderValue::from_str(value).unwrap());
+            assert_eq!(
+                resolver.resolve(peer, &headers).unwrap_err(),
+                ClientIpHeaderError::Invalid,
+                "{value} must be rejected for singleton identity headers"
+            );
+        }
     }
 
     #[test]
@@ -3727,9 +3809,26 @@ mod tests {
     }
 
     #[test]
+    fn singleton_client_ip_tokens_are_raw_ip_literals_only() {
+        assert_eq!(
+            parse_singleton_client_ip_token("198.51.100.7"),
+            Some("198.51.100.7".parse().unwrap())
+        );
+        assert_eq!(
+            parse_singleton_client_ip_token("2001:db8::1"),
+            Some("2001:db8::1".parse().unwrap())
+        );
+        assert_eq!(parse_singleton_client_ip_token("198.51.100.7:443"), None);
+        assert_eq!(parse_singleton_client_ip_token("[2001:db8::1]"), None);
+        assert_eq!(parse_singleton_client_ip_token("[2001:db8::1]:443"), None);
+    }
+
+    #[test]
     fn parses_content_length_header() {
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_LENGTH, HeaderValue::from_static("42"));
+        assert_eq!(content_length(&headers), Some(42));
+        headers.insert(CONTENT_LENGTH, HeaderValue::from_static(" \t42\t "));
         assert_eq!(content_length(&headers), Some(42));
         headers.insert(CONTENT_LENGTH, HeaderValue::from_static("not-a-number"));
         assert_eq!(content_length(&headers), None);
@@ -3741,6 +3840,9 @@ mod tests {
         content_length_headers.insert(CONTENT_LENGTH, HeaderValue::from_static("42"));
         let mut chunked_headers = HeaderMap::new();
         chunked_headers.insert(TRANSFER_ENCODING, HeaderValue::from_static("chunked"));
+        let mut chunked_with_empty_elements = HeaderMap::new();
+        chunked_with_empty_elements
+            .insert(TRANSFER_ENCODING, HeaderValue::from_static(", chunked,"));
 
         assert_eq!(
             validate_request_framing(&content_length_headers, false),
@@ -3751,6 +3853,10 @@ mod tests {
             Err("chunked request body not allowed")
         );
         assert_eq!(validate_request_framing(&chunked_headers, true), Ok(()));
+        assert_eq!(
+            validate_request_framing(&chunked_with_empty_elements, true),
+            Ok(())
+        );
     }
 
     #[test]
@@ -3762,6 +3868,11 @@ mod tests {
         comma_list.insert(CONTENT_LENGTH, HeaderValue::from_static("4, 4"));
         let mut invalid = HeaderMap::new();
         invalid.insert(CONTENT_LENGTH, HeaderValue::from_static("nope"));
+        let mut overflow = HeaderMap::new();
+        overflow.insert(
+            CONTENT_LENGTH,
+            HeaderValue::from_static("18446744073709551616"),
+        );
 
         assert_eq!(
             validate_request_framing(&duplicate, false),
@@ -3773,6 +3884,10 @@ mod tests {
         );
         assert_eq!(
             validate_request_framing(&invalid, false),
+            Err("invalid content-length header")
+        );
+        assert_eq!(
+            validate_request_framing(&overflow, false),
             Err("invalid content-length header")
         );
     }
@@ -3833,7 +3948,102 @@ mod tests {
 
         assert_eq!(
             validate_request_framing(&invalid, true),
-            Err("invalid transfer-encoding header")
+            Err("too many empty transfer-encoding elements")
+        );
+
+        let empty_tail_spray = format!(
+            "chunked, {}",
+            std::iter::repeat_n("", MAX_EMPTY_TRANSFER_ENCODING_ELEMENTS + 1)
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+        let mut invalid = HeaderMap::new();
+        invalid.insert(
+            TRANSFER_ENCODING,
+            HeaderValue::from_bytes(empty_tail_spray.as_bytes()).unwrap(),
+        );
+
+        assert_eq!(
+            validate_request_framing(&invalid, true),
+            Err("too many empty transfer-encoding elements")
+        );
+    }
+
+    #[test]
+    fn upstream_response_framing_allows_single_content_length_or_chunked() {
+        let mut content_length_headers = HeaderMap::new();
+        content_length_headers.insert(CONTENT_LENGTH, HeaderValue::from_static("42"));
+        let mut chunked_headers = HeaderMap::new();
+        chunked_headers.insert(TRANSFER_ENCODING, HeaderValue::from_static("chunked"));
+
+        assert_eq!(
+            validate_upstream_response_framing(&content_length_headers),
+            Ok(())
+        );
+        assert_eq!(validate_upstream_response_framing(&chunked_headers), Ok(()));
+    }
+
+    #[test]
+    fn upstream_response_framing_rejects_invalid_content_length() {
+        let mut duplicate = HeaderMap::new();
+        duplicate.append(CONTENT_LENGTH, HeaderValue::from_static("4"));
+        duplicate.append(CONTENT_LENGTH, HeaderValue::from_static("4"));
+        let mut comma_list = HeaderMap::new();
+        comma_list.insert(CONTENT_LENGTH, HeaderValue::from_static("4, 4"));
+        let mut invalid = HeaderMap::new();
+        invalid.insert(CONTENT_LENGTH, HeaderValue::from_static("nope"));
+        let mut overflow = HeaderMap::new();
+        overflow.insert(
+            CONTENT_LENGTH,
+            HeaderValue::from_static("18446744073709551616"),
+        );
+
+        assert_eq!(
+            validate_upstream_response_framing(&duplicate),
+            Err("multiple upstream content-length headers")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&comma_list),
+            Err("invalid upstream content-length header")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&invalid),
+            Err("invalid upstream content-length header")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&overflow),
+            Err("invalid upstream content-length header")
+        );
+    }
+
+    #[test]
+    fn upstream_response_framing_rejects_ambiguous_or_bad_transfer_encoding() {
+        let mut te_and_cl = HeaderMap::new();
+        te_and_cl.insert(CONTENT_LENGTH, HeaderValue::from_static("4"));
+        te_and_cl.insert(TRANSFER_ENCODING, HeaderValue::from_static("chunked"));
+        let mut duplicate_te = HeaderMap::new();
+        duplicate_te.append(TRANSFER_ENCODING, HeaderValue::from_static("chunked"));
+        duplicate_te.append(TRANSFER_ENCODING, HeaderValue::from_static("chunked"));
+        let mut unsupported = HeaderMap::new();
+        unsupported.insert(TRANSFER_ENCODING, HeaderValue::from_static("gzip"));
+        let mut extra_coding = HeaderMap::new();
+        extra_coding.insert(TRANSFER_ENCODING, HeaderValue::from_static("gzip, chunked"));
+
+        assert_eq!(
+            validate_upstream_response_framing(&te_and_cl),
+            Err("ambiguous upstream transfer-encoding and content-length")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&duplicate_te),
+            Err("multiple upstream transfer-encoding headers")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&unsupported),
+            Err("unsupported upstream transfer-encoding")
+        );
+        assert_eq!(
+            validate_upstream_response_framing(&extra_coding),
+            Err("unsupported upstream transfer-encoding")
         );
     }
 
@@ -3994,6 +4204,13 @@ mod tests {
             ),
             Ok(())
         );
+        assert_eq!(
+            validate_raw_http1_header_block(
+                b"POST /drain HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: , chunked,\r\n\r\n",
+                true
+            ),
+            Ok(())
+        );
     }
 
     #[test]
@@ -4029,6 +4246,20 @@ mod tests {
     }
 
     #[test]
+    fn raw_initial_framing_precheck_rejects_invalid_header_names() {
+        for block in [
+            b"GET / HTTP/1.1\r\nBad Name: value\r\n\r\n".as_slice(),
+            b"GET / HTTP/1.1\r\nBad@Name: value\r\n\r\n".as_slice(),
+            b"GET / HTTP/1.1\r\nBad\x7fName: value\r\n\r\n".as_slice(),
+        ] {
+            assert_eq!(
+                validate_raw_http1_header_block(block, false),
+                Err("invalid header name")
+            );
+        }
+    }
+
+    #[test]
     fn raw_initial_framing_precheck_rejects_transfer_encoding_comma_spray() {
         let comma_spray = std::iter::repeat_n("gzip", 64)
             .collect::<Vec<_>>()
@@ -4049,7 +4280,22 @@ mod tests {
 
         assert_eq!(
             validate_raw_http1_header_block(block.as_bytes(), true),
-            Err("invalid transfer-encoding header")
+            Err("too many empty transfer-encoding elements")
+        );
+
+        let empty_tail_spray = format!(
+            "chunked, {}",
+            std::iter::repeat_n("", MAX_EMPTY_TRANSFER_ENCODING_ELEMENTS + 1)
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+        let block = format!(
+            "POST / HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: {empty_tail_spray}\r\n\r\n"
+        );
+
+        assert_eq!(
+            validate_raw_http1_header_block(block.as_bytes(), true),
+            Err("too many empty transfer-encoding elements")
         );
     }
 
@@ -4527,7 +4773,7 @@ mod tests {
             }
             let _ = stream
                 .write_all(
-                    b"HTTP/1.1 200 OK\r\nContent-Length: 128\r\nConnection: close\r\n\r\noversized",
+                    b"HTTP/1.1 200 OK\r\nContent-Length: \t128 \r\nConnection: close\r\n\r\noversized",
                 )
                 .await;
         });
@@ -4590,6 +4836,103 @@ mod tests {
         assert_eq!(stats.http_proxied.load(Ordering::Relaxed), 0);
         assert_eq!(stats.http_upstream_body_rejected.load(Ordering::Relaxed), 1);
         assert_eq!(stats.http_upstream_errors.load(Ordering::Relaxed), 1);
+
+        let _ = shutdown_tx.send(true);
+        if timeout(Duration::from_secs(1), &mut proxy_task)
+            .await
+            .is_err()
+        {
+            proxy_task.abort();
+            panic!("proxy task did not stop before test timeout");
+        }
+        upstream_task.abort();
+        let _ = std::fs::remove_file(filter_file);
+        let _ = std::fs::remove_file(event_file);
+    }
+
+    #[tokio::test]
+    async fn request_declared_oversized_body_with_ows_is_rejected_before_upstream() {
+        let upstream_listener = tokio::net::TcpListener::bind(("127.0.0.1", 0))
+            .await
+            .unwrap();
+        let upstream_addr = upstream_listener.local_addr().unwrap();
+        let upstream_hits = Arc::new(AtomicU64::new(0));
+        let upstream_hits_for_task = Arc::clone(&upstream_hits);
+        let upstream_task = tokio::spawn(async move {
+            loop {
+                let Ok((mut stream, _)) = upstream_listener.accept().await else {
+                    break;
+                };
+                upstream_hits_for_task.fetch_add(1, Ordering::Relaxed);
+                let _ = stream
+                    .write_all(
+                        b"HTTP/1.1 204 No Content\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                    )
+                    .await;
+            }
+        });
+
+        let proxy_port = unused_tcp_port();
+        let temp_suffix = format!("{}-{}", std::process::id(), upstream_addr.port());
+        let filter_file =
+            std::env::temp_dir().join(format!("altura-prot-request-size-{temp_suffix}.json"));
+        let event_file =
+            std::env::temp_dir().join(format!("altura-prot-request-size-{temp_suffix}.jsonl"));
+        std::fs::write(&filter_file, r#"{"filters":[]}"#).unwrap();
+        let engine =
+            FilterEngine::new(Vec::new(), filter_file.clone(), Duration::from_secs(60)).await;
+        let logger = Arc::new(crate::telemetry::EventLogger::new(&event_file).unwrap());
+        let detector = AdaptiveDetector::new(
+            crate::adaptive::AdaptiveDetectorConfig {
+                enabled: false,
+                threshold_per_second: 1_000_000,
+                activation_ttl: Duration::from_secs(60),
+                event_cooldown: Duration::from_secs(1),
+                max_signature_windows: 8_192,
+                max_path_shape_windows: 8_192,
+            },
+            Arc::clone(&engine),
+            Arc::clone(&logger),
+        );
+        let stats = Arc::new(Stats::default());
+        let cfg = test_http_config(&format!(
+            r#"{{
+                "listen":"127.0.0.1:{proxy_port}",
+                "upstream":"http://{upstream_addr}",
+                "max_body_bytes":16
+            }}"#
+        ));
+        let (startup_tx, startup_rx) = oneshot::channel();
+        let (shutdown_tx, shutdown_rx) = watch::channel(false);
+        let mut proxy_task = tokio::spawn(run_http_proxy(
+            cfg,
+            engine,
+            detector,
+            Arc::clone(&stats),
+            logger,
+            Some(startup_tx),
+            shutdown_rx,
+        ));
+        startup_rx.await.unwrap().unwrap();
+
+        let mut stream = TcpStream::connect(("127.0.0.1", proxy_port)).await.unwrap();
+        stream
+            .write_all(
+                b"POST /large HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: \t32 \r\nConnection: close\r\n\r\n",
+            )
+            .await
+            .unwrap();
+        let response = read_test_response(&mut stream).await;
+        assert!(
+            response.starts_with(b"HTTP/1.1 413 Payload Too Large"),
+            "unexpected response: {}",
+            String::from_utf8_lossy(&response)
+        );
+        assert!(response.ends_with(b"request body too large\n"));
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert_eq!(upstream_hits.load(Ordering::Relaxed), 0);
+        assert_eq!(stats.http_body_rejected.load(Ordering::Relaxed), 1);
+        assert_eq!(stats.http_proxied.load(Ordering::Relaxed), 0);
 
         let _ = shutdown_tx.send(true);
         if timeout(Duration::from_secs(1), &mut proxy_task)
@@ -4816,11 +5159,17 @@ mod tests {
         allowed_ipv6.insert(HOST, HeaderValue::from_static("[2001:db8::1]"));
         let mut denied = HeaderMap::new();
         denied.insert(HOST, HeaderValue::from_static("evil.example"));
+        let mut denied_unlisted_port = HeaderMap::new();
+        denied_unlisted_port.insert(HOST, HeaderValue::from_static("example.com:8443"));
 
         assert!(validate_host_header(&allowed, &cfg).is_ok());
         assert!(validate_host_header(&allowed_authority, &cfg).is_ok());
         assert!(validate_host_header(&allowed_ipv6, &cfg).is_ok());
         assert_eq!(validate_host_header(&denied, &cfg), Err("host not allowed"));
+        assert_eq!(
+            validate_host_header(&denied_unlisted_port, &cfg),
+            Err("host not allowed")
+        );
     }
 
     #[test]
@@ -4837,6 +5186,12 @@ mod tests {
 
         headers.insert(HOST, HeaderValue::from_static("good.local"));
         let uri: Uri = "http://evil.local/app?x=1".parse().unwrap();
+        assert_eq!(
+            validate_effective_host(&uri, &headers, &cfg),
+            Err("host not allowed")
+        );
+
+        let uri: Uri = "http://good.local:8443/app?x=1".parse().unwrap();
         assert_eq!(
             validate_effective_host(&uri, &headers, &cfg),
             Err("host not allowed")

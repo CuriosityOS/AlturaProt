@@ -22,7 +22,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from bench_provenance import generated_at_utc, source_tree_metadata
 
@@ -70,6 +70,7 @@ BENCH_HTTP_CONNECTION_LIMITS = {
     "global_connects_per_second": 1_000_000,
     "global_connect_burst": 1_000_000,
 }
+PROCESS_STDERR_TAIL_CHARS = 4000
 
 
 class FastHttpHandler(socketserver.BaseRequestHandler):
@@ -447,6 +448,47 @@ def wait_http(url_host: str, url_port: int, path: str = "/__altura/health") -> N
             except Exception:
                 pass
     raise RuntimeError("AlturaProt did not become ready")
+
+
+def stop_process_and_collect_stderr(
+    process: subprocess.Popen[str],
+    timeout_seconds: float = 5.0,
+) -> str:
+    if process.poll() is None:
+        try:
+            process.terminate()
+        except ProcessLookupError:
+            pass
+    try:
+        _, stderr = process.communicate(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        try:
+            _, stderr = process.communicate(timeout=timeout_seconds)
+        except subprocess.TimeoutExpired:
+            return "<stderr unavailable: process did not exit after SIGKILL>"
+    return stderr or ""
+
+
+def format_process_stderr_tail(stderr: str) -> str:
+    stderr = stderr.strip()
+    if not stderr:
+        return "<empty>"
+    if len(stderr) <= PROCESS_STDERR_TAIL_CHARS:
+        return stderr
+    return f"<truncated>\n{stderr[-PROCESS_STDERR_TAIL_CHARS:]}"
+
+
+def startup_failure_with_stderr(
+    reason: BaseException,
+    process: subprocess.Popen[str],
+    stderr: str,
+) -> RuntimeError:
+    return RuntimeError(
+        "AlturaProt benchmark proxy startup failed: "
+        f"{reason}; exit_status={process.returncode}; "
+        f"stderr_tail={format_process_stderr_tail(stderr)}"
+    )
 
 
 def wait_tcp_port(port: int) -> None:
@@ -4843,6 +4885,35 @@ def first_decodable_json_line(path: Path) -> dict[str, Any]:
     return {}
 
 
+def decodable_json_lines(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    events: list[dict[str, Any]] = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line.strip():
+            continue
+        try:
+            value = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, dict):
+            events.append(value)
+    return events
+
+
+def wait_for_jsonl_event(
+    path: Path,
+    predicate: Callable[[dict[str, Any]], bool],
+    timeout_seconds: float,
+) -> list[dict[str, Any]]:
+    deadline = time.perf_counter() + timeout_seconds
+    events = decodable_json_lines(path)
+    while not any(predicate(event) for event in events) and time.perf_counter() < deadline:
+        time.sleep(0.02)
+        events = decodable_json_lines(path)
+    return events
+
+
 def event_log_files(path: Path, backup_count: int) -> list[Path]:
     return [path] + [Path(f"{path}.{idx}") for idx in range(1, backup_count + 1)]
 
@@ -7038,6 +7109,9 @@ def run_host_guard_probe(binary: Path, upstream_port: int, tmp_path: Path) -> di
             "allowed_host_port": send_raw_host_request(
                 proxy_port, ["api.good.local:8080"]
             ),
+            "unlisted_port_host": send_raw_host_request(
+                proxy_port, ["good.local:8080"]
+            ),
             "missing_host": send_raw_host_request(proxy_port, []),
             "duplicate_host": send_raw_host_request(
                 proxy_port, ["good.local", "evil.local"]
@@ -7050,6 +7124,9 @@ def run_host_guard_probe(binary: Path, upstream_port: int, tmp_path: Path) -> di
             ),
             "absolute_form_disallowed_authority": send_raw_host_request(
                 proxy_port, ["good.local"], target="http://evil.local/"
+            ),
+            "absolute_form_unlisted_port_authority": send_raw_host_request(
+                proxy_port, ["good.local"], target="http://good.local:8080/"
             ),
             "absolute_form_unsupported_scheme": send_raw_host_request(
                 proxy_port, ["good.local"], target="ftp://good.local/"
@@ -7074,10 +7151,18 @@ def run_host_guard_probe(binary: Path, upstream_port: int, tmp_path: Path) -> di
                     "invalid_host",
                     "long_host",
                     "disallowed_host",
+                    "unlisted_port_host",
                     "absolute_form_disallowed_authority",
+                    "absolute_form_unlisted_port_authority",
                     "absolute_form_unsupported_scheme",
                 ]
             ),
+            "bare_host_does_not_allow_unlisted_port": probes["unlisted_port_host"].get("status")
+            == 400,
+            "absolute_form_bare_host_does_not_allow_unlisted_port": probes[
+                "absolute_form_unlisted_port_authority"
+            ].get("status")
+            == 400,
             "absolute_form_unsupported_scheme_rejected": probes[
                 "absolute_form_unsupported_scheme"
             ].get("status")
@@ -8267,7 +8352,7 @@ def run_path_shape_rate_probe(binary: Path, upstream_port: int, tmp_path: Path) 
                 "global_burst": 1_000_000,
                 "signature_rps": 1_000_000,
                 "signature_burst": 1_000_000,
-                "max_tracked_signatures": 64,
+                "max_tracked_signatures": 4096,
                 "path_shape_rps": path_shape_rps,
                 "path_shape_burst": path_shape_burst,
                 "max_tracked_path_shapes": 64,
@@ -8326,20 +8411,12 @@ def run_path_shape_rate_probe(binary: Path, upstream_port: int, tmp_path: Path) 
         other_shape_status = get_status(proxy_port, "GET", "/api/catalog/123")
         version_shape_status = get_status(proxy_port, "GET", "/api/v1/users")
         metrics_after = fetch_metrics(proxy_port, token="path-shape-rate-token")
-        wait_file_line_count(events_path, 1, 1.0)
-        events: list[dict[str, Any]] = []
-        if events_path.exists():
-            for line in events_path.read_text(
-                encoding="utf-8", errors="replace"
-            ).splitlines():
-                if not line.strip():
-                    continue
-                try:
-                    event = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if isinstance(event, dict):
-                    events.append(event)
+        events = wait_for_jsonl_event(
+            events_path,
+            lambda event: event.get("reason") == "path_shape_rate_limited"
+            and event.get("path_shape") == "/api/:short-token",
+            1.0,
+        )
         path_shape_event_shapes = [
             event.get("path_shape")
             for event in events
@@ -10488,6 +10565,7 @@ def run_edge_template_port_coverage_probe(tmp_path: Path) -> dict[str, Any]:
                 str(sysctl_path),
                 "--systemd",
                 str(systemd_path),
+                "--skip-nft-syntax-check",
             ],
             text=True,
             stdout=subprocess.PIPE,
@@ -11086,9 +11164,15 @@ def main() -> None:
             text=True,
             env={**os.environ, "RUST_BACKTRACE": "0"},
         )
+        proxy_stopped = False
         try:
-            wait_http("127.0.0.1", proxy_port)
-            wait_tcp_port(tcp_proxy_port)
+            try:
+                wait_http("127.0.0.1", proxy_port)
+                wait_tcp_port(tcp_proxy_port)
+            except Exception as err:
+                stderr = stop_process_and_collect_stderr(proxy)
+                proxy_stopped = True
+                raise startup_failure_with_stderr(err, proxy, stderr) from err
             result = {
                 "generated_at_utc": generated_at_utc(),
                 "source_tree": source_tree_metadata(Path.cwd()),
@@ -11613,11 +11697,8 @@ def main() -> None:
             }
             print(json.dumps(result, indent=2, sort_keys=True))
         finally:
-            proxy.terminate()
-            try:
-                proxy.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                proxy.kill()
+            if not proxy_stopped:
+                stop_process_and_collect_stderr(proxy)
             upstream.shutdown()
 
 
