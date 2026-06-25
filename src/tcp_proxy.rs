@@ -322,7 +322,7 @@ where
     tokio::pin!(idle_sleep);
     let (mut downstream_read, mut downstream_write) = split(downstream);
     let (mut upstream_read, mut upstream_write) = split(upstream);
-    let (activity_tx, mut activity_rx) = mpsc::unbounded_channel();
+    let (activity_tx, mut activity_rx) = mpsc::channel(1);
     let downstream_activity_tx = if idle_enabled {
         Some(activity_tx.clone())
     } else {
@@ -391,7 +391,7 @@ async fn relay_direction<R, W>(
     idle_timeout: Duration,
     mut rate: TcpRateGuard,
     too_slow: TcpRelayOutcome,
-    activity_tx: Option<mpsc::UnboundedSender<()>>,
+    activity_tx: Option<mpsc::Sender<()>>,
 ) -> io::Result<TcpRelayOutcome>
 where
     R: AsyncRead + Unpin,
@@ -410,9 +410,13 @@ where
         if !write_all_with_idle(writer, &buf[..read], idle_timeout).await? {
             return Ok(TcpRelayOutcome::IdleTimeout);
         }
-        if let Some(activity_tx) = &activity_tx {
-            let _ = activity_tx.send(());
-        }
+        notify_activity(&activity_tx);
+    }
+}
+
+fn notify_activity(activity_tx: &Option<mpsc::Sender<()>>) {
+    if let Some(activity_tx) = activity_tx {
+        let _ = activity_tx.try_send(());
     }
 }
 
@@ -511,6 +515,22 @@ mod tests {
         drop(client);
         drop(origin);
         let _ = timeout(Duration::from_millis(200), relay).await;
+    }
+
+    #[tokio::test]
+    async fn activity_notifications_are_bounded_and_coalesced() {
+        let (activity_tx, mut activity_rx) = mpsc::channel(1);
+        let activity_tx = Some(activity_tx);
+
+        notify_activity(&activity_tx);
+        notify_activity(&activity_tx);
+        notify_activity(&activity_tx);
+
+        assert!(activity_rx.try_recv().is_ok());
+        assert!(matches!(
+            activity_rx.try_recv(),
+            Err(mpsc::error::TryRecvError::Empty)
+        ));
     }
 
     #[tokio::test]
