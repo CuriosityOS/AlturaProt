@@ -304,6 +304,38 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "TCP upstream config must reject port zero",
     ),
     (
+        "guardrails.client_ip_config_startup.blank_trusted_proxy_rejected",
+        "client-IP config must reject blank trusted-proxy entries",
+    ),
+    (
+        "guardrails.client_ip_config_startup.duplicate_trusted_proxy_rejected",
+        "client-IP config must reject duplicate trusted-proxy entries",
+    ),
+    (
+        "guardrails.client_ip_config_startup.invalid_header_rejected",
+        "client-IP config must reject invalid trusted identity header names",
+    ),
+    (
+        "guardrails.client_ip_config_startup.invalid_trusted_proxy_rejected",
+        "client-IP config must reject invalid trusted-proxy networks",
+    ),
+    (
+        "guardrails.client_ip_config_startup.oversized_header_rejected",
+        "client-IP config must reject oversized trusted identity header names",
+    ),
+    (
+        "guardrails.client_ip_config_startup.oversized_trusted_proxy_rejected",
+        "client-IP config must reject oversized trusted-proxy entries",
+    ),
+    (
+        "guardrails.client_ip_config_startup.too_many_trusted_proxies_rejected",
+        "client-IP config must reject excessive trusted-proxy entries",
+    ),
+    (
+        "guardrails.trusted_proxy_global_trust_startup.global_trusted_proxy_rejected",
+        "trusted-proxy config must reject globally trusting all remote clients",
+    ),
+    (
         "guardrails.method_override_headers.override_headers_rejected",
         "method override headers must be rejected by default before origin work",
     ),
@@ -334,6 +366,62 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.forwarded_headers.custom_identity_header.custom_identity_rejected_metric_matches",
         "trusted custom identity header rejections must increment the forwarded-rejected metric",
+    ),
+    (
+        "guardrails.forwarded_header_bounds.valid_chain_allowed",
+        "bounded forwarded-header parsing must allow a valid trusted chain",
+    ),
+    (
+        "guardrails.forwarded_header_bounds.malformed_chain_rejected",
+        "bounded forwarded-header parsing must reject malformed chains",
+    ),
+    (
+        "guardrails.forwarded_header_bounds.oversized_chain_rejected",
+        "bounded forwarded-header parsing must reject oversized chains",
+    ),
+    (
+        "guardrails.forwarded_header_bounds.too_many_hops_rejected",
+        "bounded forwarded-header parsing must reject excessive hop counts",
+    ),
+    (
+        "guardrails.forwarded_header_bounds.rejection_metric_matches",
+        "bounded forwarded-header rejections must increment the forwarded-rejected metric",
+    ),
+    (
+        "guardrails.trusted_proxy_in_flight.rotating_xff_peer_concurrency_limited",
+        "trusted-proxy in-flight limits must catch rotating X-Forwarded-For peer floods",
+    ),
+    (
+        "guardrails.trusted_proxy_in_flight.retry_after_header_matches",
+        "trusted-proxy in-flight overload responses must carry Retry-After",
+    ),
+    (
+        "guardrails.trusted_proxy_in_flight.cache_control_header_matches",
+        "trusted-proxy in-flight overload responses must be marked no-store",
+    ),
+    (
+        "guardrails.trusted_proxy_in_flight.trusted_proxy_metric_matches",
+        "trusted-proxy in-flight probe must increment the trusted-proxy limit metric",
+    ),
+    (
+        "guardrails.ip_prefix_aggregation.same_ipv6_prefix_limited",
+        "IPv6 prefix aggregation must limit rotating clients inside the same prefix",
+    ),
+    (
+        "guardrails.ip_prefix_aggregation.different_ipv6_prefix_allowed",
+        "IPv6 prefix aggregation must allow clients from unrelated prefixes",
+    ),
+    (
+        "guardrails.ip_prefix_aggregation.retry_after_header_matches",
+        "IPv6 prefix aggregation limit responses must carry Retry-After",
+    ),
+    (
+        "guardrails.ip_prefix_aggregation.cache_control_header_matches",
+        "IPv6 prefix aggregation limit responses must be marked no-store",
+    ),
+    (
+        "guardrails.ip_prefix_aggregation.rate_limited_metric_matches",
+        "IPv6 prefix aggregation probe must increment the rate-limited metric",
     ),
     (
         "guardrails.upstream_failure_circuit.circuit_scoped_to_path_shape",

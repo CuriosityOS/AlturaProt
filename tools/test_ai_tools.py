@@ -548,6 +548,59 @@ class LocalBenchAssertionTests(unittest.TestCase):
         self.assertIn("runtime_nofile_capacity.capacity_rejected", errors[0])
         self.assertIn("expected true", errors[0])
 
+    def test_assert_local_bench_rejects_invalid_client_ip_config_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["client_ip_config_startup"][
+            "invalid_trusted_proxy_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "client_ip_config_startup.invalid_trusted_proxy_rejected", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_forwarded_header_bounds_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["forwarded_header_bounds"][
+            "too_many_hops_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("forwarded_header_bounds.too_many_hops_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_trusted_proxy_in_flight_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["trusted_proxy_in_flight"][
+            "rotating_xff_peer_concurrency_limited"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "trusted_proxy_in_flight.rotating_xff_peer_concurrency_limited",
+            errors[0],
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_ipv6_prefix_aggregation_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["ip_prefix_aggregation"][
+            "same_ipv6_prefix_limited"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("ip_prefix_aggregation.same_ipv6_prefix_limited", errors[0])
+        self.assertIn("expected true", errors[0])
+
     def test_assert_local_bench_rejects_post_grace_tcp_echo(self) -> None:
         report = self.valid_report()
         report["guardrails"]["tcp_min_rate"]["slow_drip"]["second_echo_bytes"] = 1
