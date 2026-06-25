@@ -135,14 +135,19 @@ pub fn validate_filter_rules(
         )
         .into());
     }
+    validate_unique_filter_rule_ids(source, rules)?;
+    for (idx, rule) in rules.iter().enumerate() {
+        validate_filter_rule(&format!("{source}[{idx}]"), rule)?;
+    }
+    Ok(())
+}
+
+fn validate_unique_filter_rule_ids(source: &str, rules: &[FilterRule]) -> Result<(), BoxError> {
     let mut seen_ids = HashSet::new();
     for (idx, rule) in rules.iter().enumerate() {
         if !seen_ids.insert(rule.id.as_str()) {
             return Err(format!("{source}[{idx}].id duplicates rule id {:?}", rule.id).into());
         }
-    }
-    for (idx, rule) in rules.iter().enumerate() {
-        validate_filter_rule(&format!("{source}[{idx}]"), rule)?;
     }
     Ok(())
 }
@@ -431,6 +436,7 @@ impl FilterEngine {
         if let Some(file) = self.load_runtime_filter_file().await? {
             loaded.extend(file.filters);
         }
+        validate_unique_filter_rule_ids("merged filters", &loaded)?;
         loaded.sort_by(|a, b| b.priority.cmp(&a.priority).then_with(|| a.id.cmp(&b.id)));
 
         let now_ms = unix_time_ms();
@@ -1655,6 +1661,65 @@ mod tests {
 
         assert!(err.contains("action.status"), "{err}");
         assert_eq!(engine.evaluate(&ctx).unwrap().rule_id, "good");
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[tokio::test]
+    async fn runtime_filter_reload_rejects_static_runtime_duplicate_ids_and_preserves_rules() {
+        let path = temp_runtime_filter_path("duplicate-merged-runtime-filters");
+        let static_rule = path_rule("shared-id", "/static-blocked");
+        std::fs::write(
+            &path,
+            runtime_filter_json(&[path_rule("runtime-good", "/runtime-blocked")]),
+        )
+        .unwrap();
+        let engine = FilterEngine::new_with_limits(
+            vec![static_rule],
+            path.clone(),
+            Duration::from_secs(30),
+            4096,
+            4,
+        )
+        .await;
+
+        let headers = HeaderMap::new();
+        let static_ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/static-blocked",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        let runtime_ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "GET",
+            path: "/runtime-blocked",
+            query: None,
+            headers: &headers,
+            signature: "sig".to_string(),
+        };
+        assert_eq!(engine.evaluate(&static_ctx).unwrap().rule_id, "shared-id");
+        assert_eq!(
+            engine.evaluate(&runtime_ctx).unwrap().rule_id,
+            "runtime-good"
+        );
+
+        std::fs::write(
+            &path,
+            runtime_filter_json(&[path_rule("shared-id", "/runtime-shadow")]),
+        )
+        .unwrap();
+
+        let err = engine.reload().await.unwrap_err().to_string();
+
+        assert!(err.contains("merged filters[1].id"), "{err}");
+        assert!(err.contains("duplicates rule id \"shared-id\""), "{err}");
+        assert_eq!(engine.evaluate(&static_ctx).unwrap().rule_id, "shared-id");
+        assert_eq!(
+            engine.evaluate(&runtime_ctx).unwrap().rule_id,
+            "runtime-good"
+        );
         let _ = std::fs::remove_file(path);
     }
 
