@@ -248,6 +248,58 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "absolute-form request targets must reject non-http schemes before origin work",
     ),
     (
+        "guardrails.allowed_hosts_startup.blank_rejected",
+        "allowed-host config must reject blank authorities at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.duplicate_rejected",
+        "allowed-host config must reject duplicate authorities at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.invalid_authority_rejected",
+        "allowed-host config must reject invalid authorities at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.oversized_rejected",
+        "allowed-host config must reject oversized authorities at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.too_many_rejected",
+        "allowed-host config must reject excessive authorities at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.userinfo_rejected",
+        "allowed-host config must reject authorities with userinfo at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.whitespace_rejected",
+        "allowed-host config must reject authorities with whitespace at startup",
+    ),
+    (
+        "guardrails.allowed_hosts_startup.wildcard_rejected",
+        "allowed-host config must reject wildcard authorities at startup",
+    ),
+    (
+        "guardrails.allowed_methods_startup.duplicate_rejected",
+        "allowed HTTP methods must reject duplicates at startup",
+    ),
+    (
+        "guardrails.allowed_methods_startup.empty_rejected",
+        "allowed HTTP methods must reject empty method lists at startup",
+    ),
+    (
+        "guardrails.allowed_methods_startup.invalid_token_rejected",
+        "allowed HTTP methods must reject invalid method tokens at startup",
+    ),
+    (
+        "guardrails.allowed_methods_startup.oversized_token_rejected",
+        "allowed HTTP methods must reject oversized method tokens at startup",
+    ),
+    (
+        "guardrails.allowed_methods_startup.too_many_rejected",
+        "allowed HTTP methods must reject excessive method lists at startup",
+    ),
+    (
         "guardrails.allowed_methods_startup.unsupported_connect_rejected",
         "allowed HTTP methods must reject CONNECT at startup",
     ),
@@ -258,6 +310,34 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.allowed_methods_startup.unsupported_track_rejected",
         "allowed HTTP methods must reject TRACK at startup",
+    ),
+    (
+        "guardrails.header_buffer_floor_startup.downstream_max_header_bytes_rejected",
+        "downstream header byte cap below the safe floor must fail startup",
+    ),
+    (
+        "guardrails.header_buffer_floor_startup.upstream_max_header_bytes_rejected",
+        "upstream header byte cap below the safe floor must fail startup",
+    ),
+    (
+        "guardrails.header_buffer_ceiling_startup.downstream_max_header_bytes_rejected",
+        "downstream header byte cap above the supported ceiling must fail startup",
+    ),
+    (
+        "guardrails.header_buffer_ceiling_startup.upstream_max_header_bytes_rejected",
+        "upstream header byte cap above the supported ceiling must fail startup",
+    ),
+    (
+        "guardrails.header_count_ceiling_startup.downstream_max_headers_rejected",
+        "downstream header count above the supported ceiling must fail startup",
+    ),
+    (
+        "guardrails.header_count_ceiling_startup.upstream_max_headers_rejected",
+        "upstream header count above the supported ceiling must fail startup",
+    ),
+    (
+        "guardrails.header_read_timeout_ceiling_startup.header_read_timeout_rejected",
+        "header read timeout above the supported ceiling must fail startup",
     ),
     (
         "guardrails.http_endpoint_startup.invalid_listen_rejected",
@@ -484,8 +564,60 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "stalled upstream response bodies must be closed",
     ),
     (
+        "guardrails.request_trailer_policy.request_trailer_policy_observed",
+        "request trailer policy must be exercised by the benchmark",
+    ),
+    (
+        "guardrails.request_trailer_policy.oversized_request_trailer_rejected",
+        "oversized request trailers must be rejected",
+    ),
+    (
+        "guardrails.request_trailer_policy.generated_431_closes_connection",
+        "oversized request-trailer rejections must close the downstream connection",
+    ),
+    (
+        "guardrails.request_trailer_policy.generated_431_not_stored",
+        "oversized request-trailer rejections must be marked no-store",
+    ),
+    (
+        "guardrails.request_trailer_policy.connection_closed_before_followup",
+        "oversized request-trailer rejections must close before keep-alive reuse",
+    ),
+    (
+        "guardrails.upstream_trailer_policy.upstream_trailer_policy_observed",
+        "upstream trailer policy must be exercised by the benchmark",
+    ),
+    (
         "guardrails.downstream_keep_alive.closed_before_second_response",
         "downstream keep-alive must be disabled by default",
+    ),
+    (
+        "guardrails.connection_request_limit.connection_request_limit_observed",
+        "per-connection request-count guard must be observed",
+    ),
+    (
+        "guardrails.connection_request_limit.third_request_limited",
+        "per-connection request-count guard must limit excess keep-alive reuse",
+    ),
+    (
+        "guardrails.connection_request_limit.retry_after_header_matches",
+        "per-connection request-count limit responses must carry Retry-After",
+    ),
+    (
+        "guardrails.connection_request_limit.cache_control_header_matches",
+        "per-connection request-count limit responses must be marked no-store",
+    ),
+    (
+        "guardrails.connection_request_limit.connection_close_header_matches",
+        "per-connection request-count limit responses must close the connection",
+    ),
+    (
+        "guardrails.connection_request_limit.connection_closed_before_fourth",
+        "per-connection request-count guard must close before further reuse",
+    ),
+    (
+        "guardrails.downstream_write_timeout.downstream_write_timeout_observed",
+        "downstream write timeout must close write-backpressured responses",
     ),
     (
         "guardrails.tcp_global_connection_cap.rejected_closed",
@@ -502,6 +634,10 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.tcp_relay_head_of_line.upstream_response_delivered_while_downstream_write_blocked",
         "TCP relay must keep the opposite direction flowing while one direction is write-backpressured",
+    ),
+    (
+        "guardrails.log_suppression.timeout_log_lines_bounded",
+        "timeout log suppression must keep repeated timeout logs bounded",
     ),
     (
         "guardrails.event_log_async_queue.all_requests_completed",
@@ -558,6 +694,22 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
     (
         "guardrails.runtime_filter_bounds.too_many_rules_rejected_and_last_good_preserved",
         "runtime filter over-capacity files must be rejected while preserving last-good rules",
+    ),
+    (
+        "guardrails.filter_rule_startup.empty_condition_rejected",
+        "static filter rules with empty conditions must fail startup",
+    ),
+    (
+        "guardrails.filter_rule_startup.invalid_status_rejected",
+        "static filter rules with invalid generated status codes must fail startup",
+    ),
+    (
+        "guardrails.filter_rule_startup.oversized_body_rejected",
+        "static filter rules with oversized generated bodies must fail startup",
+    ),
+    (
+        "guardrails.filter_rule_startup.too_many_static_filters_rejected",
+        "static filter rule counts above supported bounds must fail startup",
     ),
     (
         "guardrails.config_file_startup.oversized_config_rejected",
@@ -852,8 +1004,36 @@ REQUIRED_TRUE_CHECKS: tuple[tuple[str, str], ...] = (
         "systemd validation must reject excessive service capabilities",
     ),
     (
+        "guardrails.admin_prefix_startup.query_prefix_rejected",
+        "admin prefix config must reject prefixes containing query strings",
+    ),
+    (
+        "guardrails.admin_prefix_startup.relative_prefix_rejected",
+        "admin prefix config must reject relative prefixes",
+    ),
+    (
+        "guardrails.admin_prefix_startup.root_prefix_rejected",
+        "admin prefix config must reject root prefixes",
+    ),
+    (
+        "guardrails.admin_token_startup.blank_token_rejected",
+        "admin metrics token config must reject blank tokens",
+    ),
+    (
+        "guardrails.admin_token_startup.control_token_rejected",
+        "admin metrics token config must reject control characters",
+    ),
+    (
+        "guardrails.admin_token_startup.empty_token_rejected",
+        "admin metrics token config must reject empty tokens",
+    ),
+    (
         "guardrails.admin_token_startup.long_token_rejected",
         "admin metrics tokens above the bounded comparison budget must fail startup",
+    ),
+    (
+        "guardrails.admin_token_startup.padded_token_rejected",
+        "admin metrics token config must reject tokens with padding whitespace",
     ),
     (
         "guardrails.admin_control_plane.duplicate_metrics_token_rejected",

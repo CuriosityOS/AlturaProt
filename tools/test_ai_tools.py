@@ -601,6 +601,83 @@ class LocalBenchAssertionTests(unittest.TestCase):
         self.assertIn("ip_prefix_aggregation.same_ipv6_prefix_limited", errors[0])
         self.assertIn("expected true", errors[0])
 
+    def test_assert_local_bench_rejects_allowed_host_startup_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["allowed_hosts_startup"]["wildcard_rejected"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("allowed_hosts_startup.wildcard_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_header_ceiling_startup_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["header_buffer_ceiling_startup"][
+            "downstream_max_header_bytes_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "header_buffer_ceiling_startup.downstream_max_header_bytes_rejected",
+            errors[0],
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_filter_rule_startup_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["filter_rule_startup"][
+            "too_many_static_filters_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "filter_rule_startup.too_many_static_filters_rejected", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_connection_request_limit_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["connection_request_limit"][
+            "connection_closed_before_fourth"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "connection_request_limit.connection_closed_before_fourth", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_request_trailer_policy_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["request_trailer_policy"][
+            "oversized_request_trailer_rejected"
+        ] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "request_trailer_policy.oversized_request_trailer_rejected", errors[0]
+        )
+        self.assertIn("expected true", errors[0])
+
+    def test_assert_local_bench_rejects_admin_prefix_startup_gap(self) -> None:
+        report = self.valid_report()
+        report["guardrails"]["admin_prefix_startup"]["root_prefix_rejected"] = False
+
+        errors = assert_local_bench.assert_report(report)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("admin_prefix_startup.root_prefix_rejected", errors[0])
+        self.assertIn("expected true", errors[0])
+
     def test_assert_local_bench_rejects_post_grace_tcp_echo(self) -> None:
         report = self.valid_report()
         report["guardrails"]["tcp_min_rate"]["slow_drip"]["second_echo_bytes"] = 1
