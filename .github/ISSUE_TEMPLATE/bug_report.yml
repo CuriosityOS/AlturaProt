@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a defect in the proxy, analyzer, installer, or tooling
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! For **security vulnerabilities**, do not file a
+        public issue — see [SECURITY.md](https://github.com/CuriosityOS/AlturaProt/blob/main/SECURITY.md) instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps, config, and commands to trigger the bug.
+      placeholder: |
+        1. altura-prot run --config ...
+        2. send request ...
+        3. observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / output
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: Output of `altura-prot --version` or the commit SHA.
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      placeholder: e.g. Ubuntu 24.04 x86_64
+    validations:
+      required: true

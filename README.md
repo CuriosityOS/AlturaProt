@@ -1,8 +1,61 @@
-# AlturaProt
+<p align="center">
+  <a href="https://github.com/CuriosityOS/AlturaProt">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/altura-logo-dark.svg">
+      <img alt="AlturaProt" src=".github/assets/altura-logo-light.svg" width="104">
+    </picture>
+  </a>
+</p>
 
-AlturaProt is a Rust Layer 7 reverse proxy prototype for defensive HTTP and raw TCP service protection. It keeps deterministic mitigation in the hot path and treats AI/Codex analysis as an optional out-of-band filter generator.
+<h1 align="center">AlturaProt</h1>
 
-## What It Does
+<p align="center">
+  A Layer&nbsp;7 DDoS-protection reverse proxy in Rust.<br>
+  Deterministic mitigation in the hot path — AI as an optional, out-of-band precision layer.
+</p>
+
+<p align="center">
+  <a href="https://github.com/CuriosityOS/AlturaProt/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/CuriosityOS/AlturaProt/ci.yml?branch=main&style=flat-square&logo=github&label=CI"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-3da639?style=flat-square"></a>
+  <img alt="Rust 2021" src="https://img.shields.io/badge/Rust-2021-CE412B?style=flat-square&logo=rust&logoColor=white">
+  <img alt="Platform: Linux" src="https://img.shields.io/badge/platform-Linux-555?style=flat-square&logo=linux&logoColor=white">
+  <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-3da639?style=flat-square"></a>
+</p>
+
+<p align="center">
+  <a href="#install">Install</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#cli">CLI</a> ·
+  <a href="docs/ARCHITECTURE.md">Architecture</a> ·
+  <a href="docs/AI_PROVIDERS.md">AI providers</a> ·
+  <a href="docs/OPERATIONS.md">Operations</a>
+</p>
+
+---
+
+> [!NOTE]
+> **Defensive software.** AlturaProt protects services you operate. The bundled
+> flood/benchmark tool is loopback-only by default and refuses public targets.
+
+AlturaProt is a Rust reverse proxy for HTTP/1 and raw TCP that keeps every
+availability decision **deterministic and in-process** — token-bucket rate
+limits, static and adaptive filters, and strict request validation all run on the
+hot path with no dependency on an external service. An optional out-of-band
+analyzer (**CodexSDGate**) turns attack telemetry into narrow, validated filter
+rules, calling an AI provider only when a real attack is underway and a
+deterministic generator otherwise.
+
+## Highlights
+
+- **Deterministic hot path** — per-IP, per-signature, per-path-shape route-family, trusted-proxy aggregate, and global token buckets; bounded limiter state that high-cardinality rotation can't reset; `429` shedding before filter scans.
+- **Strict request hygiene** — HTTP method + Host allowlists, spoof-sanitized `X-Forwarded-For`, header/body/trailer byte+field+count+time caps, slowloris and slow read/upload guards, and chunked / `Expect` / `Range` / `Accept-Encoding` policies.
+- **Adaptive learned filters** — signature and path-shape rules that stay dormant, activate during matching floods via rolling token buckets, reclaim idle windows under pressure, and reject easy-to-fat-finger root-wide `/` blocks.
+- **AI is a precision layer, not a dependency** — the proxy never calls AI on the request path. CodexSDGate learns filters offline and only invokes a provider once an attack crosses a tunable threshold (default `20` real attack events); below that it uses a free deterministic generator. [Details »](docs/AI_PROVIDERS.md)
+- **Raw TCP proxy** — per-client-prefix and global connection-rate and concurrency caps, connect/idle timeouts, optional per-direction min-data-rate guard, and max connection duration.
+- **Operational guardrails** — a config preflight that fails startup on unsafe values, `RLIMIT_NOFILE` capacity checks, bounded JSONL event logging with rotation, token-protected Prometheus metrics, and host-edge nftables/sysctl/systemd templates.
+
+<details>
+<summary><b>The full, exhaustive control list</b></summary>
 
 - HTTP/1 reverse proxy with per-client prefix, per-signature, per-path-shape route-family, trusted-proxy aggregate, and global token-bucket limits.
 - Bounded rate-limiter state that evicts stale buckets but denies new active keys when a shard is full, so high-cardinality rotation cannot reset existing hot IP, signature, or path-shape buckets.
@@ -10,26 +63,50 @@ AlturaProt is a Rust Layer 7 reverse proxy prototype for defensive HTTP and raw 
 - Rate-limited admin health checks and token-protected Prometheus metrics.
 - Raw TCP proxy with per-client-prefix and global connection-rate limits, global/per-client-prefix concurrent-connection caps, sharded `SO_REUSEPORT` accept sockets, outbound connect timeout, idle timeout, optional per-direction minimum data-rate guard, and max connection duration.
 - Runtime `RLIMIT_NOFILE` preflight and capacity validation so configured connection caps are backed by an explicit file-descriptor floor.
-- Config preflight for the config file itself, DDoS-critical HTTP/TCP rate knobs, positive resource-capacity ceilings, Hyper HTTP/1 header-buffer floors and startup ceilings, header field-line ceilings, request metadata ceilings, trailer ceilings, forwarded-header parse ceilings, body-size ceilings, minimum data-rate byte-floor ceilings, header-read, HTTP stream/body, upstream connect, upstream idle-pool, TCP connect, and upstream response timeout ceilings, connection lifetime and per-connection request-count ceilings, event-log queue, rotation, backup-count, adaptive-window, filter TTL, runtime/static-filter, and limiter tracked-state ceilings, upstream failure circuit settings and ceilings, the HTTP method and Host allowlists, client-IP trusted-proxy settings, and admin control-plane settings, so oversized/non-regular config inputs or malformed values fail startup instead of exhausting startup memory, silently disabling protection, removing socket/metadata/concurrency bounds, silently raising too-low header byte caps, body byte caps, or accepting excessive header byte/field/count caps, accidentally stretching slowloris protection, slow upload/download protections, origin connect attempts, origin response waits, origin idle keep-alive retention, TCP upstream connect attempts, connection permit lifetimes, persistent-connection request budgets, or learned-filter activations into minutes, hours, days, or effectively unlimited work, turning event-log buffering or rotation, runtime filter reloads, learned-rule counts, adaptive detector windows, or tracked limiter state into excessive memory/filesystem/hot-path work, repeatedly hammering a failing origin path without a local shed window, making the failure circuit effectively unreachable, shedding origin-bound traffic for excessive open windows, generating malformed or huge `Allow` responses, doing unbounded request-target, trailer, Host, or trusted-proxy scans, silently falling back to weaker client-IP identity, moving control-plane endpoints, or accepting blank or oversized metrics tokens; `0` remains the explicit per-rate-bucket disable value and can disable optional minimum data-rate guards and the upstream idle connection pool.
+- Config preflight that rejects oversized/non-regular/malformed config inputs and out-of-range DDoS-critical knobs (rate caps, resource ceilings, header/body/trailer/metadata caps, timeouts, connection lifetimes, event-log and adaptive-window and filter-TTL bounds, circuit settings, method/Host allowlists, trusted-proxy and admin control-plane settings) so unsafe values fail startup instead of silently disabling protection; `0` remains the explicit per-rate-bucket disable value.
 - SIGINT/SIGTERM shutdown handling so service-manager stops enter the same listener-drain path as Ctrl-C.
 - Static JSON filters for known bad HTTP patterns, plus bounded and validated static/runtime filter rules with compiled header/user-agent match data and snapshot-based rule evaluation on the request path.
 - Adaptive learned filters that stay dormant, activate during matching floods through rolling token-bucket counters, reclaim idle signature/path-shape windows under capacity pressure, preserve recent evidence, and stop admitting fresh detector keys when a shard is full of recent windows.
-- JSONL attack event logs for offline/nearline analysis, with bounded user-controlled fields, a bounded nonblocking queue capped at `8192` owned events, worker-side JSON serialization, bounded flush cadence, and byte/backup-count-capped rotation so event logging does not become request-path JSON formatting, backpressure, a high-rate disk flush, unbounded memory or disk growth, or excessive per-rotation filesystem work during floods.
+- JSONL attack event logs for offline/nearline analysis, with bounded user-controlled fields, a bounded nonblocking queue capped at `8192` owned events, worker-side JSON serialization, bounded flush cadence, and byte/backup-count-capped rotation.
 - Optional CodexSDGate analyzer that converts attack logs into constrained adaptive filter rules using either a subscription agent CLI you already logged into (Codex, Claude, OpenCode, Cursor, Grok — wrapped the way T3 Code does) or an API key (OpenAI, Anthropic, Gemini, OpenRouter).
-- Host-edge nftables/sysctl/systemd templates plus a validation preflight for L3/L4
-  and service-manager backstops, including explicit size bounds on dynamic
-  nftables SYN-rate and connection-limit sets and exemptions for essential
-  ICMPv4/ICMPv6 control traffic.
+- Host-edge nftables/sysctl/systemd templates plus a validation preflight for L3/L4 and service-manager backstops, including explicit size bounds on dynamic nftables SYN-rate and connection-limit sets and exemptions for essential ICMPv4/ICMPv6 control traffic.
 - Local-only benchmark/flood script that refuses non-loopback targets by default.
+
+</details>
+
+## How it works
+
+```mermaid
+flowchart LR
+    C(["Clients"]) -->|HTTP / TCP| AP
+    subgraph AP ["AlturaProt · deterministic hot path"]
+      direction TB
+      RL["Rate limits<br/>IP · signature · path-shape · global"] --> FW["Static + adaptive filters"]
+      FW --> VAL["Request validation<br/>+ connection guards"]
+    end
+    AP -->|allowed| ORIGIN(["Your origin"])
+    AP -.->|attack events| LOG[("JSONL event log")]
+    LOG -.->|"out-of-band, threshold-gated"| CX["CodexSDGate analyzer<br/>AI provider or deterministic"]
+    CX -.->|learned filters| FW
+```
+
+Availability is protected by deterministic controls first: token buckets, static
+filters, and learned adaptive signatures/path shapes — all running in the proxy,
+able to drop matching traffic immediately. CodexSDGate is the precision layer: it
+learns narrow filters from telemetry so repeat attacks are blocked quickly with
+fewer false positives. For volumetric floods that saturate the link before the
+proxy can inspect traffic, pair it with upstream/provider blackholing, scrubbing,
+CDN/anycast, or router ACLs — AlturaProt ships host-edge templates for smaller
+L3/L4 floods, but provider-side mitigation is still required when the pipe itself
+is full.
 
 ## Install
 
 One command installs everything — it downloads a prebuilt binary for your
-platform (or builds from source if none is published / when run from a
-checkout), writes config, and (system mode) creates the service user and
-systemd unit. When run on a terminal it also walks an optional **AI Power
-Detection** step where you can wire an AI provider for adaptive filtering
-(skip it, pick a subscription CLI you already use, or enter an API key):
+platform (or builds from source when none is published / run from a checkout),
+writes config, and (system mode) creates the service user and systemd unit. On a
+terminal it also offers an optional **AI Power Detection** step to wire an AI
+provider for adaptive filtering.
 
 ```bash
 # system install, then enable + start the service
@@ -39,32 +116,29 @@ curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install
 curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh | bash -s -- --user
 ```
 
-### Install with an agent (fully non-interactive)
+<details>
+<summary><b>Install with an agent (fully non-interactive)</b></summary>
 
-Every prompt has a flag, so an AI agent (or CI) can install and wire AI in one
-command with no interaction. `--ai auto` picks whatever you already have — the
-first installed agent CLI (Codex, Claude, OpenCode, Cursor, Grok), else the
-first provider whose API-key env var is set:
+Every prompt has a flag, so an AI agent or CI job can install and wire AI in one
+command. `--ai auto` picks whatever you already have — the first installed agent
+CLI (Codex, Claude, OpenCode, Cursor, Grok), else the first provider whose
+API-key env var is set:
 
 ```bash
-# "Install AlturaProt for me and use whatever AI I'm already set up with"
+# "Install AlturaProt and use whatever AI I'm already set up with"
 curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh \
   | bash -s -- --user --ai auto --non-interactive
 
-# Pick a provider explicitly; the API key is read from the standard env var
-# (OPENAI_API_KEY / ANTHROPIC_API_KEY / GEMINI_API_KEY / OPENROUTER_API_KEY):
+# Pick a provider explicitly; key read from the standard env var
 GEMINI_API_KEY=sk-... curl -fsSL .../install.sh \
   | bash -s -- --user --ai gemini --non-interactive
-
-# System service that uses your already-logged-in Claude CLI, then starts:
-curl -fsSL .../install.sh | sudo bash -s -- --start --ai claude --non-interactive
 ```
 
-`--non-interactive` is also implied automatically whenever there is no terminal
-(e.g. piped in CI), so existing one-liners never hang an agent. There is **no
-capability difference** between a subscription CLI and an API key — both feed the
-same analyzer and produce the same adaptive filters; the choice is only about how
-you authenticate.
+`--non-interactive` is also implied automatically when there is no terminal, so
+one-liners never hang. There is **no capability difference** between a
+subscription CLI and an API key — both feed the same analyzer.
+
+</details>
 
 Or from a checkout:
 
@@ -72,21 +146,22 @@ Or from a checkout:
 git clone https://github.com/CuriosityOS/AlturaProt
 cd AlturaProt
 sudo ./install.sh --start    # system mode: /usr/local/bin, /etc/altura-prot, systemd unit
-./install.sh --user          # user mode: ~/.local/bin, ~/.config/altura-prot
+./install.sh --user          # user mode:   ~/.local/bin, ~/.config/altura-prot
 ```
 
-System mode creates the `altura-prot` service user/group and installs config under
+System mode creates the `altura-prot` service user/group and writes config to
 `/etc/altura-prot`. No `admin_token` is set by default, so the token-protected
-metrics endpoint stays closed until you set one. After installing, point it at
-your origin and set a token:
+metrics endpoint stays closed until you set one:
 
 ```bash
 sudo altura-prot config set http.upstream http://127.0.0.1:9000
 sudo altura-prot config set http.admin_token <secret>
-sudo systemctl restart altura-prot   # if installed with --start
+sudo systemctl restart altura-prot
 ```
 
 ## CLI
+
+The `altura-prot` binary is also a management CLI:
 
 ```bash
 altura-prot init                                   # create config dir + default config (--system for /etc)
@@ -98,60 +173,68 @@ altura-prot run                                     # start the proxy
 altura-prot status                                  # systemd or process status
 ```
 
-`config set` writes to a temp file, validates it, and only then renames it into
-place, so a rejected value never replaces a working config. The active config
-path is resolved from `--config`, then `$ALTURA_PROT_CONFIG`,
+`config set` is atomic: it writes a temp file, validates it, and only renames it
+into place on success, so a rejected value never replaces a working config. The
+active config resolves from `--config`, then `$ALTURA_PROT_CONFIG`,
 `/etc/altura-prot/config.json`, `~/.config/altura-prot/config.json`, and finally
 `configs/example.json`.
 
-## Quick Start
+## Quick start (from source)
 
 ```bash
 cargo test
 cargo run --release -- --config configs/example.json
 ```
 
-In another terminal, run an upstream:
+In another terminal, run an origin and send traffic through the proxy:
 
 ```bash
 python3 -m http.server 9000 --bind 127.0.0.1
-```
-
-Then test through the proxy:
-
-```bash
 curl http://127.0.0.1:8080/
 python3 tools/run_local_bench.py --duration 10 --workers 64
 ```
 
-## Codex Analyzer
+## AI-powered adaptive filters
 
-The proxy never calls an AI provider on the request path. Adaptive signature and path-shape tracking windows are capped by `adaptive.max_signature_windows` and `adaptive.max_path_shape_windows`. Static filters are capped by `filters.max_static_filters`, and runtime filter reloads reject non-regular files while enforcing `filters.max_runtime_file_bytes` plus `filters.max_runtime_filters`, preserving the last good rules when a bad analyzer output appears. `adaptive.activation_ttl_seconds` and per-rule `ttl_seconds` must stay within `1..=86400`; activation also clamps unvalidated in-memory TTLs before `Instant` arithmetic. Static and runtime rules must have a bounded, non-empty matcher and a bounded `block` action with a 4xx/5xx status; root-wide `path_prefix: "/"` filters are rejected because they are too easy to fat-finger into a full-site block. Adaptive path-shape learning has no hardcoded benign route-family exemptions: catalog, login, product, and other common-looking routes use the same bounded windows as every other route family. Observed-only route-family pressure can emit bounded analyzer samples, but broad path-shape filter activation requires strong evidence such as deterministic rate-limit, trusted-proxy aggregate, filter, or body-guard denial. Loaded filters precompile header names and byte needles for case-insensitive user-agent/header checks, and each request computes derived path shape at most once while rules are evaluated. Request workers clone an immutable rule snapshot before scanning; adaptive activation updates per-rule atomic deadlines and reload swaps the snapshot, so learned-filter activation does not wait on long-running rule scans. The proxy truncates user-controlled attack-event fields before enqueueing, then queues owned events to a dedicated JSONL writer thread that performs serialization, file writes, flushes, and rotation; `adaptive.event_log_queue_capacity` must be `1..=8192`, and `altura_event_log_dropped` reports events discarded when the queue is saturated instead of blocking request workers. The first event is flushed immediately, burst flushes are bounded by positive `adaptive.event_log_flush_interval_ms` (`100` ms by default), and disk growth plus rotation work are bounded by positive `adaptive.event_log_max_bytes` plus `1..=128` `adaptive.event_log_backup_count` numbered backups. CodexSDGate reads the active log plus rotated backups and writes `runtime/filters.json`.
+CodexSDGate reads the proxy's attack-event log and writes `runtime/filters.json`.
+It only calls an AI provider once a batch holds at least `--min-attack-events`
+**real attack** events (default `20`) — so tokens are spent during real attacks,
+not on noise — and falls back to a deterministic generator otherwise.
 
 ```bash
-python3 -m venv .venv
-. .venv/bin/activate
-pip install openai-codex
-python3 tools/ai_provider_cli.py login codex
-python3 tools/codexsdgate.py --events runtime/attack_events.jsonl --filters runtime/filters.json --once
+python3 tools/ai_provider_cli.py login claude        # or codex / opencode / cursor / grok / an API key
+python3 tools/codexsdgate.py --provider claude \
+  --events runtime/attack_events.jsonl --filters runtime/filters.json --once
 ```
 
-If the selected provider is unavailable, the analyzer falls back to a deterministic signature-based rule generator. To avoid spending tokens on noise, the AI provider is only called once a batch holds at least `--min-attack-events` attack-evidence events (default `20`); below that, the free deterministic generator runs instead. See [AI providers](docs/AI_PROVIDERS.md) for the subscription CLI family (Codex, Claude, OpenCode, Cursor, Grok), the OpenAI, Anthropic, Gemini, and OpenRouter API setups, and the trigger-threshold knob.
+See **[docs/AI_PROVIDERS.md](docs/AI_PROVIDERS.md)** for the subscription-CLI
+family, the OpenAI/Anthropic/Gemini/OpenRouter API setups, the trigger threshold,
+and the optional systemd timer.
 
-## Mitigation Model
+## Documentation
 
-Availability is protected by deterministic controls first: token buckets, static filters, and learned adaptive signatures/path shapes. On normal HTTP traffic, exhausted request-rate buckets shed with `429` before static/runtime filter scans, while in-budget requests still reach the filter layer. Those controls run in the proxy and can start dropping matching traffic without depending on a wall-clock tumbling boundary. CodexSDGate is the precision layer: it learns narrow filters from telemetry so repeat attacks can be blocked quickly with fewer false positives.
+| Doc | What's inside |
+| --- | --- |
+| [Architecture](docs/ARCHITECTURE.md) | Hot-path design, limiters, filters, event pipeline |
+| [Operations](docs/OPERATIONS.md) | Install, CLI, AI step, systemd timer, hardening |
+| [AI providers](docs/AI_PROVIDERS.md) | Provider families, cost-control threshold, runtime contract |
+| [Benchmarks](docs/BENCHMARKS.md) | Local load + edge-template smoke results |
+| [Edge protection](docs/EDGE_PROTECTION.md) | Host-edge nftables/sysctl/systemd templates |
 
-For true volumetric attacks that saturate the network before the proxy can inspect traffic, use upstream/provider blackholing, scrubbing, CDN/anycast protection, or router ACLs. AlturaProt includes host-edge templates for smaller L3/L4 floods, but provider-side mitigation is still required when the link itself is saturated.
+## Contributing
 
-## Safety Notes
+Contributions are welcome! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for setup
+and the checks CI runs (`cargo fmt`, `clippy`, `cargo test`, and the Python
+tooling tests). Please keep flood/benchmark changes loopback-only.
 
-This is defensive software. The included flood script defaults to loopback-only targets; its non-loopback override is limited to owned private-LAN or link-local targets, and public IPs are refused. It is meant for local validation and capacity benchmarking, not internet traffic generation.
+## Security
 
-## More Docs
+This is defensive software for protecting services you operate. Report
+vulnerabilities privately per **[SECURITY.md](SECURITY.md)** — not as public
+issues. The bundled flood tool refuses public targets by design.
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [AI providers and CodexSDGate](docs/AI_PROVIDERS.md)
-- [Benchmarks](docs/BENCHMARKS.md)
-- [Operations](docs/OPERATIONS.md)
-- [Edge protection](docs/EDGE_PROTECTION.md)
+## License
+
+Released under the [MIT License](LICENSE).
+
+<p align="center"><sub>Built with Rust · defensive security tooling · deterministic by design</sub></p>
