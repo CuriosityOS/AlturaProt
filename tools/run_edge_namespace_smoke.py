@@ -133,7 +133,9 @@ def run_namespace_smoke(
     stderr = result.stderr or ""
     source = nft_path.read_text(encoding="utf-8")
     compact_stdout = compact_nft_output(stdout)
-    ipv6_prefix_mask = bool(re.search(r"ip6 saddr\s*(?:and|&)\s*ffff:ffff:ffff:ffff::", stdout))
+    ipv6_prefix_mask = bool(
+        re.search(r"ip6 saddr\s*(?:and|&)\s*ffff:ffff:ffff:ffff::", compact_stdout)
+    )
     udp_extension_safe_source = bool(
         re.search(
             r"\bmeta\s+l4proto\s+udp\s+udp\s+dport\s+@protected_tcp_ports\s+drop\b",
@@ -163,46 +165,50 @@ def run_namespace_smoke(
         "stdout": stdout,
         "stderr": stderr,
         "nft_loaded": result.returncode == 0,
-        "listed_edge_table": "table inet altura_prot_edge" in stdout,
-        "protected_tcp_ports_present": "set protected_tcp_ports" in stdout,
-        "tcp4_connlimit_present": "set tcp4_connlimit" in stdout,
-        "tcp6_connlimit_present": "set tcp6_connlimit" in stdout,
-        "syn_rate_sets_timeout_bounded": stdout.count("timeout 10s") >= 2,
+        "listed_edge_table": "table inet altura_prot_edge" in compact_stdout,
+        "protected_tcp_ports_present": "set protected_tcp_ports" in compact_stdout,
+        "tcp4_connlimit_present": "set tcp4_connlimit" in compact_stdout,
+        "tcp6_connlimit_present": "set tcp6_connlimit" in compact_stdout,
+        "syn_rate_sets_timeout_bounded": compact_stdout.count("timeout 10s") >= 2,
         "tcp_invalid_null_drop_present": (
-            "tcp dport @protected_tcp_ports tcp flags ! fin,syn,rst,ack drop" in stdout
+            "tcp dport @protected_tcp_ports tcp flags ! fin,syn,rst,ack drop"
+            in compact_stdout
         ),
         "tcp_invalid_xmas_drop_present": any(
             match in compact_stdout for match in xmas_drop_matches
         ),
         "ipv6_prefix_syn_backstop_present": ipv6_prefix_mask
-        and "update @tcp6_syn_rate" in stdout,
+        and "update @tcp6_syn_rate" in compact_stdout,
         "tcp4_syn_backstop_present": protected_syn_present
-        and "update @tcp4_syn_rate" in stdout,
+        and "update @tcp4_syn_rate" in compact_stdout,
         "global_syn_backstop_present": protected_syn_present
-        and "limit rate over 5000/second burst 10000 packets drop" in stdout,
-        "ct_invalid_drop_present": "ct state invalid drop" in stdout,
+        and "limit rate over 5000/second burst 10000 packets drop" in compact_stdout,
+        "ct_invalid_drop_present": "ct state invalid drop" in compact_stdout,
         "new_non_syn_drop_present": any(
             match in compact_stdout for match in protected_new_non_syn_matches
         ),
-        "tcp4_connlimit_rule_present": "add @tcp4_connlimit" in stdout
-        and "ct count over 128" in stdout,
+        "tcp4_connlimit_rule_present": "add @tcp4_connlimit" in compact_stdout
+        and "ct count over 128" in compact_stdout,
         "ipv6_prefix_connlimit_present": ipv6_prefix_mask
-        and "add @tcp6_connlimit" in stdout,
+        and "add @tcp6_connlimit" in compact_stdout,
         "tcp6_connlimit_rule_present": ipv6_prefix_mask
-        and "add @tcp6_connlimit" in stdout
-        and "ct count over 128" in stdout,
-        "udp_protected_port_drop_present": "udp dport @protected_tcp_ports drop" in stdout,
-        "udp_protected_port_drop_extension_safe_source": udp_extension_safe_source,
-        "icmpv4_control_exemption_present": "icmp type" in stdout
-        and "destination-unreachable" in stdout,
-        "icmpv4_flood_drop_present": (
-            "ip protocol icmp limit rate over 100/second burst 200 packets drop" in stdout
+        and "add @tcp6_connlimit" in compact_stdout
+        and "ct count over 128" in compact_stdout,
+        "udp_protected_port_drop_present": (
+            "udp dport @protected_tcp_ports drop" in compact_stdout
         ),
-        "icmpv6_control_exemption_present": "icmpv6 type" in stdout
-        and "packet-too-big" in stdout,
+        "udp_protected_port_drop_extension_safe_source": udp_extension_safe_source,
+        "icmpv4_control_exemption_present": "icmp type" in compact_stdout
+        and "destination-unreachable" in compact_stdout,
+        "icmpv4_flood_drop_present": (
+            "ip protocol icmp limit rate over 100/second burst 200 packets drop"
+            in compact_stdout
+        ),
+        "icmpv6_control_exemption_present": "icmpv6 type" in compact_stdout
+        and "packet-too-big" in compact_stdout,
         "icmpv6_flood_drop_present": (
             "meta l4proto ipv6-icmp limit rate over 100/second burst 200 packets drop"
-            in stdout
+            in compact_stdout
         ),
     }
 

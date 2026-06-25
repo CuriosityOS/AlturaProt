@@ -988,16 +988,29 @@ class EdgeNamespaceSmokeTests(unittest.TestCase):
         original_run = run_edge_namespace_smoke.subprocess.run
         canonical_stdout = "\n".join(
             [
-                "table inet altura_prot_edge {",
+                "table   inet   altura_prot_edge {",
+                "  set   protected_tcp_ports { type inet_service; }",
+                "  set   tcp4_connlimit { type ipv4_addr . inet_service; }",
+                "  set   tcp6_connlimit { type ipv6_addr . inet_service; }",
+                "  set   tcp4_syn_rate { flags timeout; timeout 10s; }",
+                "  set   tcp6_syn_rate { flags timeout; timeout 10s; }",
                 "  chain preraw {",
-                "    tcp dport @protected_tcp_ports tcp flags ! fin,syn,rst,ack drop",
-                "    tcp dport @protected_tcp_ports tcp flags fin,psh,urg / fin,syn,rst,psh,ack,urg drop",
-                "    ip protocol tcp tcp dport @protected_tcp_ports tcp flags syn / fin,syn,rst,ack update @tcp4_syn_rate { ip saddr . tcp dport limit rate over 200/second burst 400 packets } drop",
+                "    tcp   dport   @protected_tcp_ports   tcp flags ! fin,syn,rst,ack drop",
+                "    tcp   dport   @protected_tcp_ports tcp flags fin,psh,urg / fin,syn,rst,psh,ack,urg drop",
+                "    ip protocol tcp tcp dport @protected_tcp_ports tcp flags syn / fin,syn,rst,ack update   @tcp4_syn_rate { ip saddr . tcp dport limit rate over 200/second burst 400 packets } drop",
+                "    meta nfproto ipv6 meta l4proto tcp ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport update   @tcp6_syn_rate { ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport limit rate over 200/second burst 400 packets } drop",
                 "    tcp dport @protected_tcp_ports tcp flags syn / fin,syn,rst,ack limit rate over 5000/second burst 10000 packets drop",
+                "    meta l4proto udp udp   dport   @protected_tcp_ports drop",
+                "    ip protocol icmp icmp type { destination-unreachable } accept",
+                "    ip protocol icmp limit rate over 100/second burst 200 packets drop",
+                "    meta l4proto ipv6-icmp icmpv6 type { packet-too-big } accept",
+                "    meta l4proto ipv6-icmp limit rate over 100/second burst 200 packets drop",
                 "  }",
                 "  chain input {",
                 "    ct state invalid drop",
                 "    tcp dport @protected_tcp_ports ct state new tcp flags != syn / fin,syn,rst,ack drop",
+                "    meta l4proto tcp add   @tcp4_connlimit { ip saddr . tcp dport ct count over 128 } drop",
+                "    meta nfproto ipv6 meta l4proto tcp ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport add   @tcp6_connlimit { ip6 saddr and ffff:ffff:ffff:ffff:: . tcp dport ct count over 128 } drop",
                 "  }",
                 "}",
             ]
@@ -1024,9 +1037,25 @@ class EdgeNamespaceSmokeTests(unittest.TestCase):
                 run_edge_namespace_smoke.subprocess.run = original_run  # type: ignore[assignment]
 
         self.assertTrue(report["tcp_invalid_xmas_drop_present"])
+        self.assertTrue(report["listed_edge_table"])
+        self.assertTrue(report["protected_tcp_ports_present"])
+        self.assertTrue(report["tcp4_connlimit_present"])
+        self.assertTrue(report["tcp6_connlimit_present"])
+        self.assertTrue(report["syn_rate_sets_timeout_bounded"])
+        self.assertTrue(report["tcp_invalid_null_drop_present"])
         self.assertTrue(report["tcp4_syn_backstop_present"])
+        self.assertTrue(report["ipv6_prefix_syn_backstop_present"])
         self.assertTrue(report["global_syn_backstop_present"])
+        self.assertTrue(report["ct_invalid_drop_present"])
         self.assertTrue(report["new_non_syn_drop_present"])
+        self.assertTrue(report["tcp4_connlimit_rule_present"])
+        self.assertTrue(report["ipv6_prefix_connlimit_present"])
+        self.assertTrue(report["tcp6_connlimit_rule_present"])
+        self.assertTrue(report["udp_protected_port_drop_present"])
+        self.assertTrue(report["icmpv4_control_exemption_present"])
+        self.assertTrue(report["icmpv4_flood_drop_present"])
+        self.assertTrue(report["icmpv6_control_exemption_present"])
+        self.assertTrue(report["icmpv6_flood_drop_present"])
 
     def test_assert_edge_namespace_smoke_accepts_required_packet_probe(self) -> None:
         report = self.valid_edge_smoke_report()
