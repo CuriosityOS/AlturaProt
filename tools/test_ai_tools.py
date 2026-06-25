@@ -3890,5 +3890,54 @@ class AiProviderCliTests(unittest.TestCase):
             self.assertIn(provider, codex_analyzer.DEFAULT_PROVIDER_CONFIG["providers"])
 
 
+class InstallerAiAutodetectTests(unittest.TestCase):
+    """Exercise install.sh's agent-friendly `--ai auto` resolver in isolation by
+    sourcing its shell functions under a controlled PATH/env."""
+
+    def _run_autodetect(self, bin_files: dict[str, str], env_overrides: dict[str, str]) -> str:
+        import shutil
+        import stat
+
+        dirname_bin = shutil.which("dirname")
+        bash_bin = shutil.which("bash") or "/bin/bash"
+        self.assertIsNotNone(dirname_bin, "dirname required for the test harness")
+        install = Path("install.sh").read_text(encoding="utf-8")
+        body = "\n".join(line for line in install.splitlines() if line.strip() != 'main "$@"')
+        harness = body + '\nprintf "RESULT=%s\\n" "$(ai_autodetect)"\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            bindir = Path(tmp) / "bin"
+            bindir.mkdir()
+            os.symlink(dirname_bin, bindir / "dirname")  # only external cmd the script sources
+            for name, content in bin_files.items():
+                fake = bindir / name
+                fake.write_text(content, encoding="utf-8")
+                fake.chmod(fake.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+            script = Path(tmp) / "harness.sh"
+            script.write_text(harness, encoding="utf-8")
+            env = {"PATH": str(bindir), "HOME": tmp}
+            env.update(env_overrides)
+            proc = subprocess.run([bash_bin, str(script)], env=env, capture_output=True, text=True, timeout=30)
+        for line in proc.stdout.splitlines():
+            if line.startswith("RESULT="):
+                return line.split("=", 1)[1]
+        self.fail(f"no RESULT line; stdout={proc.stdout!r} stderr={proc.stderr!r}")
+
+    def test_auto_prefers_installed_agent_cli(self) -> None:
+        # codex is highest preference, so a present codex wins regardless of env.
+        result = self._run_autodetect(
+            {"codex": "#!/bin/sh\necho fake\n"},
+            {"GEMINI_API_KEY": "should-be-ignored"},
+        )
+        self.assertEqual(result, "codex")
+
+    def test_auto_falls_back_to_env_api_key(self) -> None:
+        result = self._run_autodetect({}, {"GEMINI_API_KEY": "x"})
+        self.assertEqual(result, "gemini")
+
+    def test_auto_returns_none_without_cli_or_key(self) -> None:
+        result = self._run_autodetect({}, {})
+        self.assertEqual(result, "none")
+
+
 if __name__ == "__main__":
     unittest.main()

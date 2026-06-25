@@ -39,6 +39,33 @@ curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install
 curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh | bash -s -- --user
 ```
 
+### Install with an agent (fully non-interactive)
+
+Every prompt has a flag, so an AI agent (or CI) can install and wire AI in one
+command with no interaction. `--ai auto` picks whatever you already have — the
+first installed agent CLI (Codex, Claude, OpenCode, Cursor, Grok), else the
+first provider whose API-key env var is set:
+
+```bash
+# "Install AlturaProt for me and use whatever AI I'm already set up with"
+curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh \
+  | bash -s -- --user --ai auto --non-interactive
+
+# Pick a provider explicitly; the API key is read from the standard env var
+# (OPENAI_API_KEY / ANTHROPIC_API_KEY / GEMINI_API_KEY / OPENROUTER_API_KEY):
+GEMINI_API_KEY=sk-... curl -fsSL .../install.sh \
+  | bash -s -- --user --ai gemini --non-interactive
+
+# System service that uses your already-logged-in Claude CLI, then starts:
+curl -fsSL .../install.sh | sudo bash -s -- --start --ai claude --non-interactive
+```
+
+`--non-interactive` is also implied automatically whenever there is no terminal
+(e.g. piped in CI), so existing one-liners never hang an agent. There is **no
+capability difference** between a subscription CLI and an API key — both feed the
+same analyzer and produce the same adaptive filters; the choice is only about how
+you authenticate.
+
 Or from a checkout:
 
 ```bash

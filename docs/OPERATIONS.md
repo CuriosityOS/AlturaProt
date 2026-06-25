@@ -45,19 +45,30 @@ this only configures the out-of-band CodexSDGate loop, which you can change
 later with `ai_provider_cli.py`.
 
 The step is skipped automatically when there is no terminal (e.g. CI) or with
-`--non-interactive`. To configure it non-interactively, pass `--ai PROVIDER`
-(one of `none`, `codex`, `claude`, `opencode`, `cursor`, `grok`, `openai`,
-`anthropic`, `gemini`, `openrouter`) plus optional `--ai-model MODEL` and
-`--ai-key KEY`:
+`--non-interactive`, so agent/automation one-liners never hang. To configure it
+non-interactively, pass `--ai PROVIDER` (one of `auto`, `none`, `codex`,
+`claude`, `opencode`, `cursor`, `grok`, `openai`, `anthropic`, `gemini`,
+`openrouter`) plus optional `--ai-model MODEL` and `--ai-key KEY`. With
+`--ai auto` the installer selects the first installed agent CLI, else the first
+provider whose API-key env var is set. For an explicit API-key provider, the key
+is taken from the standard env var (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+`GEMINI_API_KEY`, `OPENROUTER_API_KEY`) when `--ai-key` is omitted:
 
 ```bash
-# user install that wires Gemini in one shot
+# agent-friendly: install and wire whatever AI is already available
 curl -fsSL https://raw.githubusercontent.com/CuriosityOS/AlturaProt/main/install.sh \
-  | bash -s -- --user --ai gemini --ai-model gemini-2.5-pro --ai-key "$GEMINI_API_KEY"
+  | bash -s -- --user --ai auto --non-interactive
+
+# user install that wires Gemini in one shot (key from $GEMINI_API_KEY)
+GEMINI_API_KEY=sk-... curl -fsSL .../install.sh \
+  | bash -s -- --user --ai gemini --non-interactive
 
 # system install that selects the already-logged-in Claude CLI
 sudo ./install.sh --start --ai claude --non-interactive
 ```
+
+There is no capability difference between a subscription CLI and an API key:
+both drive the same analyzer pipeline and produce the same adaptive filters.
 
 The `altura-prot` binary is also a management CLI:
 

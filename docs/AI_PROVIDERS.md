@@ -13,8 +13,20 @@ There are two provider families:
 - **API-key providers** (`openai`, `anthropic`, `gemini`, `openrouter`): a model
   plus an API key (env var or `0600` secrets file) called over HTTPS.
 
+**Feature parity.** Both families are first-class and interchangeable. Whichever
+you pick, CodexSDGate builds the same prompt, enforces the same sanitized filter
+schema, runs the same strong-coverage merge and deterministic fallback, and
+preserves learned filters the same way. You can override the model for any
+provider, switch providers at any time with `ai_provider_cli.py select`, and
+nothing about the analyzer's capabilities depends on whether you authenticated
+through a subscription CLI or an API key. Provider-specific knobs that only exist
+upstream (for example Codex `reasoning_effort`/`service_tier`) are the only
+difference, and they have no analyzer-side equivalent that a CLI agent loses.
+
 The installer's interactive **AI Power Detection** step configures either family
-for you; see [Operations](OPERATIONS.md). You can also do it by hand:
+for you; see [Operations](OPERATIONS.md). For agents and CI, `install.sh --ai
+auto --non-interactive` auto-selects an installed CLI or an env-keyed API
+provider with zero prompts. You can also do it by hand:
 
 ## Configure Providers
 

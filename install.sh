@@ -66,19 +66,30 @@ Options:
   --start             Enable and start the systemd service after install (system mode only)
   --from-source       Build from source even when a prebuilt binary is available
   --ai PROVIDER       Configure an AI provider non-interactively. PROVIDER is one
-                      of none, codex, claude, opencode, cursor, grok, openai,
-                      anthropic, gemini, openrouter.
+                      of: auto, none, codex, claude, opencode, cursor, grok,
+                      openai, anthropic, gemini, openrouter. With "auto" the
+                      installer picks the first installed agent CLI, else the
+                      first provider whose API-key env var is set.
   --ai-model MODEL    Model to use for --ai (optional; blank uses the default).
-  --ai-key KEY        API key to store for an API-key --ai provider.
+  --ai-key KEY        API key to store for an API-key --ai provider. If omitted,
+                      the provider's standard env var (e.g. OPENAI_API_KEY,
+                      ANTHROPIC_API_KEY, GEMINI_API_KEY, OPENROUTER_API_KEY) is
+                      used when present.
   --non-interactive   Never prompt; skip the AI step unless --ai is given.
   -h, --help          Show this help
 
-Examples:
+Fully non-interactive (agent-friendly) examples:
+  # Install and auto-wire whatever AI CLI/key is already available:
+  curl -fsSL .../install.sh | bash -s -- --user --ai auto --non-interactive
+  # Pick a specific provider; key taken from $GEMINI_API_KEY if --ai-key omitted:
+  curl -fsSL .../install.sh | bash -s -- --user --ai gemini --non-interactive
+  # System service, use the already-logged-in Claude CLI, start it:
+  curl -fsSL .../install.sh | sudo bash -s -- --start --ai claude --non-interactive
+
+Interactive examples:
   sudo ./install.sh
   sudo ./install.sh --start
   ./install.sh --user
-  ./install.sh --user --ai gemini --ai-model gemini-2.5-pro --ai-key sk-...
-  ./install.sh --user --ai claude --non-interactive
 EOF
 }
 
@@ -417,6 +428,41 @@ is_api_provider() {
   esac
 }
 
+# Standard API-key env var for an API-key provider (empty for CLI agents).
+ai_default_env_for() {
+  case "$1" in
+    openai) echo "OPENAI_API_KEY" ;;
+    anthropic) echo "ANTHROPIC_API_KEY" ;;
+    gemini) echo "GEMINI_API_KEY" ;;
+    openrouter) echo "OPENROUTER_API_KEY" ;;
+    *) echo "" ;;
+  esac
+}
+
+# Resolve "--ai auto": prefer an installed agent CLI (subscription login), else
+# the first API-key provider whose env var is set, else "none". Uses only shell
+# builtins so it is safe under a minimal PATH.
+ai_autodetect() {
+  local agents=(codex claude opencode cursor grok)
+  local bins=(codex claude opencode cursor-agent grok)
+  local i env
+  for i in "${!agents[@]}"; do
+    if command -v "${bins[$i]}" >/dev/null 2>&1; then
+      echo "${agents[$i]}"
+      return
+    fi
+  done
+  local p
+  for p in openai anthropic gemini openrouter; do
+    env="$(ai_default_env_for "$p")"
+    if [[ -n "${!env:-}" ]]; then
+      echo "$p"
+      return
+    fi
+  done
+  echo "none"
+}
+
 # Interactive top-level menu; echoes a provider name or "none".
 prompt_ai_menu() {
   {
@@ -558,6 +604,13 @@ configure_ai() {
     fi
     choice="$(prompt_ai_menu)"
   fi
+
+  # Agent-friendly: resolve "auto" to a concrete installed CLI or env-keyed API.
+  if [[ "${choice}" == "auto" ]]; then
+    choice="$(ai_autodetect)"
+    log "AI Power Detection: auto-detected provider '${choice}'"
+  fi
+
   if [[ -z "${choice}" || "${choice}" == "none" ]]; then
     log "AI Power Detection: skipped (no provider configured)"
     return 0
@@ -571,7 +624,13 @@ configure_ai() {
   log "AI Power Detection: configuring '${choice}'"
   install_ai_tools
 
-  local model="${AI_MODEL}" key="${AI_KEY}"
+  local model="${AI_MODEL}" key="${AI_KEY}" env
+  # For API providers, fall back to the standard env var so agents can pass the
+  # key via environment instead of a flag.
+  if is_api_provider "${choice}" && [[ -z "${key}" ]]; then
+    env="$(ai_default_env_for "${choice}")"
+    [[ -n "${!env:-}" ]] && key="${!env}"
+  fi
   if [[ "${INTERACTIVE}" -eq 1 ]]; then
     if is_api_provider "${choice}"; then
       [[ -n "${model}" ]] || model="$(ask "Model for ${choice} (blank = provider default): " "")"
