@@ -1214,6 +1214,40 @@ class AnalyzerTests(unittest.TestCase):
                 self.assertNotIn("path_prefix", clean["condition"])
                 self.assertEqual(clean["condition"]["signature"], SIG_A)
 
+    def test_sanitize_filter_normalizes_response_header_safe_id(self) -> None:
+        clean = codex_analyzer.sanitize_filter(
+            {
+                "id": "bad\r\nid,with unicode \u2603",
+                "condition": {"signature": SIG_A},
+            },
+            ttl_seconds=45,
+        )
+
+        self.assertEqual(clean["id"], "bad-id-with-unicode")
+        self.assertNotRegex(clean["id"], r"[\x00-\x20\x7f,]")
+        self.assertTrue(clean["id"].isascii())
+
+    def test_merge_existing_filters_deconflicts_duplicate_sanitized_ids(self) -> None:
+        filters = codex_analyzer.merge_existing_filters(
+            [],
+            [
+                {
+                    "id": "same id",
+                    "condition": {"signature": SIG_A},
+                },
+                {
+                    "id": "same\nid",
+                    "condition": {"path_shape": "/api/:num"},
+                },
+            ],
+            ttl_seconds=45,
+            max_filters=8,
+        )
+
+        ids = [item["id"] for item in filters]
+        self.assertEqual(ids, ["same-id", "same-id-2"])
+        self.assertEqual(len(ids), len(set(ids)))
+
     def test_build_prompt_clamps_ttl_seconds_to_server_ceiling(self) -> None:
         prompt = codex_analyzer.build_prompt(
             [],

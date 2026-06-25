@@ -23,6 +23,7 @@ from typing import Any
 SAFE_ID = re.compile(r"[^a-zA-Z0-9_.:-]+")
 SUPPORTED_SIGNATURE = re.compile(r"(?:[0-9a-f]{16}|[0-9a-f]{32})\Z")
 FILTER_TTL_MAX_SECONDS = 24 * 60 * 60
+FILTER_RULE_ID_MAX_BYTES = 96
 
 DEFAULT_PROVIDER_CONFIG = {
     "selected_provider": "codex",
@@ -845,7 +846,25 @@ def merge_strong_coverage(
 
 
 def safe_id(value: str) -> str:
-    return SAFE_ID.sub("-", value)[:96].strip("-") or "codex-learned-filter"
+    return SAFE_ID.sub("-", value)[:FILTER_RULE_ID_MAX_BYTES].strip("-") or "codex-learned-filter"
+
+
+def unique_filter_ids(filters: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: set[str] = set()
+    unique = []
+    for item in filters:
+        clean = dict(item)
+        base = safe_id(str(clean.get("id") or "codex-learned-filter"))
+        candidate = base
+        suffix = 2
+        while candidate in seen:
+            tail = f"-{suffix}"
+            candidate = f"{base[: FILTER_RULE_ID_MAX_BYTES - len(tail)]}{tail}".strip("-")
+            suffix += 1
+        clean["id"] = candidate
+        seen.add(candidate)
+        unique.append(clean)
+    return unique
 
 
 def write_filters(path: Path, filters: list[dict[str, Any]]) -> None:
@@ -902,7 +921,7 @@ def merge_existing_filters(
         upsert(item)
     for item in new_filters:
         upsert(item)
-    return list(merged.values())[-max(1, max_filters) :]
+    return unique_filter_ids(list(merged.values())[-max(1, max_filters) :])
 
 
 def analyze_once(args: argparse.Namespace) -> None:
