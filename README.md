@@ -1,9 +1,6 @@
 <p align="center">
   <a href="https://github.com/CuriosityOS/AlturaProt">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/altura-logo-dark.svg">
-      <img alt="AlturaProt" src=".github/assets/altura-logo-light.svg" width="104">
-    </picture>
+    <img alt="AlturaProt" src=".github/assets/altura-prot-logo-readme.png" width="128">
   </a>
 </p>
 
