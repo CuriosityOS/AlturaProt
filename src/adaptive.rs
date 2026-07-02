@@ -228,7 +228,9 @@ impl AdaptiveDetector {
                 poisoned.into_inner()
             }
         };
-        if !windows.entries.contains_key(signature) {
+        let window = if let Some(window) = windows.entries.get_mut(signature) {
+            window
+        } else {
             if !ensure_signature_window_capacity(
                 &mut windows,
                 self.max_signature_windows_per_shard,
@@ -240,18 +242,19 @@ impl AdaptiveDetector {
                     emit: false,
                 };
             }
-            windows.order.push_back(signature.to_string());
-        }
-        let window = windows
-            .entries
-            .entry(signature.to_string())
-            .or_insert_with(|| SignatureWindow {
-                bucket: adaptive_bucket(self.threshold_per_second, now),
-                observed_count: 0,
-                last_event: None,
-                last_strong_event: None,
-                last_seen: now,
-            });
+            let signature_owned = signature.to_string();
+            windows.order.push_back(signature_owned.clone());
+            windows
+                .entries
+                .entry(signature_owned)
+                .or_insert_with(|| SignatureWindow {
+                    bucket: adaptive_bucket(self.threshold_per_second, now),
+                    observed_count: 0,
+                    last_event: None,
+                    last_strong_event: None,
+                    last_seen: now,
+                })
+        };
         window.last_seen = now;
         window.observed_count = window.observed_count.saturating_add(1);
         let count = window.observed_count;
@@ -294,7 +297,9 @@ impl AdaptiveDetector {
                 poisoned.into_inner()
             }
         };
-        if !windows.entries.contains_key(path_shape) {
+        let window = if let Some(window) = windows.entries.get_mut(path_shape) {
+            window
+        } else {
             if !ensure_shape_window_capacity(
                 &mut windows,
                 self.max_path_shape_windows_per_shard,
@@ -302,20 +307,21 @@ impl AdaptiveDetector {
             ) {
                 return None;
             }
-            windows.order.push_back(path_shape.to_string());
-        }
-        let window = windows
-            .entries
-            .entry(path_shape.to_string())
-            .or_insert_with(|| ShapeWindow {
-                bucket: adaptive_bucket(self.threshold_per_second, now),
-                strong_bucket: adaptive_bucket(self.threshold_per_second, now),
-                observed_count: 0,
-                strong_count: 0,
-                sample_window_start: now,
-                emitted_samples: 0,
-                last_seen: now,
-            });
+            let path_shape_owned = path_shape.to_string();
+            windows.order.push_back(path_shape_owned.clone());
+            windows
+                .entries
+                .entry(path_shape_owned)
+                .or_insert_with(|| ShapeWindow {
+                    bucket: adaptive_bucket(self.threshold_per_second, now),
+                    strong_bucket: adaptive_bucket(self.threshold_per_second, now),
+                    observed_count: 0,
+                    strong_count: 0,
+                    sample_window_start: now,
+                    emitted_samples: 0,
+                    last_seen: now,
+                })
+        };
         window.last_seen = now;
         window.observed_count = window.observed_count.saturating_add(1);
         if now.saturating_duration_since(window.sample_window_start) >= Duration::from_secs(1) {
@@ -1264,6 +1270,69 @@ mod tests {
             max_signature_windows,
             max_path_shape_windows,
         }
+    }
+
+    fn signature_observed_count(detector: &AdaptiveDetector, signature: &str) -> u64 {
+        let shard_idx = shard_for(signature);
+        let windows = match detector.windows[shard_idx].lock() {
+            Ok(windows) => windows,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        windows
+            .entries
+            .get(signature)
+            .map(|window| window.observed_count)
+            .unwrap_or(0)
+    }
+
+    #[tokio::test]
+    async fn body_too_large_hot_path_observes_before_strong_evidence() {
+        let engine = FilterEngine::new(
+            vec![],
+            PathBuf::from("/tmp/altura-prot-nonexistent-body-too-large-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let logger = Arc::new(
+            EventLogger::new("/tmp/altura-prot-test-body-too-large-events.jsonl").unwrap(),
+        );
+        let detector = AdaptiveDetector::new(
+            test_detector_config(60, 8_192, 8_192),
+            Arc::clone(&engine),
+            logger,
+        );
+        let headers = HeaderMap::new();
+        let signature = crate::filter::request_signature("POST", "/upload", None, &headers);
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "POST",
+            path: "/upload",
+            query: None,
+            headers: &headers,
+            signature: signature.clone(),
+        };
+        let path_shape = request_path_shape("/upload");
+
+        detector.observe_with_path_shape(&ctx, "body_too_large", &path_shape);
+        assert_eq!(signature_observed_count(&detector, &signature), 1);
+
+        let engine = FilterEngine::new(
+            vec![],
+            PathBuf::from("/tmp/altura-prot-nonexistent-body-too-large-hot-path-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let logger = Arc::new(
+            EventLogger::new("/tmp/altura-prot-test-body-too-large-hot-path-events.jsonl").unwrap(),
+        );
+        let detector = AdaptiveDetector::new(
+            test_detector_config(60, 8_192, 8_192),
+            Arc::clone(&engine),
+            logger,
+        );
+        detector.observe_with_path_shape(&ctx, "observed", &path_shape);
+        detector.observe_with_path_shape(&ctx, "body_too_large", &path_shape);
+        assert_eq!(signature_observed_count(&detector, &signature), 2);
     }
 
     fn same_signature_shard_keys(prefix: &str, count: usize) -> Vec<String> {

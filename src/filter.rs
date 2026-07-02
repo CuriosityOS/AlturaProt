@@ -405,8 +405,9 @@ impl FilterEvalScratch {
             .as_str()
     }
 
-    fn matches_path_shape(&mut self, path: &str, expected: &str) -> bool {
-        if self.path_shape(path) == expected {
+    fn matches_path_shape(&mut self, path: &str, expected: &str, hint: Option<&str>) -> bool {
+        let shape = hint.unwrap_or_else(|| self.path_shape(path));
+        if shape == expected {
             return true;
         }
         let parent = self
@@ -613,6 +614,14 @@ impl FilterEngine {
     }
 
     pub fn evaluate(&self, ctx: &RequestContext<'_>) -> Option<FilterDecision> {
+        self.evaluate_with_path_shape(ctx, None)
+    }
+
+    pub fn evaluate_with_path_shape(
+        &self,
+        ctx: &RequestContext<'_>,
+        path_shape_hint: Option<&str>,
+    ) -> Option<FilterDecision> {
         let unix_ms = unix_time_ms();
         let rules = self.rules_snapshot("evaluate");
         let mut scratch = FilterEvalScratch::default();
@@ -624,7 +633,7 @@ impl FilterEngine {
             if rule.adaptive && runtime.active_until_ms.load(Ordering::Relaxed) <= unix_ms {
                 continue;
             }
-            if rule_matches(runtime, ctx, &mut scratch) {
+            if rule_matches(runtime, ctx, &mut scratch, path_shape_hint) {
                 return Some(FilterDecision {
                     rule_id: rule.id.clone(),
                     status: rule.action.status,
@@ -722,11 +731,9 @@ pub fn request_signature(
     query: Option<&str>,
     headers: &HeaderMap<HeaderValue>,
 ) -> String {
-    let basis = signature_basis(method, path, query, headers);
-    hex_prefix(
-        blake3::hash(basis.as_bytes()).as_bytes(),
-        REQUEST_SIGNATURE_HASH_BYTES,
-    )
+    let mut hasher = blake3::Hasher::new();
+    append_signature_basis(&mut hasher, method, path, query, headers);
+    hex_prefix(hasher.finalize().as_bytes(), REQUEST_SIGNATURE_HASH_BYTES)
 }
 
 pub fn legacy_request_signature(
@@ -735,7 +742,8 @@ pub fn legacy_request_signature(
     query: Option<&str>,
     headers: &HeaderMap<HeaderValue>,
 ) -> String {
-    let basis = signature_basis(method, path, query, headers);
+    let mut basis = String::with_capacity(128);
+    append_signature_basis_string(&mut basis, method, path, query, headers);
     format!("{:016x}", fnv1a64(basis.as_bytes()))
 }
 
@@ -745,26 +753,72 @@ pub fn signature_basis(
     query: Option<&str>,
     headers: &HeaderMap<HeaderValue>,
 ) -> String {
-    let ua = combined_header_value(headers, &http::header::USER_AGENT)
-        .map(|value| user_agent_family(value.as_ref()))
-        .unwrap_or_else(|| "empty".to_string());
-    let accept = combined_header_value(headers, &http::header::ACCEPT)
-        .map(|value| header_class(value.as_ref()))
-        .unwrap_or_else(|| "empty".to_string());
-    format!(
-        "{}|{}|{}|{}|{}",
-        method.to_ascii_uppercase(),
-        normalize_path(path),
-        query_shape(query.unwrap_or("")),
-        ua,
-        accept
-    )
+    let mut basis = String::with_capacity(128);
+    append_signature_basis_string(&mut basis, method, path, query, headers);
+    basis
+}
+
+fn append_signature_basis_string(
+    out: &mut String,
+    method: &str,
+    path: &str,
+    query: Option<&str>,
+    headers: &HeaderMap<HeaderValue>,
+) {
+    for byte in method.bytes() {
+        out.push(byte.to_ascii_uppercase() as char);
+    }
+    out.push('|');
+    out.push_str(&normalize_path(path));
+    out.push('|');
+    out.push_str(&query_shape(query.unwrap_or("")));
+    out.push('|');
+    match combined_header_value(headers, &http::header::USER_AGENT) {
+        Some(value) => out.push_str(&user_agent_family(value.as_ref())),
+        None => out.push_str("empty"),
+    }
+    out.push('|');
+    match combined_header_value(headers, &http::header::ACCEPT) {
+        Some(value) => out.push_str(&header_class(value.as_ref())),
+        None => out.push_str("empty"),
+    }
+}
+
+fn append_signature_basis(
+    hasher: &mut blake3::Hasher,
+    method: &str,
+    path: &str,
+    query: Option<&str>,
+    headers: &HeaderMap<HeaderValue>,
+) {
+    for byte in method.bytes() {
+        hasher.update(&[byte.to_ascii_uppercase()]);
+    }
+    hasher.update(b"|");
+    let normalized_path = normalize_path(path);
+    hasher.update(normalized_path.as_bytes());
+    hasher.update(b"|");
+    let query = query_shape(query.unwrap_or(""));
+    hasher.update(query.as_bytes());
+    hasher.update(b"|");
+    if let Some(value) = combined_header_value(headers, &http::header::USER_AGENT) {
+        hasher.update(user_agent_family(value.as_ref()).as_bytes());
+    } else {
+        hasher.update(b"empty");
+    }
+    hasher.update(b"|");
+    if let Some(value) = combined_header_value(headers, &http::header::ACCEPT) {
+        hasher.update(header_class(value.as_ref()).as_bytes());
+    } else {
+        hasher.update(b"empty");
+    }
 }
 
 fn rule_matches(
     runtime: &RuntimeRule,
     ctx: &RequestContext<'_>,
     scratch: &mut FilterEvalScratch,
+    path_shape_hint: Option<&str>,
 ) -> bool {
     let rule = &runtime.rule;
     let compiled = &runtime.condition;
@@ -801,7 +855,7 @@ fn rule_matches(
         }
     }
     if let Some(path_shape) = &rule.condition.path_shape {
-        if !scratch.matches_path_shape(ctx.path, path_shape) {
+        if !scratch.matches_path_shape(ctx.path, path_shape, path_shape_hint) {
             return false;
         }
     }
@@ -2218,6 +2272,13 @@ mod tests {
         };
         assert!(engine.evaluate(&matching).is_some());
         assert!(engine.evaluate(&benign).is_none());
+        let hinted_shape = request_path_shape(matching.path);
+        assert_eq!(
+            engine
+                .evaluate_with_path_shape(&matching, Some(&hinted_shape))
+                .map(|decision| decision.rule_id),
+            engine.evaluate(&matching).map(|decision| decision.rule_id)
+        );
     }
 
     #[tokio::test]
