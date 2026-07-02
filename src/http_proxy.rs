@@ -1227,6 +1227,9 @@ async fn handle_http(
             };
             state
                 .detector
+                .observe_with_path_shape(&ctx, "observed", &path_shape);
+            state
+                .detector
                 .observe_with_path_shape(&ctx, "body_too_large", &path_shape);
             return Ok(content_too_large_response("request body too large\n"));
         }

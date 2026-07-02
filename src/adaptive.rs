@@ -1272,6 +1272,69 @@ mod tests {
         }
     }
 
+    fn signature_observed_count(detector: &AdaptiveDetector, signature: &str) -> u64 {
+        let shard_idx = shard_for(signature);
+        let windows = match detector.windows[shard_idx].lock() {
+            Ok(windows) => windows,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        windows
+            .entries
+            .get(signature)
+            .map(|window| window.observed_count)
+            .unwrap_or(0)
+    }
+
+    #[tokio::test]
+    async fn body_too_large_hot_path_observes_before_strong_evidence() {
+        let engine = FilterEngine::new(
+            vec![],
+            PathBuf::from("/tmp/altura-prot-nonexistent-body-too-large-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let logger = Arc::new(
+            EventLogger::new("/tmp/altura-prot-test-body-too-large-events.jsonl").unwrap(),
+        );
+        let detector = AdaptiveDetector::new(
+            test_detector_config(60, 8_192, 8_192),
+            Arc::clone(&engine),
+            logger,
+        );
+        let headers = HeaderMap::new();
+        let signature = crate::filter::request_signature("POST", "/upload", None, &headers);
+        let ctx = RequestContext {
+            client_ip: "127.0.0.1".parse().unwrap(),
+            method: "POST",
+            path: "/upload",
+            query: None,
+            headers: &headers,
+            signature: signature.clone(),
+        };
+        let path_shape = request_path_shape("/upload");
+
+        detector.observe_with_path_shape(&ctx, "body_too_large", &path_shape);
+        assert_eq!(signature_observed_count(&detector, &signature), 1);
+
+        let engine = FilterEngine::new(
+            vec![],
+            PathBuf::from("/tmp/altura-prot-nonexistent-body-too-large-hot-path-filters.json"),
+            Duration::from_secs(30),
+        )
+        .await;
+        let logger = Arc::new(
+            EventLogger::new("/tmp/altura-prot-test-body-too-large-hot-path-events.jsonl").unwrap(),
+        );
+        let detector = AdaptiveDetector::new(
+            test_detector_config(60, 8_192, 8_192),
+            Arc::clone(&engine),
+            logger,
+        );
+        detector.observe_with_path_shape(&ctx, "observed", &path_shape);
+        detector.observe_with_path_shape(&ctx, "body_too_large", &path_shape);
+        assert_eq!(signature_observed_count(&detector, &signature), 2);
+    }
+
     fn same_signature_shard_keys(prefix: &str, count: usize) -> Vec<String> {
         let mut selected = Vec::new();
         let mut target_shard = None;
