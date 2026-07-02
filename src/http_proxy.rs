@@ -162,22 +162,23 @@ impl UpstreamFailureCircuitBreaker {
             Ok(shard) => shard,
             Err(poisoned) => poisoned.into_inner(),
         };
-        if !shard.entries.contains_key(path_shape) {
+        let entry = if let Some(entry) = shard.entries.get_mut(path_shape) {
+            entry
+        } else {
             if !ensure_upstream_circuit_shard_capacity(&mut shard, self.shard_capacity, now_ms) {
                 return;
             }
-            shard.order.push_back(path_shape.to_string());
-            shard.entries.insert(
-                path_shape.to_string(),
-                UpstreamFailureCircuitEntry::default(),
-            );
-        }
-        if let Some(entry) = shard.entries.get_mut(path_shape) {
-            entry.consecutive_failures = entry.consecutive_failures.saturating_add(1);
-            if entry.consecutive_failures >= self.threshold {
-                entry.open_until_ms = now_ms.saturating_add(self.open_ms);
-                entry.consecutive_failures = 0;
-            }
+            let path_shape_owned = path_shape.to_string();
+            shard.order.push_back(path_shape_owned.clone());
+            shard
+                .entries
+                .entry(path_shape_owned)
+                .or_insert_with(UpstreamFailureCircuitEntry::default)
+        };
+        entry.consecutive_failures = entry.consecutive_failures.saturating_add(1);
+        if entry.consecutive_failures >= self.threshold {
+            entry.open_until_ms = now_ms.saturating_add(self.open_ms);
+            entry.consecutive_failures = 0;
         }
     }
 
@@ -1154,7 +1155,7 @@ async fn handle_http(
 
     if admin_endpoint(&state.cfg.admin_path_prefix, &method, &path).is_some() {
         if let Some(response) =
-            maybe_rate_limit_response(&state.limiter, &state.stats, client_ip, None, &ctx)
+            maybe_rate_limit_response(&state.limiter, &state.stats, client_ip, None, &ctx, None)
         {
             return Ok(response);
         }
@@ -1165,12 +1166,17 @@ async fn handle_http(
             peer_addr.ip(),
             None,
             &ctx,
+            None,
         ) {
             return Ok(response);
         }
-        if let Some(response) =
-            maybe_signature_rate_limit_response(&state.signature_limiter, &state.stats, None, &ctx)
-        {
+        if let Some(response) = maybe_signature_rate_limit_response(
+            &state.signature_limiter,
+            &state.stats,
+            None,
+            &ctx,
+            None,
+        ) {
             return Ok(response);
         }
         if let Some(response) = maybe_path_shape_rate_limit_response(
@@ -1196,12 +1202,16 @@ async fn handle_http(
         }
     }
 
-    state.detector.observe(&ctx, "observed");
+    state
+        .detector
+        .observe_with_path_shape(&ctx, "observed", &path_shape);
 
     if let Some(length) = content_length(req.headers()) {
         if state.cfg.max_body_bytes > 0 && length > state.cfg.max_body_bytes {
             Stats::inc(&state.stats.http_body_rejected);
-            state.detector.observe(&ctx, "body_too_large");
+            state
+                .detector
+                .observe_with_path_shape(&ctx, "body_too_large", &path_shape);
             return Ok(content_too_large_response("request body too large\n"));
         }
     }
@@ -1211,6 +1221,7 @@ async fn handle_http(
         &state.stats,
         Some(&state.detector),
         &ctx,
+        Some(&path_shape),
     ) {
         return Ok(response);
     }
@@ -1240,6 +1251,7 @@ async fn handle_http(
         client_ip,
         Some(&state.detector),
         &ctx,
+        Some(&path_shape),
     ) {
         return Ok(response);
     }
@@ -1250,13 +1262,19 @@ async fn handle_http(
         peer_addr.ip(),
         Some(&state.detector),
         &ctx,
+        Some(&path_shape),
     ) {
         return Ok(response);
     }
 
-    if let Some(decision) = state.engine.evaluate(&ctx) {
+    if let Some(decision) = state
+        .engine
+        .evaluate_with_path_shape(&ctx, Some(&path_shape))
+    {
         Stats::inc(&state.stats.http_blocked);
-        state.detector.observe(&ctx, "filter_block");
+        state
+            .detector
+            .observe_with_path_shape(&ctx, "filter_block", &path_shape);
         return Ok(early_rejection_response(
             decision.status,
             decision.body,
@@ -1958,6 +1976,7 @@ fn maybe_rate_limit_response(
     client_ip: IpAddr,
     detector: Option<&AdaptiveDetector>,
     ctx: &RequestContext<'_>,
+    path_shape: Option<&str>,
 ) -> Option<Response<ProxyBody>> {
     let limit = limiter.check(client_ip);
     if limit.allowed {
@@ -1965,14 +1984,16 @@ fn maybe_rate_limit_response(
     }
     Stats::inc(&stats.http_rate_limited);
     if let Some(detector) = detector {
-        detector.observe(
-            ctx,
-            match limit.reason {
-                Some(LimitReason::GlobalRate) => "global_rate_limited",
-                Some(LimitReason::PerIpRate) => "per_ip_rate_limited",
-                _ => "rate_limited",
-            },
-        );
+        let reason = match limit.reason {
+            Some(LimitReason::GlobalRate) => "global_rate_limited",
+            Some(LimitReason::PerIpRate) => "per_ip_rate_limited",
+            _ => "rate_limited",
+        };
+        if let Some(path_shape) = path_shape {
+            detector.observe_with_path_shape(ctx, reason, path_shape);
+        } else {
+            detector.observe(ctx, reason);
+        }
     }
     Some(rate_limit_response("rate limited\n"))
 }
@@ -1982,6 +2003,7 @@ fn maybe_signature_rate_limit_response(
     stats: &Stats,
     detector: Option<&AdaptiveDetector>,
     ctx: &RequestContext<'_>,
+    path_shape: Option<&str>,
 ) -> Option<Response<ProxyBody>> {
     if limiter.check(&ctx.signature) {
         return None;
@@ -1989,7 +2011,11 @@ fn maybe_signature_rate_limit_response(
     Stats::inc(&stats.http_rate_limited);
     Stats::inc(&stats.http_signature_rate_limited);
     if let Some(detector) = detector {
-        detector.observe(ctx, "signature_rate_limited");
+        if let Some(path_shape) = path_shape {
+            detector.observe_with_path_shape(ctx, "signature_rate_limited", path_shape);
+        } else {
+            detector.observe(ctx, "signature_rate_limited");
+        }
     }
     Some(rate_limit_response("signature rate limited\n"))
 }
@@ -2038,6 +2064,7 @@ fn maybe_trusted_proxy_rate_limit_response(
     peer_ip: IpAddr,
     detector: Option<&AdaptiveDetector>,
     ctx: &RequestContext<'_>,
+    path_shape: Option<&str>,
 ) -> Option<Response<ProxyBody>> {
     if client_ip == peer_ip {
         return None;
@@ -2049,7 +2076,11 @@ fn maybe_trusted_proxy_rate_limit_response(
     Stats::inc(&stats.http_rate_limited);
     Stats::inc(&stats.http_trusted_proxy_rate_limited);
     if let Some(detector) = detector {
-        detector.observe(ctx, "trusted_proxy_rate_limited");
+        if let Some(path_shape) = path_shape {
+            detector.observe_with_path_shape(ctx, "trusted_proxy_rate_limited", path_shape);
+        } else {
+            detector.observe(ctx, "trusted_proxy_rate_limited");
+        }
     }
     Some(rate_limit_response("trusted proxy rate limited\n"))
 }
@@ -5470,8 +5501,8 @@ mod tests {
             signature,
         };
 
-        assert!(maybe_rate_limit_response(&limiter, &stats, client_ip, None, &ctx).is_none());
-        let response = maybe_rate_limit_response(&limiter, &stats, client_ip, None, &ctx)
+        assert!(maybe_rate_limit_response(&limiter, &stats, client_ip, None, &ctx, None).is_none());
+        let response = maybe_rate_limit_response(&limiter, &stats, client_ip, None, &ctx, None)
             .expect("second request should be rate limited");
         assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
         assert_retry_after_header(&response);
@@ -5529,14 +5560,16 @@ mod tests {
             signature: "cold-signature".to_string(),
         };
 
-        assert!(maybe_signature_rate_limit_response(&limiter, &stats, None, &ctx).is_none());
-        let response = maybe_signature_rate_limit_response(&limiter, &stats, None, &ctx)
+        assert!(maybe_signature_rate_limit_response(&limiter, &stats, None, &ctx, None).is_none());
+        let response = maybe_signature_rate_limit_response(&limiter, &stats, None, &ctx, None)
             .expect("second hot signature request should be limited");
         assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
         assert_retry_after_header(&response);
         assert_generated_no_store_header(&response);
         assert_connection_close_header(&response);
-        assert!(maybe_signature_rate_limit_response(&limiter, &stats, None, &other_ctx).is_none());
+        assert!(
+            maybe_signature_rate_limit_response(&limiter, &stats, None, &other_ctx, None).is_none()
+        );
         assert_eq!(
             stats
                 .http_signature_rate_limited
@@ -5714,11 +5747,11 @@ mod tests {
         };
 
         assert!(maybe_trusted_proxy_rate_limit_response(
-            &limiter, &stats, client_ip, peer_ip, None, &ctx
+            &limiter, &stats, client_ip, peer_ip, None, &ctx, None
         )
         .is_none());
         let response = maybe_trusted_proxy_rate_limit_response(
-            &limiter, &stats, client_ip, peer_ip, None, &ctx,
+            &limiter, &stats, client_ip, peer_ip, None, &ctx, None,
         )
         .expect("second trusted-proxy request should be rate limited");
         assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
@@ -5732,7 +5765,7 @@ mod tests {
             1
         );
         assert!(maybe_trusted_proxy_rate_limit_response(
-            &limiter, &stats, peer_ip, peer_ip, None, &ctx
+            &limiter, &stats, peer_ip, peer_ip, None, &ctx, None
         )
         .is_none());
     }

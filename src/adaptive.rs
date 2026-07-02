@@ -228,7 +228,9 @@ impl AdaptiveDetector {
                 poisoned.into_inner()
             }
         };
-        if !windows.entries.contains_key(signature) {
+        let window = if let Some(window) = windows.entries.get_mut(signature) {
+            window
+        } else {
             if !ensure_signature_window_capacity(
                 &mut windows,
                 self.max_signature_windows_per_shard,
@@ -240,18 +242,19 @@ impl AdaptiveDetector {
                     emit: false,
                 };
             }
-            windows.order.push_back(signature.to_string());
-        }
-        let window = windows
-            .entries
-            .entry(signature.to_string())
-            .or_insert_with(|| SignatureWindow {
-                bucket: adaptive_bucket(self.threshold_per_second, now),
-                observed_count: 0,
-                last_event: None,
-                last_strong_event: None,
-                last_seen: now,
-            });
+            let signature_owned = signature.to_string();
+            windows.order.push_back(signature_owned.clone());
+            windows
+                .entries
+                .entry(signature_owned)
+                .or_insert_with(|| SignatureWindow {
+                    bucket: adaptive_bucket(self.threshold_per_second, now),
+                    observed_count: 0,
+                    last_event: None,
+                    last_strong_event: None,
+                    last_seen: now,
+                })
+        };
         window.last_seen = now;
         window.observed_count = window.observed_count.saturating_add(1);
         let count = window.observed_count;
@@ -294,7 +297,9 @@ impl AdaptiveDetector {
                 poisoned.into_inner()
             }
         };
-        if !windows.entries.contains_key(path_shape) {
+        let window = if let Some(window) = windows.entries.get_mut(path_shape) {
+            window
+        } else {
             if !ensure_shape_window_capacity(
                 &mut windows,
                 self.max_path_shape_windows_per_shard,
@@ -302,20 +307,21 @@ impl AdaptiveDetector {
             ) {
                 return None;
             }
-            windows.order.push_back(path_shape.to_string());
-        }
-        let window = windows
-            .entries
-            .entry(path_shape.to_string())
-            .or_insert_with(|| ShapeWindow {
-                bucket: adaptive_bucket(self.threshold_per_second, now),
-                strong_bucket: adaptive_bucket(self.threshold_per_second, now),
-                observed_count: 0,
-                strong_count: 0,
-                sample_window_start: now,
-                emitted_samples: 0,
-                last_seen: now,
-            });
+            let path_shape_owned = path_shape.to_string();
+            windows.order.push_back(path_shape_owned.clone());
+            windows
+                .entries
+                .entry(path_shape_owned)
+                .or_insert_with(|| ShapeWindow {
+                    bucket: adaptive_bucket(self.threshold_per_second, now),
+                    strong_bucket: adaptive_bucket(self.threshold_per_second, now),
+                    observed_count: 0,
+                    strong_count: 0,
+                    sample_window_start: now,
+                    emitted_samples: 0,
+                    last_seen: now,
+                })
+        };
         window.last_seen = now;
         window.observed_count = window.observed_count.saturating_add(1);
         if now.saturating_duration_since(window.sample_window_start) >= Duration::from_secs(1) {

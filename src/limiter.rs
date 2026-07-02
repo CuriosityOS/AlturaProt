@@ -165,21 +165,19 @@ impl KeyRateLimiter {
         let now = Instant::now();
         let shard_idx = shard_for_key(key);
         let mut shard = lock_or_recover(&self.shards[shard_idx], "key rate limiter");
-        if !shard.entries.contains_key(key)
-            && !ensure_key_shard_capacity(&mut shard, self.max_tracked_keys, now)
-        {
+        if let Some(entry) = shard.entries.get_mut(key) {
+            entry.last_seen = now;
+            return entry.bucket.allow(now, 1.0);
+        }
+        if !ensure_key_shard_capacity(&mut shard, self.max_tracked_keys, now) {
             return false;
         }
-        if !shard.entries.contains_key(key) {
-            shard.order.push_back(key.to_string());
-        }
-        let entry = shard
-            .entries
-            .entry(key.to_string())
-            .or_insert_with(|| KeyBucket {
-                bucket: TokenBucket::new(self.rps, self.burst, now),
-                last_seen: now,
-            });
+        let key_owned = key.to_string();
+        shard.order.push_back(key_owned.clone());
+        let entry = shard.entries.entry(key_owned).or_insert_with(|| KeyBucket {
+            bucket: TokenBucket::new(self.rps, self.burst, now),
+            last_seen: now,
+        });
         entry.last_seen = now;
         entry.bucket.allow(now, 1.0)
     }
@@ -263,26 +261,30 @@ impl ShortTokenSiblingRateLimiter {
         let now = Instant::now();
         let shard_idx = shard_for_key(parent_shape);
         let mut shard = lock_or_recover(&self.shards[shard_idx], "short-token sibling limiter");
-        if !shard.entries.contains_key(parent_shape)
-            && !ensure_short_token_parent_shard_capacity(&mut shard, self.max_tracked_parents, now)
-        {
-            return false;
-        }
-        if !shard.entries.contains_key(parent_shape) {
-            shard.order.push_back(parent_shape.to_string());
-        }
-        let entry = shard
-            .entries
-            .entry(parent_shape.to_string())
-            .or_insert_with(|| ShortTokenSiblingEntry {
-                bucket: TokenBucket::new(self.rps, self.burst, now),
-                distinct_tokens: HashSet::new(),
-                token_order: VecDeque::new(),
-                last_seen: now,
-            });
+        let entry = if let Some(entry) = shard.entries.get_mut(parent_shape) {
+            entry
+        } else {
+            if !ensure_short_token_parent_shard_capacity(&mut shard, self.max_tracked_parents, now)
+            {
+                return false;
+            }
+            let parent_owned = parent_shape.to_string();
+            shard.order.push_back(parent_owned.clone());
+            shard
+                .entries
+                .entry(parent_owned)
+                .or_insert_with(|| ShortTokenSiblingEntry {
+                    bucket: TokenBucket::new(self.rps, self.burst, now),
+                    distinct_tokens: HashSet::new(),
+                    token_order: VecDeque::new(),
+                    last_seen: now,
+                })
+        };
         entry.last_seen = now;
-        if entry.distinct_tokens.insert(token.to_string()) {
-            entry.token_order.push_back(token.to_string());
+        if !entry.distinct_tokens.contains(token) {
+            let token_owned = token.to_string();
+            entry.distinct_tokens.insert(token_owned.clone());
+            entry.token_order.push_back(token_owned);
             while entry.distinct_tokens.len() > SHORT_TOKEN_SIBLING_DISTINCT_CAP {
                 let Some(oldest) = entry.token_order.pop_front() else {
                     break;
