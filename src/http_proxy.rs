@@ -1096,7 +1096,6 @@ async fn handle_http(
             return Ok(early_rejection_response(400, format!("{reason}\n"), None));
         }
     };
-    let method = req.method().as_str().to_string();
     if !method_allowed(req.method(), &state.cfg) {
         Stats::inc(&state.stats.http_method_rejected);
         return Ok(method_not_allowed_response(&state.cfg));
@@ -1138,22 +1137,26 @@ async fn handle_http(
         Stats::inc(&state.stats.http_uri_rejected);
         return Ok(request_target_rejected_response(format!("{reason}\n")));
     }
-    let path = req.uri().path().to_string();
-    let query = req.uri().query().map(ToString::to_string);
-    let signature = request_signature(&method, &path, query.as_deref(), req.headers());
-    let path_shape = request_path_shape(&path);
-    let short_token_parent = short_token_parent_shape(&path);
 
-    let ctx = RequestContext {
-        client_ip,
-        method: &method,
-        path: &path,
-        query: query.as_deref(),
-        headers: req.headers(),
-        signature,
-    };
+    let method = req.method().as_str();
+    let path = req.uri().path();
+    let query = req.uri().query();
 
-    if admin_endpoint(&state.cfg.admin_path_prefix, &method, &path).is_some() {
+    if admin_endpoint(&state.cfg.admin_path_prefix, method, path).is_some() {
+        let method = method.to_string();
+        let path = path.to_string();
+        let query = query.map(ToString::to_string);
+        let signature = request_signature(&method, &path, query.as_deref(), req.headers());
+        let path_shape = request_path_shape(&path);
+        let short_token_parent = short_token_parent_shape(&path);
+        let ctx = RequestContext {
+            client_ip,
+            method: &method,
+            path: &path,
+            query: query.as_deref(),
+            headers: req.headers(),
+            signature,
+        };
         if let Some(response) =
             maybe_rate_limit_response(&state.limiter, &state.stats, client_ip, None, &ctx, None)
         {
@@ -1202,19 +1205,51 @@ async fn handle_http(
         }
     }
 
-    state
-        .detector
-        .observe_with_path_shape(&ctx, "observed", &path_shape);
-
     if let Some(length) = content_length(req.headers()) {
         if state.cfg.max_body_bytes > 0 && length > state.cfg.max_body_bytes {
             Stats::inc(&state.stats.http_body_rejected);
+            let path_owned = path.to_string();
+            let path_shape = request_path_shape(&path_owned);
+            let method_owned = method.to_string();
+            let query_owned = query.map(ToString::to_string);
+            let ctx = RequestContext {
+                client_ip,
+                method: &method_owned,
+                path: &path_owned,
+                query: query_owned.as_deref(),
+                headers: req.headers(),
+                signature: request_signature(
+                    &method_owned,
+                    &path_owned,
+                    query_owned.as_deref(),
+                    req.headers(),
+                ),
+            };
             state
                 .detector
                 .observe_with_path_shape(&ctx, "body_too_large", &path_shape);
             return Ok(content_too_large_response("request body too large\n"));
         }
     }
+
+    let method = method.to_string();
+    let path = path.to_string();
+    let query = query.map(ToString::to_string);
+    let signature = request_signature(&method, &path, query.as_deref(), req.headers());
+    let path_shape = request_path_shape(&path);
+    let short_token_parent = short_token_parent_shape(&path);
+    let ctx = RequestContext {
+        client_ip,
+        method: &method,
+        path: &path,
+        query: query.as_deref(),
+        headers: req.headers(),
+        signature,
+    };
+
+    state
+        .detector
+        .observe_with_path_shape(&ctx, "observed", &path_shape);
 
     if let Some(response) = maybe_signature_rate_limit_response(
         &state.signature_limiter,
